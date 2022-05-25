@@ -1,0 +1,20 @@
+.settings
+Debug
+Drivers
+Core/Startup
+Middlewares
+
+.cproject
+.mxproject
+# .project
+Nucleo_G491RE\ Debug.launch
+STM32G491RETX_FLASH.ld
+
+Core/Inc/stm32g4xx_hal_conf.h
+Core/Inc/stm32g4xx_it.h
+
+Core/Src/stm32g4xx_hal_msp.c
+Core/Src/stm32g4xx_it.c
+Core/Src/syscalls.c
+Core/Src/sysmem.c
+Core/Src/system_stm32g4xx.c
