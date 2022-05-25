@@ -5,9 +5,15 @@ Firmware for microcontroller and sensors for PR2 fingertips
 
 # Directories
 
-- g491_makabe
+- CubeIDE
+
+-- g491_makabe
 
   Nucleo G491RE firmware for PR2 fingertip. SPI communication loop runs on FreeRTOS
+
+- Datasheets
+
+  Datasheets of microcontrollers and sensors
 
 # Documents
 
