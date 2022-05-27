@@ -1,0 +1,20 @@
+.settings
+Debug
+Drivers
+Core/Startup
+Middlewares
+
+.cproject
+.mxproject
+# .project
+Nucleo_L412\ Debug.launch
+STM32L412RBTXP_FLASH.ld
+
+Core/Inc/stm32l4xx_hal_conf.h
+Core/Inc/stm32l4xx_it.h
+
+Core/Src/stm32l4xx_hal_msp.c
+Core/Src/stm32l4xx_it.c
+Core/Src/syscalls.c
+Core/Src/sysmem.c
+Core/Src/system_stm32l4xx.c
