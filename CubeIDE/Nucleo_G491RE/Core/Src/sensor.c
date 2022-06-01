@@ -24,11 +24,11 @@ void mpuWrite(SPI_HandleTypeDef *hspi, uint8_t address, uint8_t value)
 	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
 }
 
-void mpuRead(SPI_HandleTypeDef *hspi, uint8_t address, uint8_t value)
+void mpuRead(SPI_HandleTypeDef *hspi, uint8_t *address, uint8_t *value)
 {
 	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(hspi, &address, 1, 1000);
-	HAL_SPI_Receive(hspi, &value, 1, 1000);
+	HAL_SPI_Transmit(hspi, &*address, 1, 1000);
+	HAL_SPI_Receive(hspi, &*value, 1, 1000);
 	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
 }
 
@@ -49,10 +49,7 @@ void imu_init(SPI_HandleTypeDef *hspi){
 		break;
 	}
 
-	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(hspi, &t_data, 1, 1000);
-	HAL_SPI_Receive(hspi, &who, 1, 1000);
-	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
+	mpuRead(hspi, &t_data, &who);
 
 	if((who == IMU_WHO_AM_I_20600  && sp.imu_select == SELECT_ICM_20600) ||
 			(who == IMU_WHO_AM_I_42605  && sp.imu_select == SELECT_ICM_42605) ||
