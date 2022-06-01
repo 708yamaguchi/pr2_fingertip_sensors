@@ -50,6 +50,7 @@ DMA_HandleTypeDef hdma_spi2_tx;
 
 osThreadId SPIslaveTaskHandle;
 osThreadId IdleTaskHandle;
+osThreadId IMUTaskHandle;
 /* USER CODE BEGIN PV */
 uint8_t rxBuffer[1] = {};
 uint8_t txBuffer[44] = {};
@@ -64,8 +65,12 @@ static void MX_SPI2_Init(void);
 static void MX_SPI3_Init(void);
 void StartSPIslaveTask(void const * argument);
 void StartIdleTask(void const * argument);
+void StartIMUTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
+void mpuWrite(uint8_t, uint8_t);
+void imu_init();
+void imu_update();
 
 /* USER CODE END PFP */
 
@@ -103,6 +108,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -128,6 +134,9 @@ int main(void)
   MX_SPI2_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
+  sp.imu_select = SELECT_ICM_42688;
+  imu_init(&hspi3);
+
   // /pressure/l(r)_gripper_motor values will be
   // [0, 100, 200, 300, ..., 2100]
   for(int i = 0; i < 22; i++) {
@@ -159,6 +168,10 @@ int main(void)
   /* definition and creation of IdleTask */
   osThreadDef(IdleTask, StartIdleTask, osPriorityIdle, 0, 128);
   IdleTaskHandle = osThreadCreate(osThread(IdleTask), NULL);
+
+  /* definition and creation of IMUTask */
+  osThreadDef(IMUTask, StartIMUTask, osPriorityIdle, 0, 128);
+  IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -351,7 +364,7 @@ static void MX_SPI3_Init(void)
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -402,9 +415,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -418,6 +435,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PD2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
@@ -472,6 +496,25 @@ void StartIdleTask(void const * argument)
 	  osDelay(100);
   }
   /* USER CODE END StartIdleTask */
+}
+
+/* USER CODE BEGIN Header_StartIMUTask */
+/**
+* @brief Function implementing the IMUTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartIMUTask */
+void StartIMUTask(void const * argument)
+{
+  /* USER CODE BEGIN StartIMUTask */
+  /* Infinite loop */
+  for(;;)
+  {
+	  imu_update(&hspi3);
+	  osDelay(1);
+  }
+  /* USER CODE END StartIMUTask */
 }
 
 /**
