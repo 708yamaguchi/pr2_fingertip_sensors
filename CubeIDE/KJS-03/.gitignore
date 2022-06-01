@@ -1,0 +1,22 @@
+.settings
+Debug
+Drivers
+Core/Startup
+Middlewares
+
+.cproject
+.mxproject
+# .project
+KJS-03.elf.launch
+KJS-03\ Debug.launch
+KJS-03.launch
+STM32F411CEUX_FLASH.ld
+
+Core/Inc/stm32f4xx_hal_conf.h
+Core/Inc/stm32f4xx_it.h
+
+Core/Src/stm32f4xx_hal_msp.c
+Core/Src/stm32f4xx_it.c
+Core/Src/syscalls.c
+Core/Src/sysmem.c
+Core/Src/system_stm32f4xx.c
