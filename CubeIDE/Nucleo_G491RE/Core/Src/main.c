@@ -54,6 +54,7 @@ osThreadId SPIslaveTaskHandle;
 osThreadId IdleTaskHandle;
 osThreadId IMUTaskHandle;
 osThreadId ADCTaskHandle;
+osThreadId TXBUFFTaskHandle;
 /* USER CODE BEGIN PV */
 uint8_t rxBuffer[1] = {};
 uint8_t txBuffer[44] = {};
@@ -71,6 +72,7 @@ void StartSPIslaveTask(void const * argument);
 void StartIdleTask(void const * argument);
 void StartIMUTask(void const * argument);
 void StartADCTask(void const * argument);
+void StartTXBUFFTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void mpuWrite(uint8_t, uint8_t);
@@ -78,6 +80,7 @@ void imu_init();
 void imu_update();
 void adc_init();
 void adc_update();
+void txbuff_update();
 
 /* USER CODE END PFP */
 
@@ -145,6 +148,7 @@ int main(void)
   sp.imu_select = SELECT_ICM_42688;
   imu_init(&hspi3);
   adc_init(&hadc1);
+  memset(sp.txbuff, 0, sizeof(sp.txbuff));
 
   // /pressure/l(r)_gripper_motor values will be
   // [0, 100, 200, 300, ..., 2100]
@@ -185,6 +189,10 @@ int main(void)
   /* definition and creation of ADCTask */
   osThreadDef(ADCTask, StartADCTask, osPriorityIdle, 0, 128);
   ADCTaskHandle = osThreadCreate(osThread(ADCTask), NULL);
+
+  /* definition and creation of TXBUFFTask */
+  osThreadDef(TXBUFFTask, StartTXBUFFTask, osPriorityIdle, 0, 128);
+  TXBUFFTaskHandle = osThreadCreate(osThread(TXBUFFTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -545,14 +553,25 @@ void StartSPIslaveTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if SPI_SLAVE_SENSOR_EN
+	  if (HAL_SPI_Receive(&hspi2, sp.rxbuff, 1, 1000) != HAL_OK) {
+		  uint8_t dummy = rxBuffer[0];
+	  }
+	  if(rxBuffer[0] == READ_COMMAND){
+		  if (HAL_SPI_Transmit(&hspi2, sp.txbuff, sizeof(sp.txbuff), 1000) != HAL_OK) {
+			  printf("HAL_SPI_Transmit failed.\r\n");
+		  }
+	  }
+#else
 	  if (HAL_SPI_Receive(&hspi2, rxBuffer, 1, 1000) != HAL_OK) {
 		  uint8_t dummy = rxBuffer[0];
 	  }
-	  if(rxBuffer[0] == 0x12){
+	  if(rxBuffer[0] == READ_COMMAND){
 		  if (HAL_SPI_Transmit(&hspi2, txBuffer, sizeof(txBuffer), 1000) != HAL_OK) {
 			  printf("HAL_SPI_Transmit failed.\r\n");
 		  }
 	  }
+#endif
 	  osDelay(1);
   }
   /* USER CODE END 5 */
@@ -613,6 +632,25 @@ void StartADCTask(void const * argument)
 	  osDelay(1);
   }
   /* USER CODE END StartADCTask */
+}
+
+/* USER CODE BEGIN Header_StartTXBUFFTask */
+/**
+* @brief Function implementing the TXBUFFTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTXBUFFTask */
+void StartTXBUFFTask(void const * argument)
+{
+  /* USER CODE BEGIN StartTXBUFFTask */
+  /* Infinite loop */
+  for(;;)
+  {
+	  txbuff_update();
+	  osDelay(1);
+  }
+  /* USER CODE END StartTXBUFFTask */
 }
 
  /**

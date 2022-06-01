@@ -3,6 +3,9 @@
 
 #include "stm32g4xx_hal.h"
 
+// COMMUNICATION const
+static const uint8_t READ_COMMAND = 0x12;
+
 // IMU selection
 static const uint8_t SELECT_ICM_20600 = 0x00;
 static const uint8_t SELECT_ICM_42605 = 0x01;
@@ -95,7 +98,16 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 // ADC CONST
 #define ADC_CHANNEL_NUM 4
 
+// Buffer CONST
+#define TXBUFF_LENGTH 44
+
+#define SPI_SLAVE_SENSOR_EN 0
+
 struct sensor_params {
+	//buffer
+	uint8_t rxbuff[1];
+	uint8_t txbuff[TXBUFF_LENGTH];
+
 	// read write data
 	uint8_t id;
 

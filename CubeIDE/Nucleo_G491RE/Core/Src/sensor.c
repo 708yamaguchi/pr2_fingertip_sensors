@@ -9,6 +9,30 @@
 
 struct sensor_params sp;
 
+void txbuff_update(){
+	uint8_t index = 0;
+	for(int i=0; i < ADC_CHANNEL_NUM; i++){//2*4=8
+		sp.txbuff[index] = sp.adc_print[i] >> 8;
+		sp.txbuff[index + 1] = sp.adc_print[i] & 0x00ff;
+		index += 2;
+	}
+	for(int i=0; i < GYRO_CHANNEL_NUM; i++){//2*3=6
+		sp.txbuff[index] = sp.gyro_print[i] >> 8;
+		sp.txbuff[index + 1] = sp.gyro_print[i] & 0x00ff;
+		index += 2;
+	}
+	for(int i=0; i < ACC_CHANNEL_NUM; i++){//2*3=6
+		sp.txbuff[index] = sp.acc_print[i] >> 8;
+		sp.txbuff[index + 1] = sp.acc_print[i] & 0x00ff;
+		index += 2;
+	}
+	for (int i = index; i < TXBUFF_LENGTH; i++){
+		if((sp.txbuff[i] == 0) && (i % 2 == 1)){
+			sp.txbuff[i] = i / 2;
+		}
+	}
+}
+
 void delayUs(uint16_t micros) {
 	uint32_t start = getUs();
 	while (getUs()-start < (uint32_t) micros) {
