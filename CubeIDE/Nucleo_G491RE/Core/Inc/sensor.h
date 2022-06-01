@@ -94,8 +94,6 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 
 // ADC CONST
 #define ADC_CHANNEL_NUM 4
-static const uint8_t ADC_CHANNEL_ARRAY[4] = {0,2,3,4};
-#define ADC_GETCHANNEL_NUM 4
 
 struct sensor_params {
 	// read write data

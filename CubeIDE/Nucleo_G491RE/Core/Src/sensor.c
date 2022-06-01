@@ -161,3 +161,30 @@ void imu_update(SPI_HandleTypeDef *hspi){
 		}
 	}
 }
+
+void adc_init(ADC_HandleTypeDef *hadc){
+   if (HAL_ADC_Start(hadc) !=  HAL_OK)
+   {
+	   Error_Handler();
+	}
+	for(int i=0; i < ADC_CHANNEL_NUM; i++){
+		sp.adc_print[i] = 0;
+	}
+}
+
+void adc_update(ADC_HandleTypeDef *hadc){
+	HAL_ADC_Start(hadc);
+	for (int i = 0; i < ADC_CHANNEL_NUM; i++){
+		HAL_StatusTypeDef status = HAL_ADC_PollForConversion(hadc, 1);
+		if (status == HAL_OK){
+			uint16_t value = HAL_ADC_GetValue(hadc);
+			sp.adc[i * 2] = value >> 8;
+			sp.adc[i * 2 + 1] = value & 0x00ff;
+		}
+	}
+	for(int i=0; i < ADC_CHANNEL_NUM; i++){
+		sp.adc_print[i] = (int16_t)(sp.adc[i * 2] << 8 | sp.adc[i * 2 + 1]);
+	}
+	HAL_ADC_Stop (hadc);
+}
+
