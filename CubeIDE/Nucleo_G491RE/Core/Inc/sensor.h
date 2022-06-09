@@ -93,7 +93,7 @@ static const uint8_t PCA9547_ADDR = 0x70<<1; //1,1,1,0,A2,A1,A0 A2=A1=A0=0
 static const uint8_t PCA9548_ADDR = 0x70<<1; //1,1,1,0,A2,A1,A0 A2=A1=A0=0
 static const uint8_t PS_CHANNEL_ARRAY_PCA9458[4] = {0x01,0x08,0x10,0x80};//KJS-03-revA PCA9458 channel format ch0,3,4,7
 static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-03-revB PCA9457 channel format ch0,3,4,7
-#define PS_CHANNEL_NUM 4
+#define PS_CHANNEL_NUM 1
 
 // ADC CONST
 #define ADC_CHANNEL_NUM 4
@@ -103,11 +103,12 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 
 #define SPI_SLAVE_SENSOR_EN 0
 
-#define BUFF_SIZE 16
-int32_t I2S_RX_BUFFER[BUFF_SIZE];
-int32_t buff_sifted[BUFF_SIZE];
-int32_t buff_sifted_mirror[BUFF_SIZE];
-uint8_t buffer[1024];
+// I2S CONST
+#define I2S_BUFF_SIZE 16
+#define I2S_PERIOD 200//長くすると上手く行く場合がある
+
+// debug buffer
+uint8_t debug_buffer[2048];
 
 struct sensor_params {
 	//buffer
@@ -132,6 +133,8 @@ struct sensor_params {
 	uint8_t imu_en; //0x00:disable 0x01:enable
 	uint8_t adc[ADC_CHANNEL_NUM * 2];
 	uint16_t adc_print[ADC_CHANNEL_NUM];
+	int32_t i2s_rx_buff[I2S_BUFF_SIZE];
+	int32_t i2s_buff_sifted[I2S_BUFF_SIZE];
 
 	// control
 	uint8_t com_en;

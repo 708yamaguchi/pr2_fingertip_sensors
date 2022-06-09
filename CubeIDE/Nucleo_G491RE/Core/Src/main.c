@@ -43,6 +43,8 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
+I2C_HandleTypeDef hi2c1;
+
 I2S_HandleTypeDef hi2s2;
 
 UART_HandleTypeDef hlpuart1;
@@ -54,6 +56,7 @@ osThreadId IdleTaskHandle;
 osThreadId IMUTaskHandle;
 osThreadId ADCTaskHandle;
 osThreadId TXBUFFTaskHandle;
+osThreadId PSTaskHandle;
 osTimerId I2STimerHandle;
 /* USER CODE BEGIN PV */
 uint8_t rxBuffer[1] = {};
@@ -67,11 +70,13 @@ static void MX_LPUART1_UART_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_I2S2_Init(void);
+static void MX_I2C1_Init(void);
 void StartSPIslaveTask(void const * argument);
 void StartIdleTask(void const * argument);
 void StartIMUTask(void const * argument);
 void StartADCTask(void const * argument);
 void StartTXBUFFTask(void const * argument);
+void StartPSTask(void const * argument);
 void I2SCallback(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -80,6 +85,8 @@ void imu_init();
 void imu_update();
 void adc_init();
 void adc_update();
+void ps_init();
+void ps_update();
 void txbuff_update();
 
 /* USER CODE END PFP */
@@ -143,10 +150,12 @@ int main(void)
   MX_SPI3_Init();
   MX_ADC1_Init();
   MX_I2S2_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   sp.imu_select = SELECT_ICM_42688;
   imu_init(&hspi3);
   adc_init(&hadc1);
+  ps_init(&hi2c1);
   memset(sp.txbuff, 0, sizeof(sp.txbuff));
 
   // /pressure/l(r)_gripper_motor values will be
@@ -170,7 +179,7 @@ int main(void)
   I2STimerHandle = osTimerCreate(osTimer(I2STimer), osTimerPeriodic, NULL);
 
   /* USER CODE BEGIN RTOS_TIMERS */
-  osTimerStart(I2STimerHandle, 20);
+  osTimerStart(I2STimerHandle, I2S_PERIOD);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -197,6 +206,10 @@ int main(void)
   /* definition and creation of TXBUFFTask */
   osThreadDef(TXBUFFTask, StartTXBUFFTask, osPriorityIdle, 0, 128);
   TXBUFFTaskHandle = osThreadCreate(osThread(TXBUFFTask), NULL);
+
+  /* definition and creation of PSTask */
+  osThreadDef(PSTask, StartPSTask, osPriorityIdle, 0, 128);
+  PSTaskHandle = osThreadCreate(osThread(PSTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -272,9 +285,10 @@ void SystemClock_Config(void)
   }
   /** Initializes the peripherals clocks
   */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPUART1|RCC_PERIPHCLK_I2S
-                              |RCC_PERIPHCLK_ADC12;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPUART1|RCC_PERIPHCLK_I2C1
+                              |RCC_PERIPHCLK_I2S|RCC_PERIPHCLK_ADC12;
   PeriphClkInit.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   PeriphClkInit.I2sClockSelection = RCC_I2SCLKSOURCE_HSI;
   PeriphClkInit.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -345,6 +359,52 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x30A0A7FB;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -637,23 +697,60 @@ void StartTXBUFFTask(void const * argument)
   for(;;)
   {
 	  txbuff_update();
-	  osDelay(1);
+	  /*
+	  sprintf(debug_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d \r\n", sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
+	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
+	  HAL_Delay(100);
+	  sprintf(debug_buffer, "gyro[0]:%d gyro[1]:%d gyro[2]:%d \r\n", sp.gyro_print[0], sp.gyro_print[1], sp.gyro_print[2]);
+	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
+	  HAL_Delay(100);
+	  sprintf(debug_buffer, "ps[0]:%d ps[1]:%d ps[2]:%d ps[3]:%d\r\n", sp.ps_print[0], sp.ps_print[1], sp.ps_print[2], sp.ps_print[3]);
+	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
+	  HAL_Delay(100);
+	  sprintf(debug_buffer, "adc[0]:%d adc[1]:%d adc[2]:%d adc[3]:%d\r\n", sp.adc_print[0], sp.adc_print[1], sp.adc_print[2], sp.adc_print[3]);
+	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
+	  HAL_Delay(100);
+	  */
+	  sprintf(debug_buffer, "i2s[0]:%d i2s[1]:%d i2s[2]:%d i2s[3]:%d \r\n", sp.i2s_buff_sifted[0], sp.i2s_buff_sifted[1], sp.i2s_buff_sifted[2], sp.i2s_buff_sifted[3]);
+	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
+	  osDelay(2000);
   }
   /* USER CODE END StartTXBUFFTask */
+}
+
+/* USER CODE BEGIN Header_StartPSTask */
+/**
+* @brief Function implementing the PSTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartPSTask */
+void StartPSTask(void const * argument)
+{
+  /* USER CODE BEGIN StartPSTask */
+  /* Infinite loop */
+  for(;;)
+  {
+	ps_update(&hi2c1);
+    osDelay(1);
+  }
+  /* USER CODE END StartPSTask */
 }
 
 /* I2SCallback function */
 void I2SCallback(void const * argument)
 {
   /* USER CODE BEGIN I2SCallback */
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE ,1000);
+	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, I2S_BUFF_SIZE ,1000);
 	  if(ret == HAL_OK){
-		  for(int i = 0; i < BUFF_SIZE; i++){
-			  buff_sifted[i] = I2S_RX_BUFFER[i] >> 14;
+		  for(int i = 0; i < I2S_BUFF_SIZE; i++){
+			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
 		  }
 	  }
-	  sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
-	  HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
+	  HAL_Delay(I2S_PERIOD / 2);
+	  //sprintf(debug_buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", sp.i2s_buff_sifted[0], sp.i2s_buff_sifted[1], sp.i2s_buff_sifted[2], sp.i2s_buff_sifted[3]);
+	  //HAL_UART_Transmit(&hlpuart1, debug_buffer, 1024, 10);
+
   /* USER CODE END I2SCallback */
 }
 

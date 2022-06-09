@@ -209,3 +209,83 @@ void adc_update(ADC_HandleTypeDef *hadc){
 	HAL_ADC_Stop (hadc);
 }
 
+void ps_init(I2C_HandleTypeDef *hi2c){
+	uint8_t init_buff[2];
+	uint8_t start_buff[2];
+	uint8_t id_buff[2];
+	uint8_t ret1 = 0xff;
+	uint8_t ret2 = 0xff;
+	id_buff[0] = 0x00;
+	id_buff[1] = 0x00;
+	init_buff[0] = 0x00;
+	//init_buff[1] = 0x06;//180[mA]
+	//init_buff[1] = 0x02;//100[mA]
+	init_buff[1] = 0x00;//50[mA]
+	start_buff[0] = 0xce;//1/320,8T
+	//start_buff[0] = 0x0e;//1/40,8T
+	//start_buff[0] = 0x0c;//1/40,4T
+	//start_buff[0] = 0x04;//1/40,2T
+	//start_buff[0] = 0x00;//1/40,1T
+	start_buff[1] = 0x08;//16bit
+
+	for (int i = 0; i < PS_CHANNEL_NUM; i++){
+		/*
+		if(sp.board_select == SELECT_revA){
+			ps_select_channel(hi2c, PS_CHANNEL_ARRAY_PCA9458[i]);
+		}else if(sp.board_select == SELECT_revB){
+			ps_select_channel(hi2c, PS_CHANNEL_ARRAY_PCA9457[i]);
+		}*/
+
+		HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, ID_L, 1, id_buff, 2, HAL_MAX_DELAY);//check sensor ID
+
+		if(id_buff[0] == ID_L_VAL && id_buff[1] == ID_H_VAL){
+			sp.ps_en[i] = PS_EN;
+			HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF3, 1, init_buff, 2, HAL_MAX_DELAY);//LED setting
+			HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
+		}else{
+			sp.ps_en[i] = PS_NOT_EN;
+		}
+
+	}
+}
+
+void ps_update(I2C_HandleTypeDef *hi2c){
+	uint8_t start_buff[2];
+	uint8_t stop_buff[2];
+	uint8_t data[2];
+	uint8_t ps_ret = 0xff;
+	start_buff[0] = 0x0e;
+	start_buff[1] = 0x08;
+	stop_buff[0] = 0x01;
+	stop_buff[1] = 0x00;
+
+	for (int i = 0; i < PS_CHANNEL_NUM; i++){
+		data[0] = 0x00;
+		data[1] = 0x00;
+
+		if(sp.ps_en[i] == PS_EN){
+			/*
+			if(sp.board_select == SELECT_revA){
+				ps_select_channel(hi2c, PS_CHANNEL_ARRAY_PCA9458[i]);
+			}else if(sp.board_select == SELECT_revB){
+				ps_select_channel(hi2c, PS_CHANNEL_ARRAY_PCA9457[i]);
+			}*/
+
+			//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
+			//HAL_Delay(10);
+			//HAL_I2C_Mem_Read(hi2c1, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, 1);
+			ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, HAL_MAX_DELAY);
+
+			if(ps_ret == HAL_OK){
+				sp.ps_print[i] = (uint16_t)(data[1] << 8 | data[0]);
+
+				sp.ps[i * 2] = data[1];
+
+				sp.ps[i * 2 + 1] = data[0];
+			}
+		}
+		//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, stop_buff, 2, HAL_MAX_DELAY);//Turn off LED
+	}
+}
+
+
