@@ -77,7 +77,7 @@ void imu_init(SPI_HandleTypeDef *hspi){
 
 	if((who == IMU_WHO_AM_I_20600  && sp.imu_select == SELECT_ICM_20600) ||
 			(who == IMU_WHO_AM_I_42605  && sp.imu_select == SELECT_ICM_42605) ||
-			(who == IMU_WHO_AM_I_42688  && sp.imu_select == SELECT_ICM_42688)){
+			(who == IMU_WHO_AM_I_42688  && sp.imu_select == SELECT_ICM_42688_SPI)){
 		sp.imu_en = IMU_EN;
 		switch(sp.imu_select){
 		case 0:
@@ -182,6 +182,31 @@ void imu_update(SPI_HandleTypeDef *hspi){
 		}
 	}
 }
+
+void imu_init_i2c(I2C_HandleTypeDef *hi2c){
+	uint8_t init_buff[2];
+	uint8_t start_buff[2];
+	uint8_t id_buff;
+	uint8_t ret1 = 0xff;
+	uint8_t ret2 = 0xff;
+	//id_buff[0] = 0x00;
+	//id_buff[1] = 0x00;
+	init_buff[0] = 0x00;
+	init_buff[1] = 0x00;//50[mA]
+	start_buff[0] = 0xce;//1/320,8T
+	start_buff[1] = 0x08;//16bit
+
+	HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_PING_ADDRESS, 1, &id_buff, 1, HAL_MAX_DELAY);//check sensor ID
+
+	if(id_buff == IMU_WHO_AM_I_42688){
+		sp.imu_en = IMU_EN;
+		//HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, PS_CONF3, 1, init_buff, 2, HAL_MAX_DELAY);
+		//HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);
+	}else{
+		sp.imu_en = IMU_NOT_EN;
+	}
+}
+
 
 void adc_init(ADC_HandleTypeDef *hadc){
    if (HAL_ADC_Start(hadc) !=  HAL_OK)

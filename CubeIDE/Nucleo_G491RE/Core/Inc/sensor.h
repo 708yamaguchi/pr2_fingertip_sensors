@@ -9,7 +9,8 @@ static const uint8_t READ_COMMAND = 0x12;
 // IMU selection
 static const uint8_t SELECT_ICM_20600 = 0x00;
 static const uint8_t SELECT_ICM_42605 = 0x01;
-static const uint8_t SELECT_ICM_42688 = 0x02;
+static const uint8_t SELECT_ICM_42688_SPI = 0x02;
+static const uint8_t SELECT_ICM_42688_I2C = 0x03;
 
 // ICM-20600 IMU REGISTER and ADDR
 static const uint8_t ICM_20600_PWR_MGMT_1 =  0x6B;
@@ -56,11 +57,14 @@ static const uint8_t ICM_42688_GYRO_DATA_X1 =  0x25;
 static const uint8_t ICM_42688_ACCEL_DATA_X1 =  0x1F;
 static const uint8_t ICM_42688_PING_ADDRESS =  0x75;
 
-// ICM-42688 IMU CONFIG VAL
+// ICM-42688-P IMU CONFIG VAL
 static const uint8_t ICM_42688_GYRO_CONFIG0_VAL =  0x06;//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 0x05: ODR = 2kHz, 0x06: ODR = 1kHz(default)
 static const uint8_t ICM_42688_ACCEL_CONFIG0_VAL =  0x06;//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 0x05: ODR = 2kHz, 0x06: ODR = 1kHz(default)
 static const uint8_t ICM_42688_GYRO_ACCEL_CONFIG0_VAL = 0x00;//Setting for Bandwidth of LPF(acc,gyro), 0x00: ODR/2=500Hz, 0x11:max(400, ODR)/4=250Hz(defalut)
 static const uint8_t ICM_42688_PWR_MGMT0_VAL =  0x0F;//Turn on gyro and acc with Low Noise Mode
+
+// ICM-42688-P I2C VAL
+static const uint8_t ICM_42688_I2C_ADDR = 0x68<<1;
 
 // IMU CS PIN
 #define IMU_CS_PORT GPIOD
