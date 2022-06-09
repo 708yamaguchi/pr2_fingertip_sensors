@@ -103,6 +103,12 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 
 #define SPI_SLAVE_SENSOR_EN 0
 
+#define BUFF_SIZE 16
+int32_t I2S_RX_BUFFER[BUFF_SIZE];
+int32_t buff_sifted[BUFF_SIZE];
+int32_t buff_sifted_mirror[BUFF_SIZE];
+uint8_t buffer[1024];
+
 struct sensor_params {
 	//buffer
 	uint8_t rxbuff[1];

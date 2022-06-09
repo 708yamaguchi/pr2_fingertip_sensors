@@ -43,18 +43,18 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
+I2S_HandleTypeDef hi2s2;
+
 UART_HandleTypeDef hlpuart1;
 
-SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
-DMA_HandleTypeDef hdma_spi2_rx;
-DMA_HandleTypeDef hdma_spi2_tx;
 
 osThreadId SPIslaveTaskHandle;
 osThreadId IdleTaskHandle;
 osThreadId IMUTaskHandle;
 osThreadId ADCTaskHandle;
 osThreadId TXBUFFTaskHandle;
+osTimerId I2STimerHandle;
 /* USER CODE BEGIN PV */
 uint8_t rxBuffer[1] = {};
 uint8_t txBuffer[44] = {};
@@ -63,16 +63,16 @@ uint8_t txBuffer[44] = {};
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
-static void MX_SPI2_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_I2S2_Init(void);
 void StartSPIslaveTask(void const * argument);
 void StartIdleTask(void const * argument);
 void StartIMUTask(void const * argument);
 void StartADCTask(void const * argument);
 void StartTXBUFFTask(void const * argument);
+void I2SCallback(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void mpuWrite(uint8_t, uint8_t);
@@ -139,11 +139,10 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_LPUART1_UART_Init();
-  MX_SPI2_Init();
   MX_SPI3_Init();
   MX_ADC1_Init();
+  MX_I2S2_Init();
   /* USER CODE BEGIN 2 */
   sp.imu_select = SELECT_ICM_42688;
   imu_init(&hspi3);
@@ -165,8 +164,13 @@ int main(void)
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
+  /* Create the timer(s) */
+  /* definition and creation of I2STimer */
+  osTimerDef(I2STimer, I2SCallback);
+  I2STimerHandle = osTimerCreate(osTimer(I2STimer), osTimerPeriodic, NULL);
+
   /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
+  osTimerStart(I2STimerHandle, 20);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -268,8 +272,10 @@ void SystemClock_Config(void)
   }
   /** Initializes the peripherals clocks
   */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPUART1|RCC_PERIPHCLK_ADC12;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPUART1|RCC_PERIPHCLK_I2S
+                              |RCC_PERIPHCLK_ADC12;
   PeriphClkInit.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
+  PeriphClkInit.I2sClockSelection = RCC_I2SCLKSOURCE_HSI;
   PeriphClkInit.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
@@ -343,6 +349,38 @@ static void MX_ADC1_Init(void)
 }
 
 /**
+  * @brief I2S2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2S2_Init(void)
+{
+
+  /* USER CODE BEGIN I2S2_Init 0 */
+
+  /* USER CODE END I2S2_Init 0 */
+
+  /* USER CODE BEGIN I2S2_Init 1 */
+
+  /* USER CODE END I2S2_Init 1 */
+  hi2s2.Instance = SPI2;
+  hi2s2.Init.Mode = I2S_MODE_MASTER_RX;
+  hi2s2.Init.Standard = I2S_STANDARD_PHILIPS;
+  hi2s2.Init.DataFormat = I2S_DATAFORMAT_24B;
+  hi2s2.Init.MCLKOutput = I2S_MCLKOUTPUT_DISABLE;
+  hi2s2.Init.AudioFreq = 64000;
+  hi2s2.Init.CPOL = I2S_CPOL_LOW;
+  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2S2_Init 2 */
+
+  /* USER CODE END I2S2_Init 2 */
+
+}
+
+/**
   * @brief LPUART1 Initialization Function
   * @param None
   * @retval None
@@ -390,45 +428,6 @@ static void MX_LPUART1_UART_Init(void)
 }
 
 /**
-  * @brief SPI2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI2_Init(void)
-{
-
-  /* USER CODE BEGIN SPI2_Init 0 */
-
-  /* USER CODE END SPI2_Init 0 */
-
-  /* USER CODE BEGIN SPI2_Init 1 */
-
-  /* USER CODE END SPI2_Init 1 */
-  /* SPI2 parameter configuration*/
-  hspi2.Instance = SPI2;
-  hspi2.Init.Mode = SPI_MODE_SLAVE;
-  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi2.Init.NSS = SPI_NSS_HARD_INPUT;
-  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi2.Init.CRCPolynomial = 7;
-  hspi2.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi2.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
-  if (HAL_SPI_Init(&hspi2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI2_Init 2 */
-
-  /* USER CODE END SPI2_Init 2 */
-
-}
-
-/**
   * @brief SPI3 Initialization Function
   * @param None
   * @retval None
@@ -469,26 +468,6 @@ static void MX_SPI3_Init(void)
 }
 
 /**
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void)
-{
-
-  /* DMA controller clock enable */
-  __HAL_RCC_DMAMUX1_CLK_ENABLE();
-  __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
-  /* DMA1_Channel2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-
-}
-
-/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -522,6 +501,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB14 */
+  GPIO_InitStruct.Pin = GPIO_PIN_14;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PD2 */
   GPIO_InitStruct.Pin = GPIO_PIN_2;
@@ -563,6 +550,7 @@ void StartSPIslaveTask(void const * argument)
 		  }
 	  }
 #else
+	  /*
 	  if (HAL_SPI_Receive(&hspi2, rxBuffer, 1, 1000) != HAL_OK) {
 		  uint8_t dummy = rxBuffer[0];
 	  }
@@ -571,6 +559,7 @@ void StartSPIslaveTask(void const * argument)
 			  printf("HAL_SPI_Transmit failed.\r\n");
 		  }
 	  }
+	  */
 #endif
 	  osDelay(1);
   }
@@ -651,6 +640,21 @@ void StartTXBUFFTask(void const * argument)
 	  osDelay(1);
   }
   /* USER CODE END StartTXBUFFTask */
+}
+
+/* I2SCallback function */
+void I2SCallback(void const * argument)
+{
+  /* USER CODE BEGIN I2SCallback */
+	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE ,1000);
+	  if(ret == HAL_OK){
+		  for(int i = 0; i < BUFF_SIZE; i++){
+			  buff_sifted[i] = I2S_RX_BUFFER[i] >> 14;
+		  }
+	  }
+	  sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
+	  HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
+  /* USER CODE END I2SCallback */
 }
 
  /**
