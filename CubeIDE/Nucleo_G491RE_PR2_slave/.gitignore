@@ -7,7 +7,7 @@ Middlewares
 .cproject
 .mxproject
 # .project
-Nucleo_G491RE\ Debug.launch
+Nucleo_G491RE_PR2_slave\ Debug.launch
 STM32G491RETX_FLASH.ld
 
 Core/Inc/stm32g4xx_hal_conf.h
