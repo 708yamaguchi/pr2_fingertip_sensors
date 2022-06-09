@@ -46,6 +46,7 @@ I2S_HandleTypeDef hi2s2;
 UART_HandleTypeDef hlpuart1;
 
 osThreadId I2STaskHandle;
+osTimerId I2STimerHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -56,6 +57,7 @@ static void MX_GPIO_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_I2S2_Init(void);
 void StartI2StTask(void const * argument);
+void I2SCallback(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -111,8 +113,14 @@ int main(void)
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
+  /* Create the timer(s) */
+  /* definition and creation of I2STimer */
+  osTimerDef(I2STimer, I2SCallback);
+  I2STimerHandle = osTimerCreate(osTimer(I2STimer), osTimerPeriodic, NULL);
+
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
+  osTimerStart(I2STimerHandle, 20);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -129,13 +137,14 @@ int main(void)
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
-  //osKernelStart();
+  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  /*
 	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE ,1000);
 	  if(ret == HAL_OK){
 		  for(int i = 0; i < BUFF_SIZE; i++){
@@ -145,8 +154,8 @@ int main(void)
 	  sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
 	  HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
 
-	HAL_Delay(20);
-
+	HAL_Delay(3000);
+*/
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -346,10 +355,19 @@ static void MX_GPIO_Init(void)
 void StartI2StTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
+//	  int8_t ret = HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
   /* Infinite loop */
   for(;;)
   {
-	  /*
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
+
+/* I2SCallback function */
+void I2SCallback(void const * argument)
+{
+  /* USER CODE BEGIN I2SCallback */
 	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE ,1000);
 	  if(ret == HAL_OK){
 		  for(int i = 0; i < BUFF_SIZE; i++){
@@ -359,11 +377,9 @@ void StartI2StTask(void const * argument)
 	  sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
 	  HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
 
-	HAL_Delay(20);
-	*/
-    //osDelay(1);
-  }
-  /* USER CODE END 5 */
+	//HAL_Delay(20);
+
+  /* USER CODE END I2SCallback */
 }
 
  /**

@@ -1,7 +1,9 @@
 #MicroXplorer Configuration settings - do not modify
 FREERTOS.FootprintOK=true
-FREERTOS.IPParameters=Tasks01,FootprintOK
+FREERTOS.IPParameters=Tasks01,FootprintOK,configUSE_TIMERS,Timers01
 FREERTOS.Tasks01=I2STask,-3,128,StartI2StTask,Default,NULL,Dynamic,NULL,NULL
+FREERTOS.Timers01=I2STimer,I2SCallback,osTimerPeriodic,Default,NULL,Dynamic,NULL
+FREERTOS.configUSE_TIMERS=1
 File.Version=6
 I2S2.AudioFreq=AudioFreqCustomValue
 I2S2.AudioFreqCustom=64000
