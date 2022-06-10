@@ -184,29 +184,54 @@ void imu_update(SPI_HandleTypeDef *hspi){
 }
 
 void imu_init_i2c(I2C_HandleTypeDef *hi2c){
-	uint8_t init_buff[2];
-	uint8_t start_buff[2];
 	uint8_t id_buff;
-	uint8_t ret1 = 0xff;
-	uint8_t ret2 = 0xff;
-	//id_buff[0] = 0x00;
-	//id_buff[1] = 0x00;
-	init_buff[0] = 0x00;
-	init_buff[1] = 0x00;//50[mA]
-	start_buff[0] = 0xce;//1/320,8T
-	start_buff[1] = 0x08;//16bit
+	uint8_t tx_buff;
 
 	HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_PING_ADDRESS, 1, &id_buff, 1, HAL_MAX_DELAY);//check sensor ID
 
 	if(id_buff == IMU_WHO_AM_I_42688){
 		sp.imu_en = IMU_EN;
-		//HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, PS_CONF3, 1, init_buff, 2, HAL_MAX_DELAY);
-		//HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);
+		//set-gyro-scale-and-ODR
+		tx_buff = ICM_42688_GYRO_CONFIG0_VAL;
+		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_CONFIG0, 1, &tx_buff, 1, HAL_MAX_DELAY);//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 1kHz ODR
+		HAL_Delay(10); //very importnat! between gyro and acc
+
+		//set-acc-scale-and-ODR
+		tx_buff = ICM_42688_ACCEL_CONFIG0_VAL;
+		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_CONFIG0, 1, &tx_buff, 1, HAL_MAX_DELAY);//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 1kHz ODR
+		HAL_Delay(10); //very importnat! between gyro and acc
+
+		//set-gyro-acc-LPF
+		tx_buff = ICM_42688_GYRO_ACCEL_CONFIG0_VAL;
+		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_ACCEL_CONFIG0, 1, &tx_buff, 1, HAL_MAX_DELAY);//ACCEL_CONFIG  -- AFS_SEL=2 (Full Scale = +/-8G)  ; ACCELL_HPF=0   //note something is wrong in the spec.
+		HAL_Delay(10);
+
+		//start gyro and acc
+		tx_buff = ICM_42688_PWR_MGMT0_VAL;
+		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_PWR_MGMT0, 1, &tx_buff, 1, HAL_MAX_DELAY);//Turn on Gyro and Acc with Low Noise Mode
+		HAL_Delay(10);
 	}else{
 		sp.imu_en = IMU_NOT_EN;
 	}
 }
 
+void imu_update_i2c(I2C_HandleTypeDef *hi2c){
+	if(sp.imu_en == IMU_EN){
+		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, HAL_MAX_DELAY);//check sensor ID
+		if((sp.gyro[0] != 0) || (sp.gyro[1] != 0) || (sp.gyro[2] != 0)){
+			sp.gyro_print[0] = (int16_t)(sp.gyro[0] << 8 | sp.gyro[1]);
+			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
+			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
+		}
+
+		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6, HAL_MAX_DELAY);//check sensor ID
+		if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
+			sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
+			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
+			sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
+		}
+	}
+}
 
 void adc_init(ADC_HandleTypeDef *hadc){
    if (HAL_ADC_Start(hadc) !=  HAL_OK)

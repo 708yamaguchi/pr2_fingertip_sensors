@@ -718,7 +718,7 @@ void StartIMUTask(void const * argument)
 	  if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
 		  imu_update(&hspi3);
 	  }else if(sp.imu_select == SELECT_ICM_42688_I2C){
-		  //imu_update_i2c(&hi2c2);
+		  imu_update_i2c(&hi2c2);
 	  }
 	  osDelay(1);
   }
