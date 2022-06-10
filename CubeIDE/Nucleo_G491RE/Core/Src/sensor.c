@@ -9,7 +9,7 @@
 
 struct sensor_params sp;
 
-void txbuff_update(){
+void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 	uint8_t index = 0;
 	for(int i=0; i < ADC_CHANNEL_NUM; i++){//2*4=8
 		sp.txbuff[index] = sp.adc_print[i] >> 8;
@@ -26,7 +26,19 @@ void txbuff_update(){
 		sp.txbuff[index + 1] = sp.acc_print[i] & 0x00ff;
 		index += 2;
 	}
-	for (int i = index; i < TXBUFF_LENGTH; i++){
+	for(int i=0; i < PS_CHANNEL_NUM; i++){//2*1=2
+		sp.txbuff[index] = sp.ps_print[i] >> 8;
+		sp.txbuff[index + 1] = sp.ps_print[i] & 0x00ff;
+		index += 2;
+	}
+	for(int i=0; i < MIC_CHANNEL_NUM; i++){//4*4=16
+		sp.txbuff[index] = 0x00;
+		sp.txbuff[index + 1] = sp.i2s_buff_sifted[i * 2 + 1] >> 16;
+		sp.txbuff[index + 2] = (sp.i2s_buff_sifted[i * 2 + 1] >> 8) & 0x000000ff;
+		sp.txbuff[index + 3] = sp.i2s_buff_sifted[i * 2 + 1] & 0x000000ff;
+		index += 4;
+	}
+	for(int i = index; i < TXBUFF_LENGTH; i++){
 		if((sp.txbuff[i] == 0) && (i % 2 == 1)){
 			sp.txbuff[i] = i / 2;
 		}
@@ -263,8 +275,6 @@ void ps_init(I2C_HandleTypeDef *hi2c){
 	uint8_t init_buff[2];
 	uint8_t start_buff[2];
 	uint8_t id_buff[2];
-	uint8_t ret1 = 0xff;
-	uint8_t ret2 = 0xff;
 	id_buff[0] = 0x00;
 	id_buff[1] = 0x00;
 	init_buff[0] = 0x00;

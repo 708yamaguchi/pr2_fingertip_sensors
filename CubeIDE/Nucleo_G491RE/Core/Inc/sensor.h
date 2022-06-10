@@ -78,6 +78,8 @@ static const uint8_t IMU_NOT_EN = 0x00;
 static const uint8_t IMU_WHO_AM_I_20600 = 0x11;
 static const uint8_t IMU_WHO_AM_I_42605 = 0x42;
 static const uint8_t IMU_WHO_AM_I_42688 = 0x47;
+#define IMU_SPI_MODE 0
+#define IMU_I2C_MODE !IMU_SPI_MODE
 
 // PS CMD
 static const uint8_t PS_CONF1 = 0x03;
@@ -108,11 +110,13 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 #define SPI_SLAVE_SENSOR_EN 0
 
 // I2S CONST
-#define I2S_BUFF_SIZE 16
-#define I2S_PERIOD 200//長くすると上手く行く場合がある
+#define MIC_BUFF_SIZE 16
+#define MIC_PERIOD 200//長くすると上手く行く場合がある
+#define MIC_CHANNEL_NUM 4
 
-// debug buffer
+// Debug buffer
 uint8_t debug_buffer[2048];
+#define DEBUG_EN 0
 
 struct sensor_params {
 	//buffer
@@ -137,8 +141,8 @@ struct sensor_params {
 	uint8_t imu_en; //0x00:disable 0x01:enable
 	uint8_t adc[ADC_CHANNEL_NUM * 2];
 	uint16_t adc_print[ADC_CHANNEL_NUM];
-	int32_t i2s_rx_buff[I2S_BUFF_SIZE];
-	int32_t i2s_buff_sifted[I2S_BUFF_SIZE];
+	int32_t i2s_rx_buff[MIC_BUFF_SIZE];
+	int32_t i2s_buff_sifted[MIC_BUFF_SIZE];
 
 	// control
 	uint8_t com_en;
