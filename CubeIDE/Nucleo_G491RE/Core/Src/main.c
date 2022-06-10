@@ -180,6 +180,11 @@ int main(void)
   for(int i = 0; i < 22; i++) {
 	  setTxBuffer(i*100, i);
   }
+
+  for(int i=0;i<3;i++){
+	  sp.acc_print[i] = 0;
+	  sp.gyro_print[i] = 0;
+  }
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
