@@ -108,6 +108,7 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 #define TXBUFF_LENGTH 44
 
 #define SPI_SLAVE_SENSOR_EN 1
+#define SPISLAVE_PERIOD 30//長くすると上手く行く場合がある
 
 // I2S CONST
 #define MIC_BUFF_SIZE 16

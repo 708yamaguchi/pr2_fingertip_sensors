@@ -33,12 +33,18 @@ void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 		index += 2;
 	}
 	for(int i=0; i < MIC_CHANNEL_NUM; i++){//4*4=16
+		sp.txbuff[index] = (sp.i2s_buff_sifted[i * 2] >> 10) & 0x000000ff;
+		sp.txbuff[index + 1] = (sp.i2s_buff_sifted[i * 2] >> 2)& 0x000000ff;
+		index += 2;
+	}
+	/*
+	for(int i=0; i < MIC_CHANNEL_NUM; i++){//4*4=16
 		sp.txbuff[index] = 0x00;
 		sp.txbuff[index + 1] = sp.i2s_buff_sifted[i * 2] >> 16;
 		sp.txbuff[index + 2] = (sp.i2s_buff_sifted[i * 2] >> 8) & 0x000000ff;
 		sp.txbuff[index + 3] = sp.i2s_buff_sifted[i * 2] & 0x000000ff;
 		index += 4;
-	}
+	}*/
 	for(int i = index; i < TXBUFF_LENGTH; i++){
 		if((sp.txbuff[i] == 0) && (i % 2 == 1)){
 			sp.txbuff[i] = i / 2;

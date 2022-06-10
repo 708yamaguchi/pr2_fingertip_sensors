@@ -62,6 +62,7 @@ osThreadId TXBUFFTaskHandle;
 osThreadId PSTaskHandle;
 osThreadId SerialTaskHandle;
 osTimerId I2STimerHandle;
+osTimerId SPISlaveTimerHandle;
 /* USER CODE BEGIN PV */
 uint8_t rxBuffer[1] = {};
 uint8_t txBuffer[44] = {};
@@ -85,6 +86,7 @@ void StartTXBUFFTask(void const * argument);
 void StartPSTask(void const * argument);
 void StartSerialTask(void const * argument);
 void I2SCallback(void const * argument);
+void SPISlaveCallback(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void mpuWrite(uint8_t, uint8_t);
@@ -199,6 +201,10 @@ int main(void)
   /* definition and creation of I2STimer */
   osTimerDef(I2STimer, I2SCallback);
   I2STimerHandle = osTimerCreate(osTimer(I2STimer), osTimerPeriodic, NULL);
+
+  /* definition and creation of SPISlaveTimer */
+  osTimerDef(SPISlaveTimer, SPISlaveCallback);
+  SPISlaveTimerHandle = osTimerCreate(osTimer(SPISlaveTimer), osTimerPeriodic, NULL);
 
   /* USER CODE BEGIN RTOS_TIMERS */
   //osTimerStart(I2STimerHandle, MIC_PERIOD);
@@ -745,7 +751,17 @@ void StartSPIslaveTask(void const * argument)
 		  taskEXIT_CRITICAL();
 	  }
 #endif
-	  osDelay(30);
+
+	  //taskENTER_CRITICAL();
+	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+	  //taskEXIT_CRITICAL();
+	  if(ret == HAL_OK){
+		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
+			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
+		  }
+	  }
+
+	  osDelay(10);
   }
   /* USER CODE END 5 */
 }
@@ -890,6 +906,7 @@ void StartSerialTask(void const * argument)
 void I2SCallback(void const * argument)
 {
   /* USER CODE BEGIN I2SCallback */
+	/*
 	  taskENTER_CRITICAL();
 	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
 	  taskEXIT_CRITICAL();
@@ -898,9 +915,49 @@ void I2SCallback(void const * argument)
 			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
 		  }
 	  }
-	  HAL_Delay(MIC_PERIOD / 2);
+	  osDelay(MIC_PERIOD / 2);
+	  */
+	  //HAL_Delay(MIC_PERIOD / 2);
 
   /* USER CODE END I2SCallback */
+}
+
+/* SPISlaveCallback function */
+void SPISlaveCallback(void const * argument)
+{
+  /* USER CODE BEGIN SPISlaveCallback */
+#if SPI_SLAVE_SENSOR_EN
+	  //if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
+	  if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
+		  uint8_t dummy = sp.rxbuff[0];
+	  }
+	  if(sp.rxbuff[0] == READ_COMMAND){
+		  /*
+		  if (HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000) != HAL_OK) {
+			  printf("HAL_SPI_Transmit failed.\r\n");
+		  }*/
+		  taskENTER_CRITICAL();
+		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
+		  taskEXIT_CRITICAL();
+	  }
+#else
+	  if (HAL_SPI_Receive(&hspi3, rxBuffer, 1, 1000) != HAL_OK) {
+		  uint8_t dummy = rxBuffer[0];
+	  }
+	  if(rxBuffer[0] == READ_COMMAND){
+		  /*
+		  if (HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000) != HAL_OK) {
+			  printf("HAL_SPI_Transmit failed.\r\n");
+		  }*/
+		  taskENTER_CRITICAL();
+		  HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000);
+		  taskEXIT_CRITICAL();
+	  }
+#endif
+	  //HAL_Delay(SPISLAVE_PERIOD / 2);
+	  HAL_Delay(SPISLAVE_PERIOD / 2);
+
+  /* USER CODE END SPISlaveCallback */
 }
 
  /**
