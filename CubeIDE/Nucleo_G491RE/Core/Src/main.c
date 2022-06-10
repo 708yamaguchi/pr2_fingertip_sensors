@@ -689,11 +689,11 @@ void StartSPIslaveTask(void const * argument)
   for(;;)
   {
 #if SPI_SLAVE_SENSOR_EN
-	  if (HAL_SPI_Receive(&hspi2, sp.rxbuff, 1, 1000) != HAL_OK) {
+	  if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
 		  uint8_t dummy = rxBuffer[0];
 	  }
 	  if(rxBuffer[0] == READ_COMMAND){
-		  if (HAL_SPI_Transmit(&hspi2, sp.txbuff, sizeof(sp.txbuff), 1000) != HAL_OK) {
+		  if (HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000) != HAL_OK) {
 			  printf("HAL_SPI_Transmit failed.\r\n");
 		  }
 	  }
@@ -827,22 +827,16 @@ void StartSerialTask(void const * argument)
   for(;;)
   {
 #if DEBUG_EN
-	  sprintf(debug_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d \r\n", sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
-	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
-	  HAL_Delay(100);
-	  sprintf(debug_buffer, "gyro[0]:%d gyro[1]:%d gyro[2]:%d \r\n", sp.gyro_print[0], sp.gyro_print[1], sp.gyro_print[2]);
-	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
-	  HAL_Delay(100);
-	  sprintf(debug_buffer, "ps[0]:%d ps[1]:%d ps[2]:%d ps[3]:%d\r\n", sp.ps_print[0], sp.ps_print[1], sp.ps_print[2], sp.ps_print[3]);
-	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
-	  HAL_Delay(100);
-	  sprintf(debug_buffer, "adc[0]:%d adc[1]:%d adc[2]:%d adc[3]:%d\r\n", sp.adc_print[0], sp.adc_print[1], sp.adc_print[2], sp.adc_print[3]);
-	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
-	  HAL_Delay(100);
-	  sprintf(debug_buffer, "i2s[0]:%d i2s[1]:%d i2s[2]:%d i2s[3]:%d \r\n", sp.i2s_buff_sifted[0], sp.i2s_buff_sifted[1], sp.i2s_buff_sifted[2], sp.i2s_buff_sifted[3]);
+	  sprintf(acc_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d\r\n", sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
+	  sprintf(gyro_buffer, "gyro[0]:%d gyro[1]:%d gyro[2]:%d\r\n", sp.gyro_print[0], sp.gyro_print[1], sp.gyro_print[2]);
+	  sprintf(adc_buffer, "adc[0]:%d adc[1]:%d adc[2]:%d adc[3]:%d\r\n", sp.adc_print[0], sp.adc_print[1], sp.adc_print[2], sp.adc_print[3]);
+	  sprintf(i2s_buffer, "i2s[0]:%d i2s[1]:%d i2s[2]:%d i2s[3]:%d\r\n", sp.i2s_buff_sifted[0], sp.i2s_buff_sifted[1], sp.i2s_buff_sifted[2], sp.i2s_buff_sifted[3]);
+	  sprintf(debug_buffer, "%s%s%s%s\r\n", acc_buffer, gyro_buffer, adc_buffer, i2s_buffer);
 	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
 #endif
-    osDelay(2000);
+	  // 2000[ms] is very important value.
+	  // Changing delay time or adding HAL_Delay causes I2S reading error.
+	  osDelay(2000);
   }
   /* USER CODE END StartSerialTask */
 }
