@@ -109,6 +109,10 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 
 // debug buffer
 uint8_t debug_buffer[2048];
+uint8_t gyro_buffer[512];
+uint8_t acc_buffer[512];
+uint8_t adc_buffer[512];
+uint8_t i2s_buffer[512];
 
 struct sensor_params {
 	//buffer
