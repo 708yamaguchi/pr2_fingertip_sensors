@@ -745,7 +745,7 @@ void StartSPIslaveTask(void const * argument)
 		  taskEXIT_CRITICAL();
 	  }
 #endif
-	  osDelay(1);
+	  osDelay(30);
   }
   /* USER CODE END 5 */
 }
@@ -890,7 +890,9 @@ void StartSerialTask(void const * argument)
 void I2SCallback(void const * argument)
 {
   /* USER CODE BEGIN I2SCallback */
+	  taskENTER_CRITICAL();
 	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+	  taskEXIT_CRITICAL();
 	  if(ret == HAL_OK){
 		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
 			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
