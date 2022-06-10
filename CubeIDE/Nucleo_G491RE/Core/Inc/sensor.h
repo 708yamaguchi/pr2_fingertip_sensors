@@ -122,6 +122,7 @@ uint8_t gyro_buffer[512];
 uint8_t acc_buffer[512];
 uint8_t adc_buffer[512];
 uint8_t i2s_buffer[512];
+uint8_t ps_buffer[512];
 
 struct sensor_params {
 	//buffer
