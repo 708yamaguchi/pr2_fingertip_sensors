@@ -851,10 +851,9 @@ void StartSerialTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  /*
 #if DEBUG_EN
-	  //sprintf(acc_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d\r\n", sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
-	  sprintf(acc_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d\r\n", sp.count, sp.acc_print[1], sp.acc_print[2]);
+	  sprintf(acc_buffer, "imu_en:%d acc[0]:%d acc[1]:%d acc[2]:%d\r\n", sp.imu_en, sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
+	  //sprintf(acc_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d\r\n", sp.count, sp.acc_print[1], sp.acc_print[2]);
 	  sprintf(gyro_buffer, "gyro[0]:%d gyro[1]:%d gyro[2]:%d\r\n", sp.gyro_print[0], sp.gyro_print[1], sp.gyro_print[2]);
 	  sprintf(adc_buffer, "adc[0]:%d adc[1]:%d adc[2]:%d adc[3]:%d\r\n", sp.adc_print[0], sp.adc_print[1], sp.adc_print[2], sp.adc_print[3]);
 	  sprintf(i2s_buffer, "i2s[0]:%d i2s[1]:%d i2s[2]:%d i2s[3]:%d\r\n", sp.i2s_buff_sifted[0], sp.i2s_buff_sifted[1], sp.i2s_buff_sifted[2], sp.i2s_buff_sifted[3]);
@@ -866,7 +865,6 @@ void StartSerialTask(void const * argument)
 	  if(sp.count == 30){
 		  sp.count = 0;
 	  }
-	  */
 	  // 2000[ms] is very important value.
 	  // Changing delay time or adding HAL_Delay causes I2S reading error.
 	  osDelay(2000);
