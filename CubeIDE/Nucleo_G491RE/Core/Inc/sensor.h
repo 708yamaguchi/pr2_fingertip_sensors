@@ -151,6 +151,8 @@ struct sensor_params {
 
 	// control
 	uint8_t com_en;
+
+	uint8_t count;
 };
 
 extern struct sensor_params sp;
