@@ -107,15 +107,16 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 // Buffer CONST
 #define TXBUFF_LENGTH 44
 
-#define SPI_SLAVE_SENSOR_EN 0
+#define SPI_SLAVE_SENSOR_EN 1
 
 // I2S CONST
 #define MIC_BUFF_SIZE 16
-#define MIC_PERIOD 200//長くすると上手く行く場合がある
+#define MIC_PERIOD 50//長くすると上手く行く場合がある
 #define MIC_CHANNEL_NUM 4
 
 // Debug buffer
-#define DEBUG_EN 1
+#define DEBUG_EN 0
+#define SERIAL_PERIOD 2000
 
 uint8_t debug_buffer[2048];
 uint8_t gyro_buffer[512];

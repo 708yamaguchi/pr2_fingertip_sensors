@@ -33,9 +33,9 @@ void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 	}
 	for(int i=0; i < MIC_CHANNEL_NUM; i++){//4*4=16
 		sp.txbuff[index] = 0x00;
-		sp.txbuff[index + 1] = sp.i2s_buff_sifted[i * 2 + 1] >> 16;
-		sp.txbuff[index + 2] = (sp.i2s_buff_sifted[i * 2 + 1] >> 8) & 0x000000ff;
-		sp.txbuff[index + 3] = sp.i2s_buff_sifted[i * 2 + 1] & 0x000000ff;
+		sp.txbuff[index + 1] = sp.i2s_buff_sifted[i * 2] >> 16;
+		sp.txbuff[index + 2] = (sp.i2s_buff_sifted[i * 2] >> 8) & 0x000000ff;
+		sp.txbuff[index + 3] = sp.i2s_buff_sifted[i * 2] & 0x000000ff;
 		index += 4;
 	}
 	for(int i = index; i < TXBUFF_LENGTH; i++){
@@ -243,14 +243,14 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
 			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
 		}
-		HAL_Delay(1);//important delay
+		HAL_Delay(5);//important delay
 		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6, HAL_MAX_DELAY);//check sensor ID
 		if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
 			sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
 			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
 			sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
 		}
-		HAL_Delay(1);//important delay
+		HAL_Delay(5);//important delay
 	}
 }
 

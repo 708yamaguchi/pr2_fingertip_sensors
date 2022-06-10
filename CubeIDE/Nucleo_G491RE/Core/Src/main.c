@@ -196,7 +196,7 @@ int main(void)
   I2STimerHandle = osTimerCreate(osTimer(I2STimer), osTimerPeriodic, NULL);
 
   /* USER CODE BEGIN RTOS_TIMERS */
-  osTimerStart(I2STimerHandle, MIC_PERIOD);
+  //osTimerStart(I2STimerHandle, MIC_PERIOD);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -205,7 +205,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of SPIslaveTask */
-  osThreadDef(SPIslaveTask, StartSPIslaveTask, osPriorityIdle, 0, 128);
+  osThreadDef(SPIslaveTask, StartSPIslaveTask, osPriorityLow, 0, 128);
   SPIslaveTaskHandle = osThreadCreate(osThread(SPIslaveTask), NULL);
 
   /* definition and creation of IdleTask */
@@ -713,22 +713,31 @@ void StartSPIslaveTask(void const * argument)
   for(;;)
   {
 #if SPI_SLAVE_SENSOR_EN
+	  //if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
 	  if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
-		  uint8_t dummy = rxBuffer[0];
+		  uint8_t dummy = sp.rxbuff[0];
 	  }
-	  if(rxBuffer[0] == READ_COMMAND){
+	  if(sp.rxbuff[0] == READ_COMMAND){
+		  /*
 		  if (HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000) != HAL_OK) {
 			  printf("HAL_SPI_Transmit failed.\r\n");
-		  }
+		  }*/
+		  taskENTER_CRITICAL();
+		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
+		  taskEXIT_CRITICAL();
 	  }
 #else
 	  if (HAL_SPI_Receive(&hspi3, rxBuffer, 1, 1000) != HAL_OK) {
 		  uint8_t dummy = rxBuffer[0];
 	  }
 	  if(rxBuffer[0] == READ_COMMAND){
+		  /*
 		  if (HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000) != HAL_OK) {
 			  printf("HAL_SPI_Transmit failed.\r\n");
-		  }
+		  }*/
+		  taskENTER_CRITICAL();
+		  HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000);
+		  taskEXIT_CRITICAL();
 	  }
 #endif
 	  osDelay(1);
@@ -860,14 +869,14 @@ void StartSerialTask(void const * argument)
 	  sprintf(ps_buffer, "ps[0]:%d\r\n", sp.ps_print[0]);
 	  sprintf(debug_buffer, "%s%s%s%s%s\r\n", acc_buffer, gyro_buffer, adc_buffer, i2s_buffer, ps_buffer);
 	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
-#endif
 	  sp.count += 1;
 	  if(sp.count == 30){
 		  sp.count = 0;
 	  }
+#endif
 	  // 2000[ms] is very important value.
 	  // Changing delay time or adding HAL_Delay causes I2S reading error.
-	  osDelay(2000);
+	  osDelay(SERIAL_PERIOD);
   }
   /* USER CODE END StartSerialTask */
 }
