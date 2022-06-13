@@ -116,10 +116,10 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 #define MIC_CHANNEL_NUM 4
 
 // Debug buffer
-#define DEBUG_EN 0
+#define DEBUG_EN 1
 #define UPDATE_SINGLE_THREAD 0
 #define TIMER_SPISLAVE 0
-#define SERIAL_PERIOD 2000
+#define SERIAL_PERIOD 1000
 
 uint8_t debug_buffer[2048];
 uint8_t gyro_buffer[512];
@@ -152,6 +152,7 @@ struct sensor_params {
 	uint8_t gyro_acc[GYRO_CHANNEL_NUM * 2 + ACC_CHANNEL_NUM * 2];
 	uint16_t imu_elapsed_time;
 	uint8_t imu_en; //0x00:disable 0x01:enable
+	uint8_t imu_dma_en; //0x00:disable 0x01:enable
 	uint8_t adc[ADC_CHANNEL_NUM * 2];
 	uint16_t adc_print[ADC_CHANNEL_NUM];
 	uint16_t adc_elapsed_time;
@@ -166,6 +167,7 @@ struct sensor_params {
 	uint8_t flag;//0:imu, 1:mic
 	uint16_t error_count;
 	uint16_t rx_counter;
+	uint8_t i2c1_dma_flag;
 };
 
 extern struct sensor_params sp;
