@@ -235,7 +235,7 @@ int main(void)
   /* USER CODE BEGIN RTOS_TIMERS */
   //osTimerStart(I2STimerHandle, MIC_PERIOD);
 #if	!UPDATE_SINGLE_THREAD
-  //osTimerStart(I2STimerHandle, MIC_PERIOD);
+  osTimerStart(I2STimerHandle, MIC_PERIOD);
 #endif
 #if  TIMER_SPISLAVE
   osTimerStart(SPISlaveTimerHandle, SPISLAVE_PERIOD);
@@ -248,8 +248,8 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of SPIslaveTask */
-  osThreadDef(SPIslaveTask, StartSPIslaveTask, osPriorityLow, 0, 128);
-  SPIslaveTaskHandle = osThreadCreate(osThread(SPIslaveTask), NULL);
+//  osThreadDef(SPIslaveTask, StartSPIslaveTask, osPriorityLow, 0, 128);
+//  SPIslaveTaskHandle = osThreadCreate(osThread(SPIslaveTask), NULL);
 
   /* definition and creation of IdleTask */
   osThreadDef(IdleTask, StartIdleTask, osPriorityIdle, 0, 128);
@@ -280,6 +280,7 @@ int main(void)
   int count = 0;
   // https://garberas.com/archives/244
   HAL_TIM_Encoder_Start( &htim2, TIM_CHANNEL_ALL );
+  HAL_SPI_Receive_DMA(&hspi3, sp.rxbuff, 1);
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
