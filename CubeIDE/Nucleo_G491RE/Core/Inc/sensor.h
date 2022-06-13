@@ -9,7 +9,8 @@ static const uint8_t READ_COMMAND = 0x12;
 // IMU selection
 static const uint8_t SELECT_ICM_20600 = 0x00;
 static const uint8_t SELECT_ICM_42605 = 0x01;
-static const uint8_t SELECT_ICM_42688 = 0x02;
+static const uint8_t SELECT_ICM_42688_SPI = 0x02;
+static const uint8_t SELECT_ICM_42688_I2C = 0x03;
 
 // ICM-20600 IMU REGISTER and ADDR
 static const uint8_t ICM_20600_PWR_MGMT_1 =  0x6B;
@@ -56,11 +57,14 @@ static const uint8_t ICM_42688_GYRO_DATA_X1 =  0x25;
 static const uint8_t ICM_42688_ACCEL_DATA_X1 =  0x1F;
 static const uint8_t ICM_42688_PING_ADDRESS =  0x75;
 
-// ICM-42688 IMU CONFIG VAL
+// ICM-42688-P IMU CONFIG VAL
 static const uint8_t ICM_42688_GYRO_CONFIG0_VAL =  0x06;//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 0x05: ODR = 2kHz, 0x06: ODR = 1kHz(default)
 static const uint8_t ICM_42688_ACCEL_CONFIG0_VAL =  0x06;//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 0x05: ODR = 2kHz, 0x06: ODR = 1kHz(default)
 static const uint8_t ICM_42688_GYRO_ACCEL_CONFIG0_VAL = 0x00;//Setting for Bandwidth of LPF(acc,gyro), 0x00: ODR/2=500Hz, 0x11:max(400, ODR)/4=250Hz(defalut)
 static const uint8_t ICM_42688_PWR_MGMT0_VAL =  0x0F;//Turn on gyro and acc with Low Noise Mode
+
+// ICM-42688-P I2C VAL
+static const uint8_t ICM_42688_I2C_ADDR = 0x68<<1;
 
 // IMU CS PIN
 #define IMU_CS_PORT GPIOD
@@ -74,6 +78,8 @@ static const uint8_t IMU_NOT_EN = 0x00;
 static const uint8_t IMU_WHO_AM_I_20600 = 0x11;
 static const uint8_t IMU_WHO_AM_I_42605 = 0x42;
 static const uint8_t IMU_WHO_AM_I_42688 = 0x47;
+#define IMU_SPI_MODE 0
+#define IMU_I2C_MODE !IMU_SPI_MODE
 
 // PS CMD
 static const uint8_t PS_CONF1 = 0x03;
@@ -101,18 +107,26 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 // Buffer CONST
 #define TXBUFF_LENGTH 44
 
-#define SPI_SLAVE_SENSOR_EN 0
+#define SPI_SLAVE_SENSOR_EN 1
+#define SPISLAVE_PERIOD 30//長くすると上手く行く場合がある
 
 // I2S CONST
-#define I2S_BUFF_SIZE 16
-#define I2S_PERIOD 200//長くすると上手く行く場合がある
+#define MIC_BUFF_SIZE 16
+#define MIC_PERIOD 200//長くすると上手く行く場合がある
+#define MIC_CHANNEL_NUM 4
 
-// debug buffer
+// Debug buffer
+#define DEBUG_EN 0
+#define UPDATE_SINGLE_THREAD 0
+#define TIMER_SPISLAVE 0
+#define SERIAL_PERIOD 2000
+
 uint8_t debug_buffer[2048];
 uint8_t gyro_buffer[512];
 uint8_t acc_buffer[512];
 uint8_t adc_buffer[512];
 uint8_t i2s_buffer[512];
+uint8_t ps_buffer[512];
 
 struct sensor_params {
 	//buffer
@@ -137,11 +151,13 @@ struct sensor_params {
 	uint8_t imu_en; //0x00:disable 0x01:enable
 	uint8_t adc[ADC_CHANNEL_NUM * 2];
 	uint16_t adc_print[ADC_CHANNEL_NUM];
-	int32_t i2s_rx_buff[I2S_BUFF_SIZE];
-	int32_t i2s_buff_sifted[I2S_BUFF_SIZE];
+	int32_t i2s_rx_buff[MIC_BUFF_SIZE];
+	int32_t i2s_buff_sifted[MIC_BUFF_SIZE];
 
 	// control
 	uint8_t com_en;
+
+	uint8_t count;
 };
 
 extern struct sensor_params sp;

@@ -44,12 +44,15 @@
 ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c2;
 
 I2S_HandleTypeDef hi2s2;
 
 UART_HandleTypeDef hlpuart1;
 
 SPI_HandleTypeDef hspi3;
+DMA_HandleTypeDef hdma_spi3_rx;
+DMA_HandleTypeDef hdma_spi3_tx;
 
 osThreadId SPIslaveTaskHandle;
 osThreadId IdleTaskHandle;
@@ -57,7 +60,9 @@ osThreadId IMUTaskHandle;
 osThreadId ADCTaskHandle;
 osThreadId TXBUFFTaskHandle;
 osThreadId PSTaskHandle;
+osThreadId SerialTaskHandle;
 osTimerId I2STimerHandle;
+osTimerId SPISlaveTimerHandle;
 /* USER CODE BEGIN PV */
 uint8_t rxBuffer[1] = {};
 uint8_t txBuffer[44] = {};
@@ -66,29 +71,36 @@ uint8_t txBuffer[44] = {};
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
-static void MX_SPI3_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_I2S2_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_I2C2_Init(void);
+static void MX_I2S2_Init(void);
+static void MX_SPI3_Init(void);
 void StartSPIslaveTask(void const * argument);
 void StartIdleTask(void const * argument);
 void StartIMUTask(void const * argument);
 void StartADCTask(void const * argument);
 void StartTXBUFFTask(void const * argument);
 void StartPSTask(void const * argument);
+void StartSerialTask(void const * argument);
 void I2SCallback(void const * argument);
+void SPISlaveCallback(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void mpuWrite(uint8_t, uint8_t);
 void imu_init();
+void imu_init_i2c();
 void imu_update();
+void imu_update_i2c();
 void adc_init();
 void adc_update();
 void ps_init();
 void ps_update();
 void txbuff_update();
-
+void *memset();
+int sprintf();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -146,14 +158,22 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_LPUART1_UART_Init();
-  MX_SPI3_Init();
   MX_ADC1_Init();
-  MX_I2S2_Init();
   MX_I2C1_Init();
+  MX_I2C2_Init();
+  MX_I2S2_Init();
+  MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
-  sp.imu_select = SELECT_ICM_42688;
-  imu_init(&hspi3);
+  sp.imu_select = SELECT_ICM_42688_I2C;
+  if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
+#if IMU_SPI_MODE
+	  imu_init(&hspi3);
+#endif
+  }else if(sp.imu_select == SELECT_ICM_42688_I2C){
+	  imu_init_i2c(&hi2c2);
+  }
   adc_init(&hadc1);
   ps_init(&hi2c1);
   memset(sp.txbuff, 0, sizeof(sp.txbuff));
@@ -162,6 +182,11 @@ int main(void)
   // [0, 100, 200, 300, ..., 2100]
   for(int i = 0; i < 22; i++) {
 	  setTxBuffer(i*100, i);
+  }
+
+  for(int i=0;i<3;i++){
+	  sp.acc_print[i] = 0;
+	  sp.gyro_print[i] = 0;
   }
   /* USER CODE END 2 */
 
@@ -178,8 +203,17 @@ int main(void)
   osTimerDef(I2STimer, I2SCallback);
   I2STimerHandle = osTimerCreate(osTimer(I2STimer), osTimerPeriodic, NULL);
 
+  /* definition and creation of SPISlaveTimer */
+  osTimerDef(SPISlaveTimer, SPISlaveCallback);
+  SPISlaveTimerHandle = osTimerCreate(osTimer(SPISlaveTimer), osTimerPeriodic, NULL);
+
   /* USER CODE BEGIN RTOS_TIMERS */
-  osTimerStart(I2STimerHandle, I2S_PERIOD);
+#if	!UPDATE_SINGLE_THREAD
+  osTimerStart(I2STimerHandle, MIC_PERIOD);
+#endif
+#if  TIMER_SPISLAVE
+  osTimerStart(SPISlaveTimerHandle, SPISLAVE_PERIOD);
+#endif
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -188,7 +222,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of SPIslaveTask */
-  osThreadDef(SPIslaveTask, StartSPIslaveTask, osPriorityIdle, 0, 128);
+  osThreadDef(SPIslaveTask, StartSPIslaveTask, osPriorityLow, 0, 128);
   SPIslaveTaskHandle = osThreadCreate(osThread(SPIslaveTask), NULL);
 
   /* definition and creation of IdleTask */
@@ -211,6 +245,10 @@ int main(void)
   osThreadDef(PSTask, StartPSTask, osPriorityIdle, 0, 128);
   PSTaskHandle = osThreadCreate(osThread(PSTask), NULL);
 
+  /* definition and creation of SerialTask */
+  osThreadDef(SerialTask, StartSerialTask, osPriorityIdle, 0, 128);
+  SerialTaskHandle = osThreadCreate(osThread(SerialTask), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -221,21 +259,29 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  int count = 0;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 	  /*
-    if (HAL_SPI_Receive(&hspi2, rxBuffer, 1, 1000) != HAL_OK) {
-    	uint8_t dummy = rxBuffer[0];
-	}
-    if(rxBuffer[0] == 0x12){
-    	if (HAL_SPI_Transmit(&hspi2, txBuffer, sizeof(txBuffer), 1000) != HAL_OK) {
-    		printf("HAL_SPI_Transmit failed.\r\n");
-    	}
-    }
-    */
+	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
+	  ps_update(&hi2c1);
+	  adc_update(&hadc1);
+	  imu_update_i2c(&hi2c2);
+	  HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+	  for(int i = 0; i < MIC_BUFF_SIZE; i++){
+		  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
+	  }
+	  txbuff_update();
+	  if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
+		  uint8_t dummy = sp.rxbuff[0];
+	  }
+	  if(sp.rxbuff[0] == READ_COMMAND){
+		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
+	  }
+	  */
   }
   /* USER CODE END 3 */
 }
@@ -286,9 +332,11 @@ void SystemClock_Config(void)
   /** Initializes the peripherals clocks
   */
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPUART1|RCC_PERIPHCLK_I2C1
-                              |RCC_PERIPHCLK_I2S|RCC_PERIPHCLK_ADC12;
+                              |RCC_PERIPHCLK_I2C2|RCC_PERIPHCLK_I2S
+                              |RCC_PERIPHCLK_ADC12;
   PeriphClkInit.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+  PeriphClkInit.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
   PeriphClkInit.I2sClockSelection = RCC_I2SCLKSOURCE_HSI;
   PeriphClkInit.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -322,11 +370,11 @@ static void MX_ADC1_Init(void)
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.GainCompensation = 0;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
-  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.NbrOfConversion = 4;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
@@ -348,10 +396,34 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_92CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_6;
+  sConfig.Rank = ADC_REGULAR_RANK_2;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_7;
+  sConfig.Rank = ADC_REGULAR_RANK_3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_8;
+  sConfig.Rank = ADC_REGULAR_RANK_4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -405,6 +477,52 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief I2C2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C2_Init(void)
+{
+
+  /* USER CODE BEGIN I2C2_Init 0 */
+
+  /* USER CODE END I2C2_Init 0 */
+
+  /* USER CODE BEGIN I2C2_Init 1 */
+
+  /* USER CODE END I2C2_Init 1 */
+  hi2c2.Instance = I2C2;
+  hi2c2.Init.Timing = 0x30A0A7FB;
+  hi2c2.Init.OwnAddress1 = 0;
+  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c2.Init.OwnAddress2 = 0;
+  hi2c2.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C2_Init 2 */
+
+  /* USER CODE END I2C2_Init 2 */
 
 }
 
@@ -527,6 +645,26 @@ static void MX_SPI3_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMAMUX1_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -599,28 +737,56 @@ void StartSPIslaveTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-#if SPI_SLAVE_SENSOR_EN
-	  if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
-		  uint8_t dummy = rxBuffer[0];
+#if UPDATE_SINGLE_THREAD & !TIMER_SPISLAVE
+	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
+
+	  imu_update_i2c(&hi2c2);
+
+	  ps_update(&hi2c1);
+
+	  adc_update(&hadc1);
+
+	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+	  if(ret == HAL_OK){
+		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
+			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
+		  }
 	  }
-	  if(rxBuffer[0] == READ_COMMAND){
+
+	  txbuff_update();
+#endif
+
+#if !TIMER_SPISLAVE
+#if SPI_SLAVE_SENSOR_EN
+	  //if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
+	  if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
+		  uint8_t dummy = sp.rxbuff[0];
+	  }
+	  if(sp.rxbuff[0] == READ_COMMAND){
+		  /*
 		  if (HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000) != HAL_OK) {
 			  printf("HAL_SPI_Transmit failed.\r\n");
-		  }
+		  }*/
+		  taskENTER_CRITICAL();
+		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
+		  taskEXIT_CRITICAL();
 	  }
 #else
-	  /*
-	  if (HAL_SPI_Receive(&hspi2, rxBuffer, 1, 1000) != HAL_OK) {
+	  if (HAL_SPI_Receive(&hspi3, rxBuffer, 1, 1000) != HAL_OK) {
 		  uint8_t dummy = rxBuffer[0];
 	  }
 	  if(rxBuffer[0] == READ_COMMAND){
-		  if (HAL_SPI_Transmit(&hspi2, txBuffer, sizeof(txBuffer), 1000) != HAL_OK) {
+		  /*
+		  if (HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000) != HAL_OK) {
 			  printf("HAL_SPI_Transmit failed.\r\n");
-		  }
+		  }*/
+		  taskENTER_CRITICAL();
+		  HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000);
+		  taskEXIT_CRITICAL();
 	  }
-	  */
 #endif
-	  osDelay(1);
+#endif
+	  osDelay(30);
   }
   /* USER CODE END 5 */
 }
@@ -638,7 +804,9 @@ void StartIdleTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if !UPDATE_SINGLE_THREAD
 	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
+#endif
 	  osDelay(100 + sp.adc_print[0] / 10);//adc read sample
   }
   /* USER CODE END StartIdleTask */
@@ -657,7 +825,15 @@ void StartIMUTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  imu_update(&hspi3);
+#if !UPDATE_SINGLE_THREAD
+	  if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
+#if IMU_SPI_MODE
+		  imu_update(&hspi3);
+#endif
+	  }else if(sp.imu_select == SELECT_ICM_42688_I2C){
+		  imu_update_i2c(&hi2c2);
+	  }
+#endif
 	  osDelay(1);
   }
   /* USER CODE END StartIMUTask */
@@ -676,7 +852,9 @@ void StartADCTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if !UPDATE_SINGLE_THREAD
 	  adc_update(&hadc1);
+#endif
 	  osDelay(1);
   }
   /* USER CODE END StartADCTask */
@@ -695,16 +873,10 @@ void StartTXBUFFTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if !UPDATE_SINGLE_THREAD
 	  txbuff_update();
-	  sprintf(acc_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d\r\n", sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
-	  sprintf(gyro_buffer, "gyro[0]:%d gyro[1]:%d gyro[2]:%d\r\n", sp.gyro_print[0], sp.gyro_print[1], sp.gyro_print[2]);
-	  sprintf(adc_buffer, "adc[0]:%d adc[1]:%d adc[2]:%d adc[3]:%d\r\n", sp.adc_print[0], sp.adc_print[1], sp.adc_print[2], sp.adc_print[3]);
-	  sprintf(i2s_buffer, "i2s[0]:%d i2s[1]:%d i2s[2]:%d i2s[3]:%d\r\n", sp.i2s_buff_sifted[0], sp.i2s_buff_sifted[1], sp.i2s_buff_sifted[2], sp.i2s_buff_sifted[3]);
-	  sprintf(debug_buffer, "%s%s%s%s\r\n", acc_buffer, gyro_buffer, adc_buffer, i2s_buffer);
-	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
-	  // 2000[ms] is very important value.
-	  // Changing delay time or adding HAL_Delay causes I2S reading error.
-	  osDelay(2000);
+#endif
+	  osDelay(1);
   }
   /* USER CODE END StartTXBUFFTask */
 }
@@ -722,27 +894,90 @@ void StartPSTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if !UPDATE_SINGLE_THREAD
 	ps_update(&hi2c1);
+#endif
     osDelay(1);
   }
   /* USER CODE END StartPSTask */
+}
+
+/* USER CODE BEGIN Header_StartSerialTask */
+/**
+* @brief Function implementing the SerialTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartSerialTask */
+void StartSerialTask(void const * argument)
+{
+  /* USER CODE BEGIN StartSerialTask */
+	sp.count = 0;
+  /* Infinite loop */
+  for(;;)
+  {
+#if DEBUG_EN
+	  sprintf(acc_buffer, "imu_en:%d acc[0]:%d acc[1]:%d acc[2]:%d\r\n", sp.imu_en, sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
+	  //sprintf(acc_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d\r\n", sp.count, sp.acc_print[1], sp.acc_print[2]);
+	  sprintf(gyro_buffer, "gyro[0]:%d gyro[1]:%d gyro[2]:%d\r\n", sp.gyro_print[0], sp.gyro_print[1], sp.gyro_print[2]);
+	  sprintf(adc_buffer, "adc[0]:%d adc[1]:%d adc[2]:%d adc[3]:%d\r\n", sp.adc_print[0], sp.adc_print[1], sp.adc_print[2], sp.adc_print[3]);
+	  sprintf(i2s_buffer, "i2s[0]:%d i2s[1]:%d i2s[2]:%d i2s[3]:%d\r\n", sp.i2s_buff_sifted[0], sp.i2s_buff_sifted[1], sp.i2s_buff_sifted[2], sp.i2s_buff_sifted[3]);
+	  sprintf(ps_buffer, "ps[0]:%d\r\n", sp.ps_print[0]);
+	  sprintf(debug_buffer, "%s%s%s%s%s\r\n", acc_buffer, gyro_buffer, adc_buffer, i2s_buffer, ps_buffer);
+	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
+	  sp.count += 1;
+	  if(sp.count == 30){
+		  sp.count = 0;
+	  }
+#endif
+	  // 2000[ms] is very important value.
+	  // Changing delay time or adding HAL_Delay causes I2S reading error.
+	  osDelay(SERIAL_PERIOD);
+  }
+  /* USER CODE END StartSerialTask */
 }
 
 /* I2SCallback function */
 void I2SCallback(void const * argument)
 {
   /* USER CODE BEGIN I2SCallback */
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, I2S_BUFF_SIZE ,1000);
+	  //HAL_Delay(MIC_PERIOD / 2);
+	  taskENTER_CRITICAL();
+	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+	  taskEXIT_CRITICAL();
 	  if(ret == HAL_OK){
-		  for(int i = 0; i < I2S_BUFF_SIZE; i++){
+		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
 			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
 		  }
 	  }
-	  HAL_Delay(I2S_PERIOD / 2);
-	  //sprintf(debug_buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", sp.i2s_buff_sifted[0], sp.i2s_buff_sifted[1], sp.i2s_buff_sifted[2], sp.i2s_buff_sifted[3]);
-	  //HAL_UART_Transmit(&hlpuart1, debug_buffer, 1024, 10);
+	  osDelay(MIC_PERIOD / 2);
+	  //HAL_Delay(MIC_PERIOD / 2);
 
   /* USER CODE END I2SCallback */
+}
+
+/* SPISlaveCallback function */
+void SPISlaveCallback(void const * argument)
+{
+  /* USER CODE BEGIN SPISlaveCallback */
+#if UPDATE_SINGLE_THREAD
+	  HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000);
+	  if(sp.rxbuff[0] == READ_COMMAND){
+		  taskENTER_CRITICAL();
+		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
+		  taskEXIT_CRITICAL();
+	  }
+
+	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+	  if(ret == HAL_OK){
+		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
+			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
+		  }
+	  }
+#endif
+	  osDelay(SPISLAVE_PERIOD / 2);
+
+  /* USER CODE END SPISlaveCallback */
 }
 
  /**
