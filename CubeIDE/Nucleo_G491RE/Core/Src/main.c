@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -55,15 +54,8 @@ SPI_HandleTypeDef hspi3;
 DMA_HandleTypeDef hdma_spi3_rx;
 DMA_HandleTypeDef hdma_spi3_tx;
 
-osThreadId SPIslaveTaskHandle;
-osThreadId IdleTaskHandle;
-osThreadId IMUTaskHandle;
-osThreadId ADCTaskHandle;
-osThreadId TXBUFFTaskHandle;
-osThreadId PSTaskHandle;
-osThreadId SerialTaskHandle;
-osTimerId I2STimerHandle;
-osTimerId SPISlaveTimerHandle;
+TIM_HandleTypeDef htim2;
+
 /* USER CODE BEGIN PV */
 uint8_t rxBuffer[1] = {};
 uint8_t txBuffer[44] = {};
@@ -79,16 +71,7 @@ static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_I2S2_Init(void);
 static void MX_SPI3_Init(void);
-void StartSPIslaveTask(void const * argument);
-void StartIdleTask(void const * argument);
-void StartIMUTask(void const * argument);
-void StartADCTask(void const * argument);
-void StartTXBUFFTask(void const * argument);
-void StartPSTask(void const * argument);
-void StartSerialTask(void const * argument);
-void I2SCallback(void const * argument);
-void SPISlaveCallback(void const * argument);
-
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 void mpuWrite(uint8_t, uint8_t);
 void imu_init();
@@ -166,6 +149,7 @@ int main(void)
   MX_I2C2_Init();
   MX_I2S2_Init();
   MX_SPI3_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   sp.imu_select = SELECT_ICM_42688_I2C;
   if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
@@ -191,73 +175,6 @@ int main(void)
   }
   /* USER CODE END 2 */
 
-  /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
-
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
-
-  /* Create the timer(s) */
-  /* definition and creation of I2STimer */
-  osTimerDef(I2STimer, I2SCallback);
-  I2STimerHandle = osTimerCreate(osTimer(I2STimer), osTimerPeriodic, NULL);
-
-  /* definition and creation of SPISlaveTimer */
-  osTimerDef(SPISlaveTimer, SPISlaveCallback);
-  SPISlaveTimerHandle = osTimerCreate(osTimer(SPISlaveTimer), osTimerPeriodic, NULL);
-
-  /* USER CODE BEGIN RTOS_TIMERS */
-#if	!UPDATE_SINGLE_THREAD
-  osTimerStart(I2STimerHandle, MIC_PERIOD);
-#endif
-#if  TIMER_SPISLAVE
-  osTimerStart(SPISlaveTimerHandle, SPISLAVE_PERIOD);
-#endif
-  /* USER CODE END RTOS_TIMERS */
-
-  /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
-
-  /* Create the thread(s) */
-  /* definition and creation of SPIslaveTask */
-  osThreadDef(SPIslaveTask, StartSPIslaveTask, osPriorityLow, 0, 128);
-  SPIslaveTaskHandle = osThreadCreate(osThread(SPIslaveTask), NULL);
-
-  /* definition and creation of IdleTask */
-  osThreadDef(IdleTask, StartIdleTask, osPriorityIdle, 0, 128);
-  IdleTaskHandle = osThreadCreate(osThread(IdleTask), NULL);
-
-  /* definition and creation of IMUTask */
-  osThreadDef(IMUTask, StartIMUTask, osPriorityIdle, 0, 128);
-  IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
-
-  /* definition and creation of ADCTask */
-  osThreadDef(ADCTask, StartADCTask, osPriorityIdle, 0, 128);
-  ADCTaskHandle = osThreadCreate(osThread(ADCTask), NULL);
-
-  /* definition and creation of TXBUFFTask */
-  osThreadDef(TXBUFFTask, StartTXBUFFTask, osPriorityIdle, 0, 128);
-  TXBUFFTaskHandle = osThreadCreate(osThread(TXBUFFTask), NULL);
-
-  /* definition and creation of PSTask */
-  osThreadDef(PSTask, StartPSTask, osPriorityIdle, 0, 128);
-  PSTaskHandle = osThreadCreate(osThread(PSTask), NULL);
-
-  /* definition and creation of SerialTask */
-  osThreadDef(SerialTask, StartSerialTask, osPriorityIdle, 0, 128);
-  SerialTaskHandle = osThreadCreate(osThread(SerialTask), NULL);
-
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
-
-  /* Start scheduler */
-  osKernelStart();
-
-  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   int count = 0;
@@ -644,6 +561,51 @@ static void MX_SPI3_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 0;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 4.294967295E9;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -655,10 +617,10 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   /* DMA1_Channel2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
 
 }
@@ -714,7 +676,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
@@ -722,262 +684,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
-
-/* USER CODE BEGIN Header_StartSPIslaveTask */
-/**
-  * @brief  Function implementing the SPIslaveTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartSPIslaveTask */
-void StartSPIslaveTask(void const * argument)
-{
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-#if UPDATE_SINGLE_THREAD & !TIMER_SPISLAVE
-	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-
-	  imu_update_i2c(&hi2c2);
-
-	  ps_update(&hi2c1);
-
-	  adc_update(&hadc1);
-
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
-	  if(ret == HAL_OK){
-		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
-			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
-		  }
-	  }
-
-	  txbuff_update();
-#endif
-
-#if !TIMER_SPISLAVE
-#if SPI_SLAVE_SENSOR_EN
-	  //if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
-	  if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
-		  uint8_t dummy = sp.rxbuff[0];
-	  }
-	  if(sp.rxbuff[0] == READ_COMMAND){
-		  /*
-		  if (HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000) != HAL_OK) {
-			  printf("HAL_SPI_Transmit failed.\r\n");
-		  }*/
-		  taskENTER_CRITICAL();
-		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
-		  taskEXIT_CRITICAL();
-	  }
-#else
-	  if (HAL_SPI_Receive(&hspi3, rxBuffer, 1, 1000) != HAL_OK) {
-		  uint8_t dummy = rxBuffer[0];
-	  }
-	  if(rxBuffer[0] == READ_COMMAND){
-		  /*
-		  if (HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000) != HAL_OK) {
-			  printf("HAL_SPI_Transmit failed.\r\n");
-		  }*/
-		  taskENTER_CRITICAL();
-		  HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000);
-		  taskEXIT_CRITICAL();
-	  }
-#endif
-#endif
-	  osDelay(30);
-  }
-  /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_StartIdleTask */
-/**
-* @brief Function implementing the IdleTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartIdleTask */
-void StartIdleTask(void const * argument)
-{
-  /* USER CODE BEGIN StartIdleTask */
-  /* Infinite loop */
-  for(;;)
-  {
-#if !UPDATE_SINGLE_THREAD
-	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-#endif
-	  osDelay(100 + sp.adc_print[0] / 10);//adc read sample
-  }
-  /* USER CODE END StartIdleTask */
-}
-
-/* USER CODE BEGIN Header_StartIMUTask */
-/**
-* @brief Function implementing the IMUTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartIMUTask */
-void StartIMUTask(void const * argument)
-{
-  /* USER CODE BEGIN StartIMUTask */
-  /* Infinite loop */
-  for(;;)
-  {
-#if !UPDATE_SINGLE_THREAD
-	  if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
-#if IMU_SPI_MODE
-		  imu_update(&hspi3);
-#endif
-	  }else if(sp.imu_select == SELECT_ICM_42688_I2C){
-		  imu_update_i2c(&hi2c2);
-	  }
-#endif
-	  osDelay(1);
-  }
-  /* USER CODE END StartIMUTask */
-}
-
-/* USER CODE BEGIN Header_StartADCTask */
-/**
-* @brief Function implementing the ADCTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartADCTask */
-void StartADCTask(void const * argument)
-{
-  /* USER CODE BEGIN StartADCTask */
-  /* Infinite loop */
-  for(;;)
-  {
-#if !UPDATE_SINGLE_THREAD
-	  adc_update(&hadc1);
-#endif
-	  osDelay(1);
-  }
-  /* USER CODE END StartADCTask */
-}
-
-/* USER CODE BEGIN Header_StartTXBUFFTask */
-/**
-* @brief Function implementing the TXBUFFTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartTXBUFFTask */
-void StartTXBUFFTask(void const * argument)
-{
-  /* USER CODE BEGIN StartTXBUFFTask */
-  /* Infinite loop */
-  for(;;)
-  {
-#if !UPDATE_SINGLE_THREAD
-	  txbuff_update();
-#endif
-	  osDelay(1);
-  }
-  /* USER CODE END StartTXBUFFTask */
-}
-
-/* USER CODE BEGIN Header_StartPSTask */
-/**
-* @brief Function implementing the PSTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartPSTask */
-void StartPSTask(void const * argument)
-{
-  /* USER CODE BEGIN StartPSTask */
-  /* Infinite loop */
-  for(;;)
-  {
-#if !UPDATE_SINGLE_THREAD
-	ps_update(&hi2c1);
-#endif
-    osDelay(1);
-  }
-  /* USER CODE END StartPSTask */
-}
-
-/* USER CODE BEGIN Header_StartSerialTask */
-/**
-* @brief Function implementing the SerialTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartSerialTask */
-void StartSerialTask(void const * argument)
-{
-  /* USER CODE BEGIN StartSerialTask */
-	sp.count = 0;
-  /* Infinite loop */
-  for(;;)
-  {
-#if DEBUG_EN
-	  sprintf(acc_buffer, "imu_en:%d acc[0]:%d acc[1]:%d acc[2]:%d\r\n", sp.imu_en, sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
-	  //sprintf(acc_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d\r\n", sp.count, sp.acc_print[1], sp.acc_print[2]);
-	  sprintf(gyro_buffer, "gyro[0]:%d gyro[1]:%d gyro[2]:%d\r\n", sp.gyro_print[0], sp.gyro_print[1], sp.gyro_print[2]);
-	  sprintf(adc_buffer, "adc[0]:%d adc[1]:%d adc[2]:%d adc[3]:%d\r\n", sp.adc_print[0], sp.adc_print[1], sp.adc_print[2], sp.adc_print[3]);
-	  sprintf(i2s_buffer, "i2s[0]:%d i2s[1]:%d i2s[2]:%d i2s[3]:%d\r\n", sp.i2s_buff_sifted[0], sp.i2s_buff_sifted[1], sp.i2s_buff_sifted[2], sp.i2s_buff_sifted[3]);
-	  sprintf(ps_buffer, "ps[0]:%d\r\n", sp.ps_print[0]);
-	  sprintf(debug_buffer, "%s%s%s%s%s\r\n", acc_buffer, gyro_buffer, adc_buffer, i2s_buffer, ps_buffer);
-	  HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
-	  sp.count += 1;
-	  if(sp.count == 30){
-		  sp.count = 0;
-	  }
-#endif
-	  // 2000[ms] is very important value.
-	  // Changing delay time or adding HAL_Delay causes I2S reading error.
-	  osDelay(SERIAL_PERIOD);
-  }
-  /* USER CODE END StartSerialTask */
-}
-
-/* I2SCallback function */
-void I2SCallback(void const * argument)
-{
-  /* USER CODE BEGIN I2SCallback */
-	  //HAL_Delay(MIC_PERIOD / 2);
-	  taskENTER_CRITICAL();
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
-	  taskEXIT_CRITICAL();
-	  if(ret == HAL_OK){
-		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
-			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
-		  }
-	  }
-	  osDelay(MIC_PERIOD / 2);
-	  //HAL_Delay(MIC_PERIOD / 2);
-
-  /* USER CODE END I2SCallback */
-}
-
-/* SPISlaveCallback function */
-void SPISlaveCallback(void const * argument)
-{
-  /* USER CODE BEGIN SPISlaveCallback */
-#if UPDATE_SINGLE_THREAD
-	  HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000);
-	  if(sp.rxbuff[0] == READ_COMMAND){
-		  taskENTER_CRITICAL();
-		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
-		  taskEXIT_CRITICAL();
-	  }
-
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
-	  if(ret == HAL_OK){
-		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
-			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
-		  }
-	  }
-#endif
-	  osDelay(SPISLAVE_PERIOD / 2);
-
-  /* USER CODE END SPISlaveCallback */
-}
 
  /**
   * @brief  Period elapsed callback in non blocking mode
