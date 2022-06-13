@@ -112,7 +112,7 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 
 // I2S CONST
 #define MIC_BUFF_SIZE 16
-#define MIC_PERIOD 10//長くすると上手く行く場合がある
+#define MIC_PERIOD 20//長くすると上手く行く場合がある
 #define MIC_CHANNEL_NUM 4
 
 // Debug buffer
@@ -163,6 +163,9 @@ struct sensor_params {
 	uint8_t com_en;
 
 	uint8_t count;
+	uint8_t flag;//0:imu, 1:mic
+	uint16_t error_count;
+	uint16_t rx_counter;
 };
 
 extern struct sensor_params sp;

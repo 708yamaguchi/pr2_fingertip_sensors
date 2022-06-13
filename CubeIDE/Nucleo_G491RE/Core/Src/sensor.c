@@ -51,9 +51,19 @@ void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 	sp.txbuff[index + 3] = sp.adc_elapsed_time & 0x00ff;
 	sp.txbuff[index + 4] = sp.imu_elapsed_time >> 8;
 	sp.txbuff[index + 5] = sp.imu_elapsed_time & 0x00ff;
-	sp.txbuff[index + 6] = sp.ps_elapsed_time >> 8;
-	sp.txbuff[index + 7] = sp.ps_elapsed_time & 0x00ff;
-	index += 8;
+	index += 6;
+	//sp.txbuff[index + 6] = sp.ps_elapsed_time >> 8;
+	//sp.txbuff[index + 7] = sp.ps_elapsed_time & 0x00ff;
+	//index += 8;
+	sp.txbuff[index] = sp.error_count >> 8;
+	sp.txbuff[index + 1] = sp.error_count & 0x00ff;
+	index += 2;
+	sp.txbuff[index] = 0;
+	sp.txbuff[index + 1] = sp.rxbuff[0];
+	index += 2;
+	sp.txbuff[index] = sp.rx_counter >> 8;
+	sp.txbuff[index + 1] = sp.rx_counter & 0x00ff;
+	index += 2;
 
 	/*
 	for(int i=0; i < MIC_CHANNEL_NUM; i++){//4*4=16
@@ -69,6 +79,16 @@ void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 			sp.txbuff[i] = i / 2;
 		}
 	}
+}
+
+uint32_t getUs(void) {
+  uint32_t usTicks = HAL_RCC_GetSysClockFreq() / 1000000;
+  register uint32_t ms, cycle_cnt;
+  do {
+    ms = HAL_GetTick();
+    cycle_cnt = SysTick->VAL;
+  } while (ms != HAL_GetTick());
+  return (ms * 1000) + (usTicks * 1000 - cycle_cnt) / usTicks;
 }
 
 void delayUs(uint16_t micros) {
@@ -265,6 +285,7 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 	if(sp.imu_en == IMU_EN){
 		taskENTER_CRITICAL();
 		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, 100);//check sensor ID
+		//HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, 1);//check sensor ID
 		taskEXIT_CRITICAL();
 		if((sp.gyro[0] != 0) || (sp.gyro[1] != 0) || (sp.gyro[2] != 0)){
 			sp.gyro_print[0] = (int16_t)(sp.gyro[0] << 8 | sp.gyro[1]);
@@ -389,7 +410,8 @@ void ps_update(I2C_HandleTypeDef *hi2c){
 			//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
 			//HAL_Delay(10);
 			//HAL_I2C_Mem_Read(hi2c1, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, 1);
-			ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, HAL_MAX_DELAY);
+			//ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, HAL_MAX_DELAY);
+			ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, 1);
 
 			if(ps_ret == HAL_OK){
 				sp.ps_print[i] = (uint16_t)(data[1] << 8 | data[0]);

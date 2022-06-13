@@ -186,15 +186,20 @@ int main(void)
   MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
   sp.imu_select = SELECT_ICM_42688_I2C;
+  sp.flag = 0;
+  sp.error_count = 0;
+  sp.rx_counter = 0;
+  //HAL_I2S_DeInit(&hi2s2);
+  //HAL_I2S_Init(&hi2s2);
   if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
 #if IMU_SPI_MODE
 	  imu_init(&hspi3);
 #endif
   }else if(sp.imu_select == SELECT_ICM_42688_I2C){
+	  imu_init_i2c(&hi2c1);
 	  //imu_init_i2c(&hi2c2);
-	  imu_init_i2c(&hi2c3);
+	  //imu_init_i2c(&hi2c3);
   }
-  adc_init(&hadc1);
   ps_init(&hi2c1);
   memset(sp.txbuff, 0, sizeof(sp.txbuff));
 
@@ -228,8 +233,9 @@ int main(void)
   SPISlaveTimerHandle = osTimerCreate(osTimer(SPISlaveTimer), osTimerPeriodic, NULL);
 
   /* USER CODE BEGIN RTOS_TIMERS */
+  //osTimerStart(I2STimerHandle, MIC_PERIOD);
 #if	!UPDATE_SINGLE_THREAD
-  osTimerStart(I2STimerHandle, MIC_PERIOD);
+  //osTimerStart(I2STimerHandle, MIC_PERIOD);
 #endif
 #if  TIMER_SPISLAVE
   osTimerStart(SPISlaveTimerHandle, SPISLAVE_PERIOD);
@@ -242,7 +248,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of SPIslaveTask */
-  osThreadDef(SPIslaveTask, StartSPIslaveTask, osPriorityRealtime, 0, 128);
+  osThreadDef(SPIslaveTask, StartSPIslaveTask, osPriorityLow, 0, 128);
   SPIslaveTaskHandle = osThreadCreate(osThread(SPIslaveTask), NULL);
 
   /* definition and creation of IdleTask */
@@ -324,12 +330,13 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV4;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV6;
   RCC_OscInitStruct.PLL.PLLN = 85;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
@@ -854,20 +861,43 @@ void StartSPIslaveTask(void const * argument)
 #if UPDATE_SINGLE_THREAD & !TIMER_SPISLAVE
 	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
 
-	  imu_update_i2c(&hi2c2);
+	  //imu_update_i2c(&hi2c2);
+	  //if(sp.flag == 1){
+	  uint32_t freqCount = htim2.Instance->CNT;
+	  float start_time_us = getTimeUs(freqCount);
+	  imu_update_i2c(&hi2c1);
+	  freqCount = htim2.Instance->CNT;
+	  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
 
+	  //sp.flag = 0;
+		  //HAL_I2S_Init(&hi2s2);
+	  //}
+	  //HAL_Delay(6);
+	  freqCount = htim2.Instance->CNT;
+	  start_time_us = getTimeUs(freqCount);
 	  ps_update(&hi2c1);
+	  freqCount = htim2.Instance->CNT;
+	  sp.ps_elapsed_time = getTimeUs(freqCount) - start_time_us;
 
+	  freqCount = htim2.Instance->CNT;
+	  start_time_us = getTimeUs(freqCount);
 	  adc_update(&hadc1);
+	  freqCount = htim2.Instance->CNT;
+	  sp.adc_elapsed_time = getTimeUs(freqCount) - start_time_us;
 
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
-	  if(ret == HAL_OK){
-		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
-			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
-		  }
-	  }
+	  //if(sp.flag == 0){
+		  //int8_t ret = HAL_I2S_Receive(&hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+		  //HAL_I2S_DeInit(&hi2s2);
+		  //int8_t ret = HAL_OK;
+		  //if(ret == HAL_OK){
+		  //for(int i = 0; i < MIC_BUFF_SIZE; i++){
+			  //sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
+		  //}
+		  //}
+		  //sp.flag = 1;
+	  //}
+	  //HAL_Delay(10);
 
-	  txbuff_update();
 #endif
 
 #if !TIMER_SPISLAVE
@@ -877,13 +907,23 @@ void StartSPIslaveTask(void const * argument)
 		  uint8_t dummy = sp.rxbuff[0];
 	  }
 	  if(sp.rxbuff[0] == READ_COMMAND){
+		  sp.rx_counter += 1;
 		  /*
 		  if (HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000) != HAL_OK) {
 			  printf("HAL_SPI_Transmit failed.\r\n");
 		  }*/
+		  txbuff_update();
 		  taskENTER_CRITICAL();
-		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
+		  //delayUs(10);
+		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 2000);
 		  taskEXIT_CRITICAL();
+	  }else{
+		  sp.error_count += 1;
+		  //if(sp.error_count > 0){
+			  //HAL_SPI_DeInit(&hspi3);
+			  //MX_SPI3_Init();
+			  ///sp.error_count = 0;
+		  //}
 	  }
 #else
 	  if (HAL_SPI_Receive(&hspi3, rxBuffer, 1, 1000) != HAL_OK) {
@@ -900,6 +940,7 @@ void StartSPIslaveTask(void const * argument)
 	  }
 #endif
 #endif
+//	  osDelay(1);
 	  osDelay(30);
   }
   /* USER CODE END 5 */
@@ -951,11 +992,26 @@ void StartIMUTask(void const * argument)
 	  }else if(sp.imu_select == SELECT_ICM_42688_I2C){
 		  uint32_t freqCount = htim2.Instance->CNT;
 		  float start_time_us = getTimeUs(freqCount);
+		  imu_update_i2c(&hi2c1);
 		  //imu_update_i2c(&hi2c2);
 		  //imu_update_i2c(&hi2c3);
-		  HAL_Delay(6);
+		  //HAL_Delay(6);
 		  freqCount = htim2.Instance->CNT;
 		  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
+		  /*
+		  freqCount = htim2.Instance->CNT;
+		  start_time_us = getTimeUs(freqCount);
+		  taskENTER_CRITICAL();
+		  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+		  taskEXIT_CRITICAL();
+		  freqCount = htim2.Instance->CNT;
+		  sp.mic_elapsed_time = getTimeUs(freqCount) - start_time_us;
+		  if(ret == HAL_OK){
+			  for(int i = 0; i < MIC_BUFF_SIZE; i++){
+				  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
+			  }
+		  }
+		  */
 	  }
 #endif
 	  osDelay(1);
@@ -1074,11 +1130,16 @@ void I2SCallback(void const * argument)
 {
   /* USER CODE BEGIN I2SCallback */
 	  //HAL_Delay(MIC_PERIOD / 2);
-	  uint32_t freqCount = htim2.Instance->CNT;
-	  float start_time_us = getTimeUs(freqCount);
-	  taskENTER_CRITICAL();
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
-	  taskEXIT_CRITICAL();
+
+	uint32_t freqCount = htim2.Instance->CNT;
+	//HAL_I2S_Init(&hi2s2);
+	//HAL_Delay(200);
+	float start_time_us = getTimeUs(freqCount);
+	//taskENTER_CRITICAL();
+	  //int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1);
+	  //taskEXIT_CRITICAL();
+	  //HAL_I2S_DeInit(&hi2s2);
 	  freqCount = htim2.Instance->CNT;
 	  sp.mic_elapsed_time = getTimeUs(freqCount) - start_time_us;
 	  if(ret == HAL_OK){
@@ -1086,6 +1147,14 @@ void I2SCallback(void const * argument)
 			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
 		  }
 	  }
+
+	  //uint32_t freqCount = htim2.Instance->CNT;
+	  //float start_time_us = getTimeUs(freqCount);
+	  //imu_update_i2c(&hi2c2);
+	  //imu_update_i2c(&hi2c1);
+	  //HAL_Delay(6);
+	  //freqCount = htim2.Instance->CNT;
+	  //sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
 	  //osDelay(MIC_PERIOD / 2);
 	  //HAL_Delay(MIC_PERIOD / 2);
 
