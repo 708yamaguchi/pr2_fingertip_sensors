@@ -33,7 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define FREERTOS
+// #define FREERTOS
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -266,7 +266,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  /*
 	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
 	  ps_update(&hi2c1);
 	  adc_update(&hadc1);
@@ -282,7 +281,6 @@ int main(void)
 	  if(sp.rxbuff[0] == READ_COMMAND){
 		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
 	  }
-	  */
   }
   /* USER CODE END 3 */
 }
