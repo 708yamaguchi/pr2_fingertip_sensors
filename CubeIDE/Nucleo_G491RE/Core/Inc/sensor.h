@@ -144,15 +144,20 @@ struct sensor_params {
 	uint8_t ps[PS_CHANNEL_NUM * 2];//0H,0L,1H,1L,4H,4L,7H,7L
 	uint16_t ps_print[PS_CHANNEL_NUM];
 	uint8_t ps_en[PS_CHANNEL_NUM]; //0x00:disable 0x01:enable
+	uint16_t ps_elapsed_time;
 	uint8_t gyro[GYRO_CHANNEL_NUM * 2];
 	int16_t gyro_print[GYRO_CHANNEL_NUM];
 	uint8_t acc[ACC_CHANNEL_NUM * 2];
 	int16_t acc_print[ACC_CHANNEL_NUM];
+	uint8_t gyro_acc[GYRO_CHANNEL_NUM * 2 + ACC_CHANNEL_NUM * 2];
+	uint16_t imu_elapsed_time;
 	uint8_t imu_en; //0x00:disable 0x01:enable
 	uint8_t adc[ADC_CHANNEL_NUM * 2];
 	uint16_t adc_print[ADC_CHANNEL_NUM];
+	uint16_t adc_elapsed_time;
 	int32_t i2s_rx_buff[MIC_BUFF_SIZE];
 	int32_t i2s_buff_sifted[MIC_BUFF_SIZE];
+	uint16_t mic_elapsed_time;
 
 	// control
 	uint8_t com_en;

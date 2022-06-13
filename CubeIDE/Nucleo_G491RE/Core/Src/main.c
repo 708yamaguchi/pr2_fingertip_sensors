@@ -54,6 +54,8 @@ SPI_HandleTypeDef hspi3;
 DMA_HandleTypeDef hdma_spi3_rx;
 DMA_HandleTypeDef hdma_spi3_tx;
 
+TIM_HandleTypeDef htim2;
+
 osThreadId SPIslaveTaskHandle;
 osThreadId IdleTaskHandle;
 osThreadId IMUTaskHandle;
@@ -78,6 +80,7 @@ static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_I2S2_Init(void);
 static void MX_SPI3_Init(void);
+static void MX_TIM2_Init(void);
 void StartSPIslaveTask(void const * argument);
 void StartIdleTask(void const * argument);
 void StartIMUTask(void const * argument);
@@ -127,6 +130,18 @@ void setTxBuffer(uint16_t val, uint8_t idx) {
 	}
 }
 
+float getTimeUs(uint32_t count)
+{
+  float us = 1000000 * (float)count / (float)SystemCoreClock;
+  return us;
+}
+
+float getTimeMs(uint32_t count)
+{
+  float ms = 1000 * (float)count / (float)SystemCoreClock;
+  return ms;
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -165,6 +180,7 @@ int main(void)
   MX_I2C2_Init();
   MX_I2S2_Init();
   MX_SPI3_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   sp.imu_select = SELECT_ICM_42688_I2C;
   if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
@@ -209,7 +225,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_TIMERS */
 #if	!UPDATE_SINGLE_THREAD
-  osTimerStart(I2STimerHandle, MIC_PERIOD);
+  //osTimerStart(I2STimerHandle, MIC_PERIOD);
 #endif
 #if  TIMER_SPISLAVE
   osTimerStart(SPISlaveTimerHandle, SPISLAVE_PERIOD);
@@ -251,6 +267,9 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  int count = 0;
+  // https://garberas.com/archives/244
+  HAL_TIM_Encoder_Start( &htim2, TIM_CHANNEL_ALL );
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -259,7 +278,6 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int count = 0;
   while (1)
   {
     /* USER CODE END WHILE */
@@ -645,6 +663,51 @@ static void MX_SPI3_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 0;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 4.294967295E9;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -828,10 +891,18 @@ void StartIMUTask(void const * argument)
 #if !UPDATE_SINGLE_THREAD
 	  if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
 #if IMU_SPI_MODE
+		  uint32_t freqCount = htim2.Instance->CNT;
+		  float start_time_us = getTimeUs(freqCount);
 		  imu_update(&hspi3);
+		  freqCount = htim2.Instance->CNT;
+		  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
 #endif
 	  }else if(sp.imu_select == SELECT_ICM_42688_I2C){
+		  uint32_t freqCount = htim2.Instance->CNT;
+		  float start_time_us = getTimeUs(freqCount);
 		  imu_update_i2c(&hi2c2);
+		  freqCount = htim2.Instance->CNT;
+		  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
 	  }
 #endif
 	  osDelay(1);
@@ -853,7 +924,11 @@ void StartADCTask(void const * argument)
   for(;;)
   {
 #if !UPDATE_SINGLE_THREAD
+	  uint32_t freqCount = htim2.Instance->CNT;
+	  float start_time_us = getTimeUs(freqCount);
 	  adc_update(&hadc1);
+	  freqCount = htim2.Instance->CNT;
+	  sp.adc_elapsed_time = getTimeUs(freqCount) - start_time_us;
 #endif
 	  osDelay(1);
   }
@@ -895,7 +970,11 @@ void StartPSTask(void const * argument)
   for(;;)
   {
 #if !UPDATE_SINGLE_THREAD
-	ps_update(&hi2c1);
+	  uint32_t freqCount = htim2.Instance->CNT;
+	  float start_time_us = getTimeUs(freqCount);
+	  ps_update(&hi2c1);
+	  freqCount = htim2.Instance->CNT;
+	  sp.ps_elapsed_time = getTimeUs(freqCount) - start_time_us;
 #endif
     osDelay(1);
   }
