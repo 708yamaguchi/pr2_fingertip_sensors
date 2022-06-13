@@ -99,7 +99,8 @@ void adc_update();
 void ps_init();
 void ps_update();
 void txbuff_update();
-void sprintf();
+void *memset();
+int sprintf();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -207,8 +208,12 @@ int main(void)
   SPISlaveTimerHandle = osTimerCreate(osTimer(SPISlaveTimer), osTimerPeriodic, NULL);
 
   /* USER CODE BEGIN RTOS_TIMERS */
-  //osTimerStart(I2STimerHandle, MIC_PERIOD);
-  //osTimerStart(SPISlaveTimerHandle, SPISLAVE_PERIOD);
+#if	!UPDATE_SINGLE_THREAD
+  osTimerStart(I2STimerHandle, MIC_PERIOD);
+#endif
+#if  TIMER_SPISLAVE
+  osTimerStart(SPISlaveTimerHandle, SPISLAVE_PERIOD);
+#endif
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -249,7 +254,7 @@ int main(void)
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
-  //osKernelStart();
+  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
@@ -260,6 +265,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  /*
 	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
 	  ps_update(&hi2c1);
 	  adc_update(&hadc1);
@@ -275,6 +281,7 @@ int main(void)
 	  if(sp.rxbuff[0] == READ_COMMAND){
 		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
 	  }
+	  */
   }
   /* USER CODE END 3 */
 }
@@ -730,12 +737,26 @@ void StartSPIslaveTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if UPDATE_SINGLE_THREAD & !TIMER_SPISLAVE
 	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-	  imu_update_i2c(&hi2c2);
-	  ps_update(&hi2c1);
-	  adc_update(&hadc1);
-	  txbuff_update();
 
+	  imu_update_i2c(&hi2c2);
+
+	  ps_update(&hi2c1);
+
+	  adc_update(&hadc1);
+
+	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+	  if(ret == HAL_OK){
+		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
+			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
+		  }
+	  }
+
+	  txbuff_update();
+#endif
+
+#if !TIMER_SPISLAVE
 #if SPI_SLAVE_SENSOR_EN
 	  //if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
 	  if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
@@ -764,16 +785,7 @@ void StartSPIslaveTask(void const * argument)
 		  taskEXIT_CRITICAL();
 	  }
 #endif
-
-	  //taskENTER_CRITICAL();
-	  //int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
-	  //taskEXIT_CRITICAL();
-	  //if(ret == HAL_OK){
-	  //for(int i = 0; i < MIC_BUFF_SIZE; i++){
-	  //sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
-	  //}
-	  //}
-
+#endif
 	  osDelay(30);
   }
   /* USER CODE END 5 */
@@ -792,7 +804,9 @@ void StartIdleTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if !UPDATE_SINGLE_THREAD
 	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
+#endif
 	  osDelay(100 + sp.adc_print[0] / 10);//adc read sample
   }
   /* USER CODE END StartIdleTask */
@@ -811,6 +825,7 @@ void StartIMUTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if !UPDATE_SINGLE_THREAD
 	  if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
 #if IMU_SPI_MODE
 		  imu_update(&hspi3);
@@ -818,6 +833,7 @@ void StartIMUTask(void const * argument)
 	  }else if(sp.imu_select == SELECT_ICM_42688_I2C){
 		  imu_update_i2c(&hi2c2);
 	  }
+#endif
 	  osDelay(1);
   }
   /* USER CODE END StartIMUTask */
@@ -836,7 +852,9 @@ void StartADCTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if !UPDATE_SINGLE_THREAD
 	  adc_update(&hadc1);
+#endif
 	  osDelay(1);
   }
   /* USER CODE END StartADCTask */
@@ -855,7 +873,9 @@ void StartTXBUFFTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if !UPDATE_SINGLE_THREAD
 	  txbuff_update();
+#endif
 	  osDelay(1);
   }
   /* USER CODE END StartTXBUFFTask */
@@ -874,7 +894,9 @@ void StartPSTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if !UPDATE_SINGLE_THREAD
 	ps_update(&hi2c1);
+#endif
     osDelay(1);
   }
   /* USER CODE END StartPSTask */
@@ -938,31 +960,13 @@ void I2SCallback(void const * argument)
 void SPISlaveCallback(void const * argument)
 {
   /* USER CODE BEGIN SPISlaveCallback */
-#if SPI_SLAVE_SENSOR_EN
-	  //if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
-	  //if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
-		  //uint8_t dummy = sp.rxbuff[0];
-	  //}
+#if UPDATE_SINGLE_THREAD
 	  HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000);
 	  if(sp.rxbuff[0] == READ_COMMAND){
 		  taskENTER_CRITICAL();
 		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
 		  taskEXIT_CRITICAL();
 	  }
-#else
-	  if (HAL_SPI_Receive(&hspi3, rxBuffer, 1, 1000) != HAL_OK) {
-		  uint8_t dummy = rxBuffer[0];
-	  }
-	  if(rxBuffer[0] == READ_COMMAND){
-		  /*
-		  if (HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000) != HAL_OK) {
-			  printf("HAL_SPI_Transmit failed.\r\n");
-		  }*/
-		  taskENTER_CRITICAL();
-		  HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000);
-		  taskEXIT_CRITICAL();
-	  }
-#endif
 
 	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
 	  if(ret == HAL_OK){
@@ -970,10 +974,8 @@ void SPISlaveCallback(void const * argument)
 			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
 		  }
 	  }
-
-	  //HAL_Delay(SPISLAVE_PERIOD / 2);
+#endif
 	  osDelay(SPISLAVE_PERIOD / 2);
-	  //osDelay(10);
 
   /* USER CODE END SPISlaveCallback */
 }

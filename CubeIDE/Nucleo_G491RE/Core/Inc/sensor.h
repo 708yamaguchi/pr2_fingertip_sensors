@@ -117,6 +117,8 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 
 // Debug buffer
 #define DEBUG_EN 0
+#define UPDATE_SINGLE_THREAD 0
+#define TIMER_SPISLAVE 0
 #define SERIAL_PERIOD 2000
 
 uint8_t debug_buffer[2048];
