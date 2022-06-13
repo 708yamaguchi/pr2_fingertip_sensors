@@ -292,7 +292,7 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
 			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
 		}
-		HAL_Delay(3);//important delay
+		HAL_Delay(10);//important delay
 
 		taskENTER_CRITICAL();
 		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6, 100);//check sensor ID
@@ -302,7 +302,7 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
 			sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
 		}
-		HAL_Delay(3);//important delay
+		HAL_Delay(10);//important delay
 
 		/*
 		taskENTER_CRITICAL();
@@ -431,12 +431,12 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 	  if(sp.rxbuff[0] == READ_COMMAND){
 		  sp.rx_counter += 1;
 		  //taskENTER_CRITICAL();
-		  HAL_SPI_Transmit(hspi, sp.txbuff, sizeof(sp.txbuff), 2000);
+		  HAL_SPI_Transmit_DMA(hspi, sp.txbuff, sizeof(sp.txbuff));
 		  //taskEXIT_CRITICAL();
 	  }else{
 		  sp.error_count += 1;
+		  HAL_SPI_Receive_DMA(hspi, sp.rxbuff, 1);
 	  }
-	  HAL_SPI_Receive_DMA(hspi, sp.rxbuff, 1);
 }
 
 /*
@@ -444,12 +444,10 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
   txBuffer[0] = rxBuffer[0];
   HAL_SPI_Transmit_DMA(hspi, txBuffer, 1);  // Tx DMA start
 }
+*/
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
-  txBuffer[0] = 0;
-  rxBuffer[0] = 0;
-  HAL_SPI_TransmitReceive_DMA(&hspi1, txBuffer, rxBuffer, 1);  // Tx & Rx DMA (re)start
+	  HAL_SPI_Receive_DMA(hspi, sp.rxbuff, 1);
 }
-*/
 
 
