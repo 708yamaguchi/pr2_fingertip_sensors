@@ -33,6 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define FREERTOS
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/

@@ -6,7 +6,9 @@
  */
 
 #include "sensor.h"
-#include "cmsis_os.h"
+#if FREERTOS
+  #include "cmsis_os.h"
+#endif
 
 struct sensor_params sp;
 
@@ -245,18 +247,26 @@ void imu_init_i2c(I2C_HandleTypeDef *hi2c){
 
 void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 	if(sp.imu_en == IMU_EN){
+#if FREERTOS
 		taskENTER_CRITICAL();
+#endif
 		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, 100);//check sensor ID
+#if FREERTOS
 		taskEXIT_CRITICAL();
+#endif
 		if((sp.gyro[0] != 0) || (sp.gyro[1] != 0) || (sp.gyro[2] != 0)){
 			sp.gyro_print[0] = (int16_t)(sp.gyro[0] << 8 | sp.gyro[1]);
 			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
 			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
 		}
 		HAL_Delay(5);//important delay
+#if FREERTOS
 		taskENTER_CRITICAL();
+#endif
 		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6, 100);//check sensor ID
+#if FREERTOS
 		taskEXIT_CRITICAL();
+#endif
 		if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
 			sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
 			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
