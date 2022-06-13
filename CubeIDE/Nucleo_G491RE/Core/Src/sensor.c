@@ -287,10 +287,10 @@ void imu_init_i2c(I2C_HandleTypeDef *hi2c){
 
 void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 	if(sp.imu_en == IMU_EN){
-		taskENTER_CRITICAL();
+		//taskENTER_CRITICAL();
 		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, 100);//check sensor ID
 		//HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, 1);//check sensor ID
-		taskEXIT_CRITICAL();
+		//taskEXIT_CRITICAL();
 		if((sp.gyro[0] != 0) || (sp.gyro[1] != 0) || (sp.gyro[2] != 0)){
 			sp.gyro_print[0] = (int16_t)(sp.gyro[0] << 8 | sp.gyro[1]);
 			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
@@ -298,9 +298,9 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 		}
 		HAL_Delay(1);//important delay
 
-		taskENTER_CRITICAL();
+		//taskENTER_CRITICAL();
 		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6, 100);//check sensor ID
-		taskEXIT_CRITICAL();
+		//taskEXIT_CRITICAL();
 		if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
 			sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
 			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
@@ -329,19 +329,20 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 
 void imu_update_i2c_DMA_gyro(I2C_HandleTypeDef *hi2c){
 	if(sp.imu_en == IMU_EN){
+		sp.imu_prev_frame = getUs();
 		sp.i2c1_dma_flag = 0;
-		HAL_Delay(50);
+		//HAL_Delay(50);
 		HAL_I2C_Mem_Read_DMA(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6);
-		HAL_Delay(50);
+		//HAL_Delay(50);
 	}
 }
 
 void imu_update_i2c_DMA_acc(I2C_HandleTypeDef *hi2c){
 	if(sp.imu_en == IMU_EN){
 		sp.i2c1_dma_flag = 1;
-		HAL_Delay(50);
+		//HAL_Delay(50);
 		HAL_I2C_Mem_Read_DMA(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6);
-		HAL_Delay(50);
+		//HAL_Delay(50);
 	}
 }
 
@@ -354,7 +355,7 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
 			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
 		}
-		HAL_Delay(50);
+		//HAL_Delay(50);
 		imu_update_i2c_DMA_acc(hi2c);
 		break;
 	case 1:
@@ -363,7 +364,7 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
 			sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
 		}
-		HAL_Delay(50);
+		//HAL_Delay(50);
 		imu_update_i2c_DMA_gyro(hi2c);
 		break;
 	}

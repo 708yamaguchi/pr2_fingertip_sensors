@@ -193,6 +193,8 @@ int main(void)
   sp.rx_counter = 0;
   sp.i2c1_dma_flag = 0x00;
   sp.imu_dma_en = 0x00;
+  sp.imu_prev_frame = 0;
+  sp.imu_count_frame = 0;
   //HAL_I2S_DeInit(&hi2s2);
   //HAL_I2S_Init(&hi2s2);
   if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
@@ -1001,15 +1003,20 @@ void StartIMUTask(void const * argument)
 		  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
 #endif
 	  }else if(sp.imu_select == SELECT_ICM_42688_I2C){
+#if !IMU_I2C_DMA
 		  uint32_t freqCount = htim2.Instance->CNT;
 		  float start_time_us = getTimeUs(freqCount);
 		  imu_update_i2c(&hi2c1);
 		  freqCount = htim2.Instance->CNT;
 		  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
-		  if(sp.imu_dma_en == 0){
-			  //imu_update_i2c_DMA_gyro(&hi2c1);
+#else
+		  sp.imu_count_frame = getUs() - sp.imu_prev_frame;
+		  if(sp.imu_dma_en == 0 || sp.imu_count_frame > 100000){
+			  sp.imu_prev_frame = getUs();
+			  imu_update_i2c_DMA_gyro(&hi2c1);
 			  sp.imu_dma_en = 1;
 		  }
+#endif
 	  }
 #endif
 	  osDelay(1);

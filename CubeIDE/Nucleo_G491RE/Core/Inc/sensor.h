@@ -80,6 +80,7 @@ static const uint8_t IMU_WHO_AM_I_42605 = 0x42;
 static const uint8_t IMU_WHO_AM_I_42688 = 0x47;
 #define IMU_SPI_MODE 0
 #define IMU_I2C_MODE !IMU_SPI_MODE
+#define IMU_I2C_DMA 0
 
 // PS CMD
 static const uint8_t PS_CONF1 = 0x03;
@@ -153,6 +154,8 @@ struct sensor_params {
 	uint16_t imu_elapsed_time;
 	uint8_t imu_en; //0x00:disable 0x01:enable
 	uint8_t imu_dma_en; //0x00:disable 0x01:enable
+	uint32_t imu_prev_frame;
+	uint32_t imu_count_frame;
 	uint8_t adc[ADC_CHANNEL_NUM * 2];
 	uint16_t adc_print[ADC_CHANNEL_NUM];
 	uint16_t adc_elapsed_time;
