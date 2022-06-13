@@ -13,8 +13,16 @@ struct sensor_params sp;
 void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 	uint8_t index = 0;
 	for(int i=0; i < MIC_CHANNEL_NUM; i++){//4*4=16
-		sp.txbuff[index] = (sp.i2s_buff_sifted[i * 2] >> 10) & 0x000000ff;
-		sp.txbuff[index + 1] = (sp.i2s_buff_sifted[i * 2] >> 2)& 0x000000ff;
+		if(sp.i2s_buff_sifted[i * 2] != 0){
+			sp.txbuff[index] = (sp.i2s_buff_sifted[i * 2] >> 10) & 0x000000ff;
+			sp.txbuff[index + 1] = (sp.i2s_buff_sifted[i * 2] >> 2)& 0x000000ff;
+		}else if(sp.i2s_buff_sifted[i * 2 + 1] != 0){
+			sp.txbuff[index] = (sp.i2s_buff_sifted[i * 2 + 1] >> 10) & 0x000000ff;
+			sp.txbuff[index + 1] = (sp.i2s_buff_sifted[i * 2 + 1] >> 2)& 0x000000ff;
+		}else{
+			sp.txbuff[index] = (12345 * 4 >> 10) & 0x000000ff;
+			sp.txbuff[index + 1] = (12345 * 4 >> 2)& 0x000000ff;
+		}
 		index += 2;
 	}
 	for(int i=0; i < ADC_CHANNEL_NUM; i++){//2*4=8
@@ -263,7 +271,7 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
 			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
 		}
-		HAL_Delay(1);//important delay
+		HAL_Delay(3);//important delay
 		taskENTER_CRITICAL();
 		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6, 100);//check sensor ID
 		taskEXIT_CRITICAL();
@@ -272,7 +280,7 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
 			sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
 		}
-		HAL_Delay(1);//important delay
+		HAL_Delay(3);//important delay
 		/*
 		taskENTER_CRITICAL();
 		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro_acc, 12, 100);//check sensor ID

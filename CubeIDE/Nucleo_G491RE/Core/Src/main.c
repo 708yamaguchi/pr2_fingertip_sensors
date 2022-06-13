@@ -45,6 +45,7 @@ ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
+I2C_HandleTypeDef hi2c3;
 
 I2S_HandleTypeDef hi2s2;
 
@@ -81,6 +82,7 @@ static void MX_I2C2_Init(void);
 static void MX_I2S2_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_I2C3_Init(void);
 void StartSPIslaveTask(void const * argument);
 void StartIdleTask(void const * argument);
 void StartIMUTask(void const * argument);
@@ -181,6 +183,7 @@ int main(void)
   MX_I2S2_Init();
   MX_SPI3_Init();
   MX_TIM2_Init();
+  MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
   sp.imu_select = SELECT_ICM_42688_I2C;
   if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
@@ -188,7 +191,8 @@ int main(void)
 	  imu_init(&hspi3);
 #endif
   }else if(sp.imu_select == SELECT_ICM_42688_I2C){
-	  imu_init_i2c(&hi2c2);
+	  //imu_init_i2c(&hi2c2);
+	  imu_init_i2c(&hi2c3);
   }
   adc_init(&hadc1);
   ps_init(&hi2c1);
@@ -225,7 +229,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_TIMERS */
 #if	!UPDATE_SINGLE_THREAD
-  //osTimerStart(I2STimerHandle, MIC_PERIOD);
+  osTimerStart(I2STimerHandle, MIC_PERIOD);
 #endif
 #if  TIMER_SPISLAVE
   osTimerStart(SPISlaveTimerHandle, SPISLAVE_PERIOD);
@@ -238,7 +242,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of SPIslaveTask */
-  osThreadDef(SPIslaveTask, StartSPIslaveTask, osPriorityLow, 0, 128);
+  osThreadDef(SPIslaveTask, StartSPIslaveTask, osPriorityRealtime, 0, 128);
   SPIslaveTaskHandle = osThreadCreate(osThread(SPIslaveTask), NULL);
 
   /* definition and creation of IdleTask */
@@ -350,11 +354,12 @@ void SystemClock_Config(void)
   /** Initializes the peripherals clocks
   */
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPUART1|RCC_PERIPHCLK_I2C1
-                              |RCC_PERIPHCLK_I2C2|RCC_PERIPHCLK_I2S
-                              |RCC_PERIPHCLK_ADC12;
+                              |RCC_PERIPHCLK_I2C2|RCC_PERIPHCLK_I2C3
+                              |RCC_PERIPHCLK_I2S|RCC_PERIPHCLK_ADC12;
   PeriphClkInit.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   PeriphClkInit.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
+  PeriphClkInit.I2c3ClockSelection = RCC_I2C3CLKSOURCE_PCLK1;
   PeriphClkInit.I2sClockSelection = RCC_I2SCLKSOURCE_HSI;
   PeriphClkInit.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -541,6 +546,52 @@ static void MX_I2C2_Init(void)
   /* USER CODE BEGIN I2C2_Init 2 */
 
   /* USER CODE END I2C2_Init 2 */
+
+}
+
+/**
+  * @brief I2C3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C3_Init(void)
+{
+
+  /* USER CODE BEGIN I2C3_Init 0 */
+
+  /* USER CODE END I2C3_Init 0 */
+
+  /* USER CODE BEGIN I2C3_Init 1 */
+
+  /* USER CODE END I2C3_Init 1 */
+  hi2c3.Instance = I2C3;
+  hi2c3.Init.Timing = 0x30A0A7FB;
+  hi2c3.Init.OwnAddress1 = 0;
+  hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c3.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c3.Init.OwnAddress2 = 0;
+  hi2c3.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C3_Init 2 */
+
+  /* USER CODE END I2C3_Init 2 */
 
 }
 
@@ -900,7 +951,9 @@ void StartIMUTask(void const * argument)
 	  }else if(sp.imu_select == SELECT_ICM_42688_I2C){
 		  uint32_t freqCount = htim2.Instance->CNT;
 		  float start_time_us = getTimeUs(freqCount);
-		  imu_update_i2c(&hi2c2);
+		  //imu_update_i2c(&hi2c2);
+		  //imu_update_i2c(&hi2c3);
+		  HAL_Delay(6);
 		  freqCount = htim2.Instance->CNT;
 		  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
 	  }
@@ -1021,15 +1074,19 @@ void I2SCallback(void const * argument)
 {
   /* USER CODE BEGIN I2SCallback */
 	  //HAL_Delay(MIC_PERIOD / 2);
+	  uint32_t freqCount = htim2.Instance->CNT;
+	  float start_time_us = getTimeUs(freqCount);
 	  taskENTER_CRITICAL();
 	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
 	  taskEXIT_CRITICAL();
+	  freqCount = htim2.Instance->CNT;
+	  sp.mic_elapsed_time = getTimeUs(freqCount) - start_time_us;
 	  if(ret == HAL_OK){
 		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
 			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
 		  }
 	  }
-	  osDelay(MIC_PERIOD / 2);
+	  //osDelay(MIC_PERIOD / 2);
 	  //HAL_Delay(MIC_PERIOD / 2);
 
   /* USER CODE END I2SCallback */

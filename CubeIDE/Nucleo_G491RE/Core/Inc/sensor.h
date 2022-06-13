@@ -112,7 +112,7 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 
 // I2S CONST
 #define MIC_BUFF_SIZE 16
-#define MIC_PERIOD 200//長くすると上手く行く場合がある
+#define MIC_PERIOD 10//長くすると上手く行く場合がある
 #define MIC_CHANNEL_NUM 4
 
 // Debug buffer
