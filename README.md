@@ -1,7 +1,13 @@
 pr2_fingertip_sensors
 =====================
 
-Firmware for microcontroller and sensors for PR2 fingertips
+The goal of this repository is to create a home-made sensor board to replace regular tactile sensors.
+
+This repository will develop boards and firmware with the following features.
+ - Develop a board that fits at the fingertips of PR2
+ - In the board, connect microcontroller with many sensors (e.g. I2C proximity sensors, IMU, ADC force sensor, I2S microphone)
+ - In the board, connect SPI slave microcontroller with PR2
+ - Output `/pressure/l(r)_gripper_motor` rostopic instead of regular tactile sensor
 
 # Directories
 
@@ -13,7 +19,7 @@ Firmware for microcontroller and sensors for PR2 fingertips
 
   - Nucleo_G491RE_PR2_slave
 
-    Nucleo G491RE firmware to communicate with PR2 as fingertip SPI slave.
+    Nucleo G491RE firmware communicating with PR2 as fingertip SPI slave.
 
   - Nucleo_G491RE_SPH0645LM4H
 
@@ -25,7 +31,7 @@ Firmware for microcontroller and sensors for PR2 fingertips
 
   - Arduino_Nano_PR2_slave
 
-    Arduino Nano firmware to communicate with PR2 as fingertip SPI slave. This firmware is for reference only in this project and is not for actual use.
+    Arduino Nano firmware communicating with PR2 as fingertip SPI slave. This firmware is for reference only in this project and is not for actual use.
 
 - Datasheets
 
