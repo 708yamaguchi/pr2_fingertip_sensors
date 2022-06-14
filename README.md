@@ -51,3 +51,16 @@ This repository will develop boards and firmware with the following features.
 - [Our progress 1](https://docs.google.com/presentation/d/1_63MSYOCmoeexlYo3aRt_9dm243HZhIHg_bWbS5awlA/edit?usp=sharing)
 
 - [Our progress 2](https://docs.google.com/presentation/d/1VxRJWDqeDk_ryu-x1Vhj3_6BDu3gscwvNpngHKwfR4M/edit?usp=sharing)
+
+# Notes
+
+  - Why G491RE?
+    - STM32 specifications require a wait time between SPI transmission and reception. The wait time depends on the clock frequency.
+    - According to [PR2 official documents](https://drive.google.com/drive/u/0/folders/10u_ev0fsHuU6k2bqzVA1QDX5yvDKZRMa), the minimum time between transmission and reception of SPI communication in PR2 is 4us.
+    - The clock frequency of the STM32 that satisfies this requirement is more than 180 MHz by simple calculation.
+    - Reference https://zenn.dev/nanase_t/articles/0280ef51007267
+    - We have verified that the Nucleo G491RE, operating at up to 170 MHz, can work as an SPI slave.
+    - The other option is the H743ZI2, but we chose the G491RE which has a smaller footprint.
+  - Current consumption constraints
+    - According to [PR2 official documents](https://drive.google.com/drive/u/0/folders/10u_ev0fsHuU6k2bqzVA1QDX5yvDKZRMa), current consumption should be kept within 30 mA total for both fingers.
+    - Minimum power consumption mode for [VCNL4040 proximity sensor](https://github.com/708yamaguchi/pr2_fingertip_sensors/blob/master/Datasheets/vcnl4040.pdf) requires 50mA peak. However, when the on/off ratio of the IR LEDs was set to 1:320, the power supplied by PR2 was found to be sufficient.
