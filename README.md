@@ -9,15 +9,23 @@ Firmware for microcontroller and sensors for PR2 fingertips
 
   - Nucleo_G491RE
 
-    Main project of this repository. Nucleo G491RE firmware for PR2 fingertip. SPI communication loop runs on FreeRTOS
+    Main project of this repository. Nucleo G491RE firmware for PR2 fingertip. SPI communication loop with DMA runs on FreeRTOS.
 
   - Nucleo_G491RE_PR2_slave
 
-    Firmware to communicate with PR2 as fingertip SPI slave.
+    Nucleo G491RE firmware to communicate with PR2 as fingertip SPI slave.
 
   - Nucleo_G491RE_SPH0645LM4H
 
-    Firmware to use SPH0645LM4H microphone with Nucleo G491RE
+    Firmware to use SPH0645LM4H microphone with Nucleo G491RE. I2S communication with DMA runs on FreeRTOS.
+
+  - Nucleo_G491RE_VCNL4040
+
+    Firmware to use VCNL4040 proximity sensor with Nucleo G491RE. I2C communication with DMA runs on FreeRTOS.
+
+  - Arduino_Nano_PR2_slave
+
+    Arduino Nano firmware to communicate with PR2 as fingertip SPI slave. This firmware is for reference only in this project and is not for actual use.
 
 - Datasheets
 
