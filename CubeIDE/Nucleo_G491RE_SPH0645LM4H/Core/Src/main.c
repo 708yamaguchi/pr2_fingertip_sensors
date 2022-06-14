@@ -42,6 +42,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2S_HandleTypeDef hi2s2;
+DMA_HandleTypeDef hdma_spi2_rx;
 
 UART_HandleTypeDef hlpuart1;
 
@@ -54,6 +55,7 @@ osTimerId I2STimerHandle;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_I2S2_Init(void);
 void StartI2StTask(void const * argument);
@@ -99,6 +101,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_LPUART1_UART_Init();
   MX_I2S2_Init();
   /* USER CODE BEGIN 2 */
@@ -297,6 +300,23 @@ static void MX_LPUART1_UART_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMAMUX1_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -342,7 +362,10 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
+  // Do nothing
+	int a = 0;
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartI2StTask */
@@ -368,7 +391,7 @@ void StartI2StTask(void const * argument)
 void I2SCallback(void const * argument)
 {
   /* USER CODE BEGIN I2SCallback */
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE ,1000);
+	  int8_t ret = HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
 	  if(ret == HAL_OK){
 		  for(int i = 0; i < BUFF_SIZE; i++){
 			  buff_sifted[i] = I2S_RX_BUFFER[i] >> 14;
