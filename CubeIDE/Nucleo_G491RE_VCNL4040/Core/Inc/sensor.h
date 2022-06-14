@@ -142,6 +142,7 @@ struct sensor_params {
 
 	// read data
 	uint8_t ps[PS_CHANNEL_NUM * 2];//0H,0L,1H,1L,4H,4L,7H,7L
+	uint8_t ps_dma[2];//0H,0L,1H,1L,4H,4L,7H,7L
 	uint16_t ps_print[PS_CHANNEL_NUM];
 	uint8_t ps_en[PS_CHANNEL_NUM]; //0x00:disable 0x01:enable
 	uint8_t gyro[GYRO_CHANNEL_NUM * 2];
