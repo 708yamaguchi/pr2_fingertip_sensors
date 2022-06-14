@@ -1,3 +1,20 @@
+/*
+Use Arduino Nano as PR2 SPI slave
+
+Expected result
+
+$ rostopic echo /pressure/l_gripper_motor
+header:
+  seq: 205238
+  stamp:
+    secs: 1583920180
+    nsecs: 246446816
+  frame_id: ''
+l_finger_tip: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+r_finger_tip: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+---
+*/
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 int cnt = 0;
