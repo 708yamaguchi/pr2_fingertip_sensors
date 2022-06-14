@@ -42,11 +42,11 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2S_HandleTypeDef hi2s2;
+DMA_HandleTypeDef hdma_spi2_rx;
 
 UART_HandleTypeDef hlpuart1;
 
 osThreadId I2STaskHandle;
-osTimerId I2STimerHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -54,10 +54,10 @@ osTimerId I2STimerHandle;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_I2S2_Init(void);
-void StartI2StTask(void const * argument);
-void I2SCallback(void const * argument);
+void StartI2STask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -65,7 +65,7 @@ void I2SCallback(void const * argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#define BUFF_SIZE 16
+#define BUFF_SIZE 1024
 int32_t I2S_RX_BUFFER[BUFF_SIZE];
 int32_t buff_sifted[BUFF_SIZE];
 int32_t buff_sifted_mirror[BUFF_SIZE];
@@ -99,10 +99,14 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_LPUART1_UART_Init();
   MX_I2S2_Init();
   /* USER CODE BEGIN 2 */
-
+  // Start receiving I2S microphone data
+  // HAL_I2S_RxCpltCallback() is called at the end of HAL_I2S_Receive_DMA,
+  // so HAL_I2S_RxCpltCallback() is executed continuously.
+  HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -113,14 +117,8 @@ int main(void)
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
-  /* Create the timer(s) */
-  /* definition and creation of I2STimer */
-  osTimerDef(I2STimer, I2SCallback);
-  I2STimerHandle = osTimerCreate(osTimer(I2STimer), osTimerPeriodic, NULL);
-
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
-  osTimerStart(I2STimerHandle, 20);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -129,7 +127,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of I2STask */
-  osThreadDef(I2STask, StartI2StTask, osPriorityIdle, 0, 128);
+  osThreadDef(I2STask, StartI2STask, osPriorityIdle, 0, 128);
   I2STaskHandle = osThreadCreate(osThread(I2STask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -144,18 +142,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  /*
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE ,1000);
-	  if(ret == HAL_OK){
-		  for(int i = 0; i < BUFF_SIZE; i++){
-			  buff_sifted[i] = I2S_RX_BUFFER[i] >> 14;
-		  }
-	  }
-	  sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
-	  HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
-
-	HAL_Delay(3000);
-*/
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -297,6 +283,23 @@ static void MX_LPUART1_UART_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMAMUX1_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -342,44 +345,34 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
+	// Send I2S data to serial monitor
+    for(int i = 0; i < BUFF_SIZE; i++){
+    	buff_sifted[i] = I2S_RX_BUFFER[i] >> 14;
+    }
+    sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
+    HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
+    // Receive I2S data again
+    HAL_I2S_Receive_DMA( hi2s, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
+}
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartI2StTask */
+/* USER CODE BEGIN Header_StartI2STask */
 /**
   * @brief  Function implementing the I2STask thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartI2StTask */
-void StartI2StTask(void const * argument)
+/* USER CODE END Header_StartI2STask */
+void StartI2STask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
-//	  int8_t ret = HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
   /* USER CODE END 5 */
-}
-
-/* I2SCallback function */
-void I2SCallback(void const * argument)
-{
-  /* USER CODE BEGIN I2SCallback */
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE ,1000);
-	  if(ret == HAL_OK){
-		  for(int i = 0; i < BUFF_SIZE; i++){
-			  buff_sifted[i] = I2S_RX_BUFFER[i] >> 14;
-		  }
-	  }
-	  sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
-	  HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
-
-	//HAL_Delay(20);
-
-  /* USER CODE END I2SCallback */
 }
 
  /**
