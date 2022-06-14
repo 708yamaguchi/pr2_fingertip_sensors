@@ -9,6 +9,11 @@ This repository will develop boards and firmware with the following features.
  - In the board, connect SPI slave microcontroller with PR2
  - Output `/pressure/l(r)_gripper_motor` rostopic instead of regular tactile sensor
 
+# System
+
+![](https://user-images.githubusercontent.com/19769486/173611179-30e323f4-dfa1-4e34-83eb-a86424cd380a.png)
+*Fig. Development using an evaluation board before designing a board*
+
 # Directories
 
 - CubeIDE
