@@ -195,6 +195,8 @@ int main(void)
   sp.imu_dma_en = 0x00;
   sp.imu_prev_frame = 0;
   sp.imu_count_frame = 0;
+  sp.ps_dma[0] = 0;
+  sp.ps_dma[1] = 0;
   //HAL_I2S_DeInit(&hi2s2);
   //HAL_I2S_Init(&hi2s2);
   if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
@@ -286,6 +288,9 @@ int main(void)
   int count = 0;
   // https://garberas.com/archives/244
   HAL_TIM_Encoder_Start( &htim2, TIM_CHANNEL_ALL );
+#if PS_I2C_DMA
+  ps_update(&hi2c1);
+#endif
   //HAL_SPI_Receive_DMA(&hspi3, sp.rxbuff, 1);
   /* USER CODE END RTOS_THREADS */
 
@@ -487,7 +492,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00802172;
+  hi2c1.Init.Timing = 0x30A0A7FB;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -511,9 +516,6 @@ static void MX_I2C1_Init(void)
   {
     Error_Handler();
   }
-  /** I2C Fast mode Plus enable
-  */
-  __HAL_SYSCFG_FASTMODEPLUS_ENABLE(I2C_FASTMODEPLUS_I2C1);
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
@@ -1007,6 +1009,7 @@ void StartIMUTask(void const * argument)
 		  uint32_t freqCount = htim2.Instance->CNT;
 		  float start_time_us = getTimeUs(freqCount);
 		  imu_update_i2c(&hi2c1);
+		  //imu_update_i2c(&hi2c2);
 		  freqCount = htim2.Instance->CNT;
 		  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
 #else
@@ -1083,12 +1086,14 @@ void StartPSTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if !PS_I2C_DMA
 #if !UPDATE_SINGLE_THREAD
 	  uint32_t freqCount = htim2.Instance->CNT;
 	  float start_time_us = getTimeUs(freqCount);
-	  //ps_update(&hi2c1);
+	  ps_update(&hi2c1);
 	  freqCount = htim2.Instance->CNT;
 	  sp.ps_elapsed_time = getTimeUs(freqCount) - start_time_us;
+#endif
 #endif
     osDelay(1);
   }

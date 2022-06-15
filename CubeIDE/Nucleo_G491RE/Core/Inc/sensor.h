@@ -81,6 +81,7 @@ static const uint8_t IMU_WHO_AM_I_42688 = 0x47;
 #define IMU_SPI_MODE 0
 #define IMU_I2C_MODE !IMU_SPI_MODE
 #define IMU_I2C_DMA 0
+#define IMU_GYRO_ACC_DELAY 20
 
 // PS CMD
 static const uint8_t PS_CONF1 = 0x03;
@@ -101,6 +102,7 @@ static const uint8_t PCA9548_ADDR = 0x70<<1; //1,1,1,0,A2,A1,A0 A2=A1=A0=0
 static const uint8_t PS_CHANNEL_ARRAY_PCA9458[4] = {0x01,0x08,0x10,0x80};//KJS-03-revA PCA9458 channel format ch0,3,4,7
 static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-03-revB PCA9457 channel format ch0,3,4,7
 #define PS_CHANNEL_NUM 1
+#define PS_I2C_DMA 0
 
 // ADC CONST
 #define ADC_CHANNEL_NUM 4
@@ -117,10 +119,15 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 #define MIC_CHANNEL_NUM 4
 
 // Debug buffer
-#define DEBUG_EN 1
+#define DEBUG_EN 0
 #define UPDATE_SINGLE_THREAD 0
 #define TIMER_SPISLAVE 0
 #define SERIAL_PERIOD 1000
+
+// DMA CONST
+#define I2C1_DMA_GYRO 0
+#define I2C1_DMA_ACC 1
+#define I2C1_DMA_PS 2
 
 uint8_t debug_buffer[2048];
 uint8_t gyro_buffer[512];
@@ -146,6 +153,7 @@ struct sensor_params {
 	uint16_t ps_print[PS_CHANNEL_NUM];
 	uint8_t ps_en[PS_CHANNEL_NUM]; //0x00:disable 0x01:enable
 	uint16_t ps_elapsed_time;
+	uint8_t ps_dma[2];
 	uint8_t gyro[GYRO_CHANNEL_NUM * 2];
 	int16_t gyro_print[GYRO_CHANNEL_NUM];
 	uint8_t acc[ACC_CHANNEL_NUM * 2];

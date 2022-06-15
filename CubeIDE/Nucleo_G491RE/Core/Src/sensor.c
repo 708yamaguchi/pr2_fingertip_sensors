@@ -260,25 +260,25 @@ void imu_init_i2c(I2C_HandleTypeDef *hi2c){
 		//set-gyro-scale-and-ODR
 		tx_buff = ICM_42688_GYRO_CONFIG0_VAL;
 		//HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_CONFIG0, 1, &tx_buff, 1, HAL_MAX_DELAY);//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 1kHz ODR
-		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_CONFIG0, 1, &tx_buff, 1, 100);//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 1kHz ODR
+		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_CONFIG0, 1, &tx_buff, 1, 1000);//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 1kHz ODR
 		HAL_Delay(100); //very importnat! between gyro and acc
 
 		//set-acc-scale-and-ODR
 		tx_buff = ICM_42688_ACCEL_CONFIG0_VAL;
 		//HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_CONFIG0, 1, &tx_buff, 1, HAL_MAX_DELAY);//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 1kHz ODR
-		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_CONFIG0, 1, &tx_buff, 1, 100);//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 1kHz ODR
+		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_CONFIG0, 1, &tx_buff, 1, 1000);//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 1kHz ODR
 		HAL_Delay(100); //very importnat! between gyro and acc
 
 		//set-gyro-acc-LPF
 		tx_buff = ICM_42688_GYRO_ACCEL_CONFIG0_VAL;
 		//HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_ACCEL_CONFIG0, 1, &tx_buff, 1, HAL_MAX_DELAY);//ACCEL_CONFIG  -- AFS_SEL=2 (Full Scale = +/-8G)  ; ACCELL_HPF=0   //note something is wrong in the spec.
-		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_ACCEL_CONFIG0, 1, &tx_buff, 1, 100);//ACCEL_CONFIG  -- AFS_SEL=2 (Full Scale = +/-8G)  ; ACCELL_HPF=0   //note something is wrong in the spec.
+		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_ACCEL_CONFIG0, 1, &tx_buff, 1, 1000);//ACCEL_CONFIG  -- AFS_SEL=2 (Full Scale = +/-8G)  ; ACCELL_HPF=0   //note something is wrong in the spec.
 		HAL_Delay(100);
 
 		//start gyro and acc
 		tx_buff = ICM_42688_PWR_MGMT0_VAL;
 		//HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_PWR_MGMT0, 1, &tx_buff, 1, HAL_MAX_DELAY);//Turn on Gyro and Acc with Low Noise Mode
-		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_PWR_MGMT0, 1, &tx_buff, 1, 100);//Turn on Gyro and Acc with Low Noise Mode
+		HAL_I2C_Mem_Write(hi2c, ICM_42688_I2C_ADDR, ICM_42688_PWR_MGMT0, 1, &tx_buff, 1, 1000);//Turn on Gyro and Acc with Low Noise Mode
 		HAL_Delay(100);
 	}else{
 		sp.imu_en = IMU_NOT_EN;
@@ -288,7 +288,7 @@ void imu_init_i2c(I2C_HandleTypeDef *hi2c){
 void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 	if(sp.imu_en == IMU_EN){
 		//taskENTER_CRITICAL();
-		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, 100);//check sensor ID
+		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, 1000);//check sensor ID
 		//HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, 1);//check sensor ID
 		//taskEXIT_CRITICAL();
 		if((sp.gyro[0] != 0) || (sp.gyro[1] != 0) || (sp.gyro[2] != 0)){
@@ -296,17 +296,17 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
 			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
 		}
-		HAL_Delay(5);//important delay
+		HAL_Delay(IMU_GYRO_ACC_DELAY);//important delay
 
 		//taskENTER_CRITICAL();
-		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6, 100);//check sensor ID
+		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6, 1000);//check sensor ID
 		//taskEXIT_CRITICAL();
 		if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
 			sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
 			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
 			sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
 		}
-		HAL_Delay(5);//important delay
+		HAL_Delay(IMU_GYRO_ACC_DELAY);//important delay
 
 		/*
 		taskENTER_CRITICAL();
@@ -330,7 +330,7 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 void imu_update_i2c_DMA_gyro(I2C_HandleTypeDef *hi2c){
 	if(sp.imu_en == IMU_EN){
 		sp.imu_prev_frame = getUs();
-		sp.i2c1_dma_flag = 0;
+		sp.i2c1_dma_flag = I2C1_DMA_GYRO;
 		//HAL_Delay(50);
 		HAL_I2C_Mem_Read_DMA(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6);
 		//HAL_Delay(50);
@@ -339,34 +339,10 @@ void imu_update_i2c_DMA_gyro(I2C_HandleTypeDef *hi2c){
 
 void imu_update_i2c_DMA_acc(I2C_HandleTypeDef *hi2c){
 	if(sp.imu_en == IMU_EN){
-		sp.i2c1_dma_flag = 1;
+		sp.i2c1_dma_flag = I2C1_DMA_ACC;
 		//HAL_Delay(50);
 		HAL_I2C_Mem_Read_DMA(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6);
 		//HAL_Delay(50);
-	}
-}
-
-void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
-{
-	switch(sp.i2c1_dma_flag){
-	case 0:
-		if((sp.gyro[0] != 0) || (sp.gyro[1] != 0) || (sp.gyro[2] != 0)){
-			sp.gyro_print[0] = (int16_t)(sp.gyro[0] << 8 | sp.gyro[1]);
-			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
-			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
-		}
-		//HAL_Delay(50);
-		imu_update_i2c_DMA_acc(hi2c);
-		break;
-	case 1:
-		if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
-			sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
-			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
-			sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
-		}
-		//HAL_Delay(50);
-		imu_update_i2c_DMA_gyro(hi2c);
-		break;
 	}
 }
 
@@ -460,8 +436,8 @@ void ps_update(I2C_HandleTypeDef *hi2c){
 			//HAL_Delay(10);
 			//HAL_I2C_Mem_Read(hi2c1, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, 1);
 			//ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, HAL_MAX_DELAY);
+#if !PS_I2C_DMA
 			ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, 1);
-
 			if(ps_ret == HAL_OK){
 				sp.ps_print[i] = (uint16_t)(data[1] << 8 | data[0]);
 
@@ -469,6 +445,10 @@ void ps_update(I2C_HandleTypeDef *hi2c){
 
 				sp.ps[i * 2 + 1] = data[0];
 			}
+#else
+			sp.i2c1_dma_flag = I2C1_DMA_PS;
+			HAL_I2C_Mem_Read_DMA(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, sp.ps_dma, 2);
+#endif
 		}
 		//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, stop_buff, 2, HAL_MAX_DELAY);//Turn off LED
 	}
@@ -497,4 +477,30 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 	  HAL_SPI_Receive_DMA(hspi, sp.rxbuff, 1);
 }
 
-
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+	switch(sp.i2c1_dma_flag){
+	case 0:
+		if((sp.gyro[0] != 0) || (sp.gyro[1] != 0) || (sp.gyro[2] != 0)){
+			sp.gyro_print[0] = (int16_t)(sp.gyro[0] << 8 | sp.gyro[1]);
+			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
+			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
+		}
+		imu_update_i2c_DMA_acc(hi2c);
+		break;
+	case 1:
+		if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
+			sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
+			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
+			sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
+		}
+		imu_update_i2c_DMA_gyro(hi2c);
+		break;
+	case 2:
+		sp.ps_print[0] = (uint16_t)(sp.ps_dma[1] << 8 | sp.ps_dma[0]);
+		sp.ps[0 * 2] = sp.ps_dma[1];
+		sp.ps[0 * 2 + 1] = sp.ps_dma[0];
+		ps_update(hi2c);
+		break;
+	}
+}
