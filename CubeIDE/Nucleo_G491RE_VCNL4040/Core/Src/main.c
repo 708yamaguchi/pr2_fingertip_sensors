@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,12 +41,13 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-I2S_HandleTypeDef hi2s2;
-DMA_HandleTypeDef hdma_spi2_rx;
+I2C_HandleTypeDef hi2c1;
+DMA_HandleTypeDef hdma_i2c1_rx;
+DMA_HandleTypeDef hdma_i2c1_tx;
 
 UART_HandleTypeDef hlpuart1;
 
-osThreadId I2STaskHandle;
+osThreadId PSTaskHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -56,8 +57,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
-static void MX_I2S2_Init(void);
-void StartI2STask(void const * argument);
+static void MX_I2C1_Init(void);
+void StarPSTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -65,11 +66,6 @@ void StartI2STask(void const * argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#define BUFF_SIZE 1024
-int32_t I2S_RX_BUFFER[BUFF_SIZE];
-int32_t buff_sifted[BUFF_SIZE];
-int32_t buff_sifted_mirror[BUFF_SIZE];
-uint8_t buffer[1024];
 /* USER CODE END 0 */
 
 /**
@@ -79,6 +75,7 @@ uint8_t buffer[1024];
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -101,12 +98,10 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_LPUART1_UART_Init();
-  MX_I2S2_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  // Start receiving I2S microphone data
-  // HAL_I2S_RxCpltCallback() is called at the end of HAL_I2S_Receive_DMA,
-  // so HAL_I2S_RxCpltCallback() is executed continuously.
-  HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
+  ps_init(&hi2c1);
+  ps_update(&hi2c1);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -126,9 +121,9 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of I2STask */
-  osThreadDef(I2STask, StartI2STask, osPriorityIdle, 0, 128);
-  I2STaskHandle = osThreadCreate(osThread(I2STask), NULL);
+  /* definition and creation of PSTask */
+  osThreadDef(PSTask, StarPSTask, osPriorityIdle, 0, 128);
+  PSTaskHandle = osThreadCreate(osThread(PSTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -194,9 +189,9 @@ void SystemClock_Config(void)
   }
   /** Initializes the peripherals clocks
   */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPUART1|RCC_PERIPHCLK_I2S;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPUART1|RCC_PERIPHCLK_I2C1;
   PeriphClkInit.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
-  PeriphClkInit.I2sClockSelection = RCC_I2SCLKSOURCE_HSI;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -204,34 +199,51 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief I2S2 Initialization Function
+  * @brief I2C1 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_I2S2_Init(void)
+static void MX_I2C1_Init(void)
 {
 
-  /* USER CODE BEGIN I2S2_Init 0 */
+  /* USER CODE BEGIN I2C1_Init 0 */
 
-  /* USER CODE END I2S2_Init 0 */
+  /* USER CODE END I2C1_Init 0 */
 
-  /* USER CODE BEGIN I2S2_Init 1 */
+  /* USER CODE BEGIN I2C1_Init 1 */
 
-  /* USER CODE END I2S2_Init 1 */
-  hi2s2.Instance = SPI2;
-  hi2s2.Init.Mode = I2S_MODE_MASTER_RX;
-  hi2s2.Init.Standard = I2S_STANDARD_PHILIPS;
-  hi2s2.Init.DataFormat = I2S_DATAFORMAT_24B;
-  hi2s2.Init.MCLKOutput = I2S_MCLKOUTPUT_DISABLE;
-  hi2s2.Init.AudioFreq = 64000;
-  hi2s2.Init.CPOL = I2S_CPOL_LOW;
-  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x00802172;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN I2S2_Init 2 */
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** I2C Fast mode Plus enable
+  */
+  __HAL_SYSCFG_FASTMODEPLUS_ENABLE(I2C_FASTMODEPLUS_I2C1);
+  /* USER CODE BEGIN I2C1_Init 2 */
 
-  /* USER CODE END I2S2_Init 2 */
+  /* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -293,9 +305,12 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+  /* DMA1_Channel6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
 }
 
@@ -330,14 +345,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PC9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_9;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF5_I2S2ext;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
@@ -345,26 +352,32 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
-	// Send I2S data to serial monitor
-    for(int i = 0; i < BUFF_SIZE; i++){
-    	buff_sifted[i] = I2S_RX_BUFFER[i] >> 14;
-    }
-    sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
-    HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
-    // Receive I2S data again
-    HAL_I2S_Receive_DMA( hi2s, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+	// Save ps data to sp object
+	sp.ps_print[0] = (uint16_t)(sp.ps_dma[1] << 8 | sp.ps_dma[0]);
+	//txbuff_update();
+    sprintf(ps_buffer, "ps[0]:%d\r\n", sp.ps_print[0]);
+	HAL_UART_Transmit(&hlpuart1, ps_buffer, 20, 100);
+	// Read I2C proximity sensor again
+	ps_update(hi2c);
 }
+
+void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  // do nothing
+}
+
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartI2STask */
+/* USER CODE BEGIN Header_StarPSTask */
 /**
-  * @brief  Function implementing the I2STask thread.
+  * @brief  Function implementing the PSTask thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartI2STask */
-void StartI2STask(void const * argument)
+/* USER CODE END Header_StarPSTask */
+void StarPSTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
@@ -373,27 +386,6 @@ void StartI2STask(void const * argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
-}
-
- /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM1 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  /* USER CODE BEGIN Callback 0 */
-
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM1) {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
-
-  /* USER CODE END Callback 1 */
 }
 
 /**
