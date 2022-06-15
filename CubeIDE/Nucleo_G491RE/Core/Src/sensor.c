@@ -296,7 +296,7 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
 			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
 		}
-		HAL_Delay(1);//important delay
+		HAL_Delay(5);//important delay
 
 		//taskENTER_CRITICAL();
 		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6, 100);//check sensor ID
@@ -306,7 +306,7 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
 			sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
 		}
-		HAL_Delay(1);//important delay
+		HAL_Delay(5);//important delay
 
 		/*
 		taskENTER_CRITICAL();
