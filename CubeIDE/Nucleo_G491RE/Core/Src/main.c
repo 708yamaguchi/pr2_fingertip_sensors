@@ -46,7 +46,6 @@ ADC_HandleTypeDef hadc1;
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef hi2c3;
-DMA_HandleTypeDef hdma_i2c1_rx;
 DMA_HandleTypeDef hdma_i2c3_rx;
 
 I2S_HandleTypeDef hi2s2;
@@ -251,10 +250,14 @@ int main(void)
   /* USER CODE BEGIN RTOS_TIMERS */
   //osTimerStart(I2STimerHandle, MIC_PERIOD);
 #if	!UPDATE_SINGLE_THREAD
-  //osTimerStart(I2STimerHandle, MIC_PERIOD);
+#if MIC_TIMER
+  osTimerStart(I2STimerHandle, MIC_PERIOD);
 #endif
+#endif
+#if SPI_SLAVE
 #if  TIMER_SPISLAVE
   osTimerStart(SPISlaveTimerHandle, SPISLAVE_PERIOD);
+#endif
 #endif
   /* USER CODE END RTOS_TIMERS */
 
@@ -300,10 +303,13 @@ int main(void)
   ps_update(&hi2c1);
 #endif
 #if IMU_I2C_DMA
-  imu_update_i2c_DMA_gyro(&hi2c1);
+  //imu_update_i2c_DMA_gyro(&hi2c1);
+  imu_update_i2c_DMA_gyro(&hi2c3);
 #endif
+#if SPI_SLAVE
 #if SPI_SLAVE_DMA
-  //HAL_SPI_Receive_DMA(&hspi3, sp.rxbuff, 1);
+  HAL_SPI_Receive_DMA(&hspi3, sp.rxbuff, 1);
+#endif
 #endif
   /* USER CODE END RTOS_THREADS */
 
@@ -798,24 +804,22 @@ static void MX_DMA_Init(void)
 
   /* DMA controller clock enable */
   __HAL_RCC_DMAMUX1_CLK_ENABLE();
+  __HAL_RCC_DMA2_CLK_ENABLE();
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
-  /* DMA1_Channel2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-  /* DMA1_Channel3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
-  /* DMA1_Channel4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
-  /* DMA1_Channel5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+  /* DMA2_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel1_IRQn);
+  /* DMA2_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel2_IRQn);
+  /* DMA2_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel3_IRQn);
 
 }
 
@@ -903,6 +907,7 @@ void StartSPIslaveTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if SPI_SLAVE
 #if UPDATE_SINGLE_THREAD & !TIMER_SPISLAVE
 	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
 
@@ -984,6 +989,7 @@ void StartSPIslaveTask(void const * argument)
 		  HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000);
 		  taskEXIT_CRITICAL();
 	  }
+#endif
 #endif
 #endif
 #endif
@@ -1213,9 +1219,9 @@ void SPISlaveCallback(void const * argument)
 #if UPDATE_SINGLE_THREAD
 	  HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000);
 	  if(sp.rxbuff[0] == READ_COMMAND){
-		  taskENTER_CRITICAL();
+		  // taskENTER_CRITICAL();
 		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
-		  taskEXIT_CRITICAL();
+		  // taskEXIT_CRITICAL();
 	  }
 
 	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);

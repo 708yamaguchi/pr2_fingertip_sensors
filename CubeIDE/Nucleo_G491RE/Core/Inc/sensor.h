@@ -58,8 +58,16 @@ static const uint8_t ICM_42688_ACCEL_DATA_X1 =  0x1F;
 static const uint8_t ICM_42688_PING_ADDRESS =  0x75;
 
 // ICM-42688-P IMU CONFIG VAL
-static const uint8_t ICM_42688_GYRO_CONFIG0_VAL =  0x06;//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 0x05: ODR = 2kHz, 0x06: ODR = 1kHz(default)
-static const uint8_t ICM_42688_ACCEL_CONFIG0_VAL =  0x06;//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 0x05: ODR = 2kHz, 0x06: ODR = 1kHz(default)
+static const uint8_t ICM_42688_GYRO_CONFIG0_VAL_32khz =  0x01;//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 0x01: ODR = 32kHz
+static const uint8_t ICM_42688_GYRO_CONFIG0_VAL_4khz =  0x04;//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 0x04: ODR = 4kHz
+static const uint8_t ICM_42688_GYRO_CONFIG0_VAL_1khz =  0x06;//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 0x06: ODR = 1kHz(default)
+static const uint8_t ICM_42688_GYRO_CONFIG0_VAL_100hz =  0x08;//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 0x08: ODR = 100Hz
+static const uint8_t ICM_42688_GYRO_CONFIG0_VAL_12_5hz =  0x0b;//GYRO_FS_SEL = 0: Full scale set to 2000 deg/sec, 0x08: ODR = 12.5Hz
+static const uint8_t ICM_42688_ACCEL_CONFIG0_VAL_32khz =  0x01;//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 0x04: ODR = 4kHz
+static const uint8_t ICM_42688_ACCEL_CONFIG0_VAL_4khz =  0x04;//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 0x04: ODR = 4kHz
+static const uint8_t ICM_42688_ACCEL_CONFIG0_VAL_1khz =  0x06;//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 0x06: ODR = 1kHz(default)
+static const uint8_t ICM_42688_ACCEL_CONFIG0_VAL_100hz =  0x08;//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 0x08 ODR = 100Hz
+static const uint8_t ICM_42688_ACCEL_CONFIG0_VAL_12_5hz =  0x0b;//ACCEL_FS_SEL = 0: Full scale set to +/-16G, 0x08 ODR = 100Hz
 static const uint8_t ICM_42688_GYRO_ACCEL_CONFIG0_VAL = 0x00;//Setting for Bandwidth of LPF(acc,gyro), 0x00: ODR/2=500Hz, 0x11:max(400, ODR)/4=250Hz(defalut)
 static const uint8_t ICM_42688_PWR_MGMT0_VAL =  0x0F;//Turn on gyro and acc with Low Noise Mode
 
@@ -80,7 +88,7 @@ static const uint8_t IMU_WHO_AM_I_42605 = 0x42;
 static const uint8_t IMU_WHO_AM_I_42688 = 0x47;
 #define IMU_SPI_MODE 0
 #define IMU_I2C_MODE !IMU_SPI_MODE
-#define IMU_I2C_DMA 1
+#define IMU_I2C_DMA 0
 #define IMU_GYRO_ACC_DELAY 5
 
 // PS CMD
@@ -115,7 +123,7 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 
 // I2S CONST
 #define MIC_BUFF_SIZE 16
-#define MIC_PERIOD 1000//長くすると上手く行く場合がある
+#define MIC_PERIOD 200//長くすると上手く行く場合がある
 #define MIC_CHANNEL_NUM 4
 
 // Debug buffer
@@ -130,6 +138,10 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 #define I2C1_DMA_PS 2
 #define SPI_SLAVE_DMA 1
 #define MIC_DMA 0
+#define MIC_TIMER 0
+
+// MAIN SPI FLAG
+#define SPI_SLAVE 1
 
 uint8_t debug_buffer[2048];
 uint8_t gyro_buffer[512];
