@@ -12,11 +12,6 @@ struct sensor_params sp;
 
 void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 	uint8_t index = 0;
-	for(int i=0; i < ADC_CHANNEL_NUM; i++){//2*4=8
-		sp.txbuff[index] = sp.adc_print[i] >> 8;
-		sp.txbuff[index + 1] = sp.adc_print[i] & 0x00ff;
-		index += 2;
-	}
 	for(int i=0; i < GYRO_CHANNEL_NUM; i++){//2*3=6
 		sp.txbuff[index] = sp.gyro_print[i] >> 8;
 		sp.txbuff[index + 1] = sp.gyro_print[i] & 0x00ff;
@@ -30,6 +25,11 @@ void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 	for(int i=0; i < PS_CHANNEL_NUM; i++){//2*1=2
 		sp.txbuff[index] = sp.ps_print[i] >> 8;
 		sp.txbuff[index + 1] = sp.ps_print[i] & 0x00ff;
+		index += 2;
+	}
+	for(int i=0; i < ADC_CHANNEL_NUM; i++){//2*4=8
+		sp.txbuff[index] = sp.adc_print[i] >> 8;
+		sp.txbuff[index + 1] = sp.adc_print[i] & 0x00ff;
 		index += 2;
 	}
 	for(int i=0; i < MIC_CHANNEL_NUM; i++){//4*4=16
@@ -288,7 +288,7 @@ void imu_init_i2c(I2C_HandleTypeDef *hi2c){
 void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 	if(sp.imu_en == IMU_EN){
 		//taskENTER_CRITICAL();
-		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, 1000);//check sensor ID
+		//HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, 1000);//check sensor ID
 		//HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_GYRO_DATA_X1, 1, sp.gyro, 6, 1);//check sensor ID
 		//taskEXIT_CRITICAL();
 		if((sp.gyro[0] != 0) || (sp.gyro[1] != 0) || (sp.gyro[2] != 0)){
@@ -296,10 +296,11 @@ void imu_update_i2c(I2C_HandleTypeDef *hi2c){
 			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
 			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
 		}
-		HAL_Delay(IMU_GYRO_ACC_DELAY);//important delay
+		//HAL_Delay(IMU_GYRO_ACC_DELAY);//important delay
 
 		//taskENTER_CRITICAL();
 		HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6, 1000);//check sensor ID
+		//HAL_I2C_Mem_Read(hi2c, ICM_42688_I2C_ADDR, ICM_42688_ACCEL_DATA_X1, 1, sp.acc, 6, 1);//check sensor ID
 		//taskEXIT_CRITICAL();
 		if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
 			sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
@@ -445,6 +446,7 @@ void ps_update(I2C_HandleTypeDef *hi2c){
 
 				sp.ps[i * 2 + 1] = data[0];
 			}
+			HAL_Delay(1);
 #else
 			sp.i2c1_dma_flag = I2C1_DMA_PS;
 			HAL_I2C_Mem_Read_DMA(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, sp.ps_dma, 2);

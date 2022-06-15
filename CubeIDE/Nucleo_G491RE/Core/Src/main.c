@@ -47,6 +47,7 @@ I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef hi2c3;
 DMA_HandleTypeDef hdma_i2c1_rx;
+DMA_HandleTypeDef hdma_i2c3_rx;
 
 I2S_HandleTypeDef hi2s2;
 DMA_HandleTypeDef hdma_spi2_rx;
@@ -205,9 +206,9 @@ int main(void)
 	  imu_init(&hspi3);
 #endif
   }else if(sp.imu_select == SELECT_ICM_42688_I2C){
-	  imu_init_i2c(&hi2c1);
+	  //imu_init_i2c(&hi2c1);
 	  //imu_init_i2c(&hi2c2);
-	  //imu_init_i2c(&hi2c3);
+	  imu_init_i2c(&hi2c3);
   }
   ps_init(&hi2c1);
   memset(sp.txbuff, 0, sizeof(sp.txbuff));
@@ -269,7 +270,7 @@ int main(void)
   IdleTaskHandle = osThreadCreate(osThread(IdleTask), NULL);
 
   /* definition and creation of IMUTask */
-  osThreadDef(IMUTask, StartIMUTask, osPriorityIdle, 0, 128);
+  osThreadDef(IMUTask, StartIMUTask, osPriorityIdle, 0, 256);
   IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
 
   /* definition and creation of ADCTask */
@@ -296,7 +297,12 @@ int main(void)
 #if PS_I2C_DMA
   ps_update(&hi2c1);
 #endif
-  //HAL_SPI_Receive_DMA(&hspi3, sp.rxbuff, 1);
+#if IMU_I2C_DMA
+  imu_update_i2c_DMA_gyro(&hi2c1);
+#endif
+#if SPI_SLAVE_DMA
+  HAL_SPI_Receive_DMA(&hspi3, sp.rxbuff, 1);
+#endif
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -805,6 +811,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel4_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+  /* DMA1_Channel5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
 }
 
@@ -934,6 +943,7 @@ void StartSPIslaveTask(void const * argument)
 
 #endif
 
+#if !SPI_SLAVE_DMA
 #if !TIMER_SPISLAVE
 #if SPI_SLAVE_SENSOR_EN
 	  //if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
@@ -972,6 +982,7 @@ void StartSPIslaveTask(void const * argument)
 		  HAL_SPI_Transmit(&hspi3, txBuffer, sizeof(txBuffer), 1000);
 		  taskEXIT_CRITICAL();
 	  }
+#endif
 #endif
 #endif
 //	  osDelay(1);
@@ -1025,19 +1036,22 @@ void StartIMUTask(void const * argument)
 #endif
 	  }else if(sp.imu_select == SELECT_ICM_42688_I2C){
 #if !IMU_I2C_DMA
-		  uint32_t freqCount = htim2.Instance->CNT;
-		  float start_time_us = getTimeUs(freqCount);
-		  imu_update_i2c(&hi2c1);
+		  //uint32_t freqCount = htim2.Instance->CNT;
+		  //float start_time_us = getTimeUs(freqCount);
+		  //imu_update_i2c(&hi2c1);
 		  //imu_update_i2c(&hi2c2);
-		  freqCount = htim2.Instance->CNT;
-		  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
-#else
+		  imu_update_i2c(&hi2c3);
+		  //freqCount = htim2.Instance->CNT;
+		  //sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
+//#else
+		  /*
 		  sp.imu_count_frame = getUs() - sp.imu_prev_frame;
 		  if(sp.imu_dma_en == 0 || sp.imu_count_frame > 100000){
 			  sp.imu_prev_frame = getUs();
 			  imu_update_i2c_DMA_gyro(&hi2c1);
 			  sp.imu_dma_en = 1;
 		  }
+		  */
 #endif
 	  }
 #endif

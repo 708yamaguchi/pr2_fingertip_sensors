@@ -81,7 +81,7 @@ static const uint8_t IMU_WHO_AM_I_42688 = 0x47;
 #define IMU_SPI_MODE 0
 #define IMU_I2C_MODE !IMU_SPI_MODE
 #define IMU_I2C_DMA 0
-#define IMU_GYRO_ACC_DELAY 20
+#define IMU_GYRO_ACC_DELAY 5
 
 // PS CMD
 static const uint8_t PS_CONF1 = 0x03;
@@ -128,6 +128,7 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 #define I2C1_DMA_GYRO 0
 #define I2C1_DMA_ACC 1
 #define I2C1_DMA_PS 2
+#define SPI_SLAVE_DMA 1
 
 uint8_t debug_buffer[2048];
 uint8_t gyro_buffer[512];
