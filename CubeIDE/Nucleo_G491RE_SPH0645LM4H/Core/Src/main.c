@@ -406,8 +406,10 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
     for(int i = 0; i < BUFF_SIZE; i++){
     	buff_sifted[i] = I2S_RX_BUFFER[i] >> 14;
     }
-    sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
-    HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
+    // このUARTをコメントアウトすると、タイミングがズレるのかうまくいかない
+    // sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
+    // HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
+    HAL_Delay(1);
     for(int i=0; i<20; i++){
     	txbuff[i*2] = (buff_sifted[i] >> 10) & 0x000000ff;
     	txbuff[i*2+1] = (buff_sifted[i] >> 2) & 0x000000ff;
