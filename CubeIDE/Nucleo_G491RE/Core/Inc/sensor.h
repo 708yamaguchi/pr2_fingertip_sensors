@@ -86,7 +86,7 @@ static const uint8_t IMU_NOT_EN = 0x00;
 static const uint8_t IMU_WHO_AM_I_20600 = 0x11;
 static const uint8_t IMU_WHO_AM_I_42605 = 0x42;
 static const uint8_t IMU_WHO_AM_I_42688 = 0x47;
-#define IMU_SPI_MODE 0
+#define IMU_SPI_MODE 1
 #define IMU_I2C_MODE !IMU_SPI_MODE
 #define IMU_I2C_DMA 0
 #define IMU_GYRO_ACC_DELAY 5
