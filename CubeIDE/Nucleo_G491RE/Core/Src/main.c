@@ -224,7 +224,9 @@ int main(void)
 	  sp.gyro_print[i] = 0;
   }
 
+#if MIC_DMA
   HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE);
+#endif
   //int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1);
 
   /* USER CODE END 2 */
@@ -301,7 +303,7 @@ int main(void)
   imu_update_i2c_DMA_gyro(&hi2c1);
 #endif
 #if SPI_SLAVE_DMA
-  HAL_SPI_Receive_DMA(&hspi3, sp.rxbuff, 1);
+  //HAL_SPI_Receive_DMA(&hspi3, sp.rxbuff, 1);
 #endif
   /* USER CODE END RTOS_THREADS */
 
@@ -1043,7 +1045,7 @@ void StartIMUTask(void const * argument)
 		  imu_update_i2c(&hi2c3);
 		  //freqCount = htim2.Instance->CNT;
 		  //sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
-//#else
+#else
 		  /*
 		  sp.imu_count_frame = getUs() - sp.imu_prev_frame;
 		  if(sp.imu_dma_en == 0 || sp.imu_count_frame > 100000){
