@@ -33,6 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+  #define READ_COMMAND 0x12
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -46,6 +47,10 @@ DMA_HandleTypeDef hdma_spi2_rx;
 
 UART_HandleTypeDef hlpuart1;
 
+SPI_HandleTypeDef hspi3;
+DMA_HandleTypeDef hdma_spi3_rx;
+DMA_HandleTypeDef hdma_spi3_tx;
+
 osThreadId I2STaskHandle;
 /* USER CODE BEGIN PV */
 
@@ -57,6 +62,7 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_I2S2_Init(void);
+static void MX_SPI3_Init(void);
 void StartI2STask(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -70,6 +76,8 @@ int32_t I2S_RX_BUFFER[BUFF_SIZE];
 int32_t buff_sifted[BUFF_SIZE];
 int32_t buff_sifted_mirror[BUFF_SIZE];
 uint8_t buffer[1024];
+uint8_t rxbuff[1];
+uint8_t txbuff[44];
 /* USER CODE END 0 */
 
 /**
@@ -102,11 +110,14 @@ int main(void)
   MX_DMA_Init();
   MX_LPUART1_UART_Init();
   MX_I2S2_Init();
+  MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
   // Start receiving I2S microphone data
   // HAL_I2S_RxCpltCallback() is called at the end of HAL_I2S_Receive_DMA,
   // so HAL_I2S_RxCpltCallback() is executed continuously.
+  txbuff[1] = 100;
   HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
+  HAL_SPI_Receive_DMA( &hspi3, rxbuff, sizeof(rxbuff));
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -283,6 +294,45 @@ static void MX_LPUART1_UART_Init(void)
 }
 
 /**
+  * @brief SPI3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI3_Init(void)
+{
+
+  /* USER CODE BEGIN SPI3_Init 0 */
+
+  /* USER CODE END SPI3_Init 0 */
+
+  /* USER CODE BEGIN SPI3_Init 1 */
+
+  /* USER CODE END SPI3_Init 1 */
+  /* SPI3 parameter configuration*/
+  hspi3.Instance = SPI3;
+  hspi3.Init.Mode = SPI_MODE_SLAVE;
+  hspi3.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi3.Init.NSS = SPI_NSS_HARD_INPUT;
+  hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi3.Init.CRCPolynomial = 7;
+  hspi3.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+  hspi3.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+  if (HAL_SPI_Init(&hspi3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI3_Init 2 */
+
+  /* USER CODE END SPI3_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -291,11 +341,18 @@ static void MX_DMA_Init(void)
   /* DMA controller clock enable */
   __HAL_RCC_DMAMUX1_CLK_ENABLE();
   __HAL_RCC_DMA1_CLK_ENABLE();
+  __HAL_RCC_DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA2_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel1_IRQn);
+  /* DMA2_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel2_IRQn);
 
 }
 
@@ -354,6 +411,19 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
     HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
     // Receive I2S data again
     HAL_I2S_Receive_DMA( hi2s, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
+}
+
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
+	  if(rxbuff[0] == READ_COMMAND){
+		  HAL_SPI_Transmit_DMA(hspi, txbuff, sizeof(txbuff));
+	  }else{
+		  HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+	  }
+	  int a = 0;
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+	  HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
 }
 /* USER CODE END 4 */
 
