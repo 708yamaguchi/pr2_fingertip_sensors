@@ -61,8 +61,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
-static void MX_I2S2_Init(void);
 static void MX_SPI3_Init(void);
+static void MX_I2S2_Init(void);
 void StartI2STask(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -109,13 +109,12 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_LPUART1_UART_Init();
-  MX_I2S2_Init();
   MX_SPI3_Init();
+  MX_I2S2_Init();
   /* USER CODE BEGIN 2 */
   // Start receiving I2S microphone data
   // HAL_I2S_RxCpltCallback() is called at the end of HAL_I2S_Receive_DMA,
   // so HAL_I2S_RxCpltCallback() is executed continuously.
-  txbuff[1] = 100;
   HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
   HAL_SPI_Receive_DMA( &hspi3, rxbuff, sizeof(rxbuff));
   /* USER CODE END 2 */
@@ -340,8 +339,8 @@ static void MX_DMA_Init(void)
 
   /* DMA controller clock enable */
   __HAL_RCC_DMAMUX1_CLK_ENABLE();
-  __HAL_RCC_DMA1_CLK_ENABLE();
   __HAL_RCC_DMA2_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
@@ -409,6 +408,14 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
     }
     sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
     HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
+    for(int i=0; i<20; i++){
+    	txbuff[i*2] = (buff_sifted[i] >> 10) & 0x000000ff;
+    	txbuff[i*2+1] = (buff_sifted[i] >> 2) & 0x000000ff;
+    }
+    txbuff[20*2] = ((int32_t)1000 >> 8) & 0x000000ff;
+    txbuff[20*2+1] = ((int32_t)1000 >> 0) & 0x000000ff;
+    txbuff[21*2] = ((int32_t)2000 >> 8) & 0x000000ff;
+    txbuff[21*2+1] = ((int32_t)2000 >> 0) & 0x000000ff;
     // Receive I2S data again
     HAL_I2S_Receive_DMA( hi2s, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
 }
@@ -419,7 +426,6 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 	  }else{
 		  HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
 	  }
-	  int a = 0;
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
