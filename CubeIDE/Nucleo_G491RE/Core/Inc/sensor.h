@@ -122,8 +122,9 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 #define SPISLAVE_PERIOD 30//長くすると上手く行く場合がある
 
 // I2S CONST
-#define MIC_BUFF_SIZE 16
-#define MIC_PERIOD 200//長くすると上手く行く場合がある
+#define MIC_BUFF_SIZE 1024
+//#define MIC_PERIOD (20 + 20)//長くすると上手く行く場合がある
+#define MIC_PERIOD (20 + 20)//1000 / () [ms]
 #define MIC_CHANNEL_NUM 4
 
 // Debug buffer
@@ -137,8 +138,8 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 #define I2C1_DMA_ACC 1
 #define I2C1_DMA_PS 2
 #define SPI_SLAVE_DMA 1
-#define MIC_DMA 1
-#define MIC_TIMER 0
+#define MIC_DMA 0
+#define MIC_TIMER 1
 
 // MAIN SPI FLAG
 #define SPI_SLAVE 1

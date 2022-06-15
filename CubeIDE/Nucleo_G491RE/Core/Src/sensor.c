@@ -32,7 +32,7 @@ void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 		sp.txbuff[index + 1] = sp.adc_print[i] & 0x00ff;
 		index += 2;
 	}
-	for(int i=0; i < MIC_CHANNEL_NUM; i++){//4*4=16
+	for(int i = 0; i < MIC_CHANNEL_NUM; i++){//4*4=16
 		if(sp.i2s_buff_sifted[i * 2] != 0){
 			sp.txbuff[index] = (sp.i2s_buff_sifted[i * 2] >> 10) & 0x000000ff;
 			sp.txbuff[index + 1] = (sp.i2s_buff_sifted[i * 2] >> 2)& 0x000000ff;
@@ -43,6 +43,9 @@ void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 			sp.txbuff[index] = (12345 * 4 >> 10) & 0x000000ff;
 			sp.txbuff[index + 1] = (12345 * 4 >> 2)& 0x000000ff;
 		}
+		//sp.txbuff[index] = (12345 >> 8) & 0x000000ff;
+		//sp.txbuff[index + 1] = 12345 & 0x000000ff;
+
 		index += 2;
 	}
 	sp.txbuff[index] = sp.mic_elapsed_time >> 8;
@@ -118,6 +121,7 @@ void imu_init(SPI_HandleTypeDef *hspi){
 
 	uint8_t t_data;
 	uint8_t who = 0x00;
+	uint8_t count = 0;
 
 	switch(sp.imu_select){
 	case 0:
@@ -131,7 +135,11 @@ void imu_init(SPI_HandleTypeDef *hspi){
 		break;
 	}
 
-	mpuRead(hspi, &t_data, &who);
+	while ((who != IMU_WHO_AM_I_20600) && (who != IMU_WHO_AM_I_42605) && (who != IMU_WHO_AM_I_42688) && (count < 20)){
+		mpuRead(hspi, &t_data, &who);
+		count++;
+		HAL_Delay(100);
+	}
 
 	if((who == IMU_WHO_AM_I_20600  && sp.imu_select == SELECT_ICM_20600) ||
 			(who == IMU_WHO_AM_I_42605  && sp.imu_select == SELECT_ICM_42605) ||

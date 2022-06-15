@@ -46,7 +46,6 @@ ADC_HandleTypeDef hadc1;
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef hi2c3;
-DMA_HandleTypeDef hdma_i2c3_rx;
 
 I2S_HandleTypeDef hi2s2;
 DMA_HandleTypeDef hdma_spi2_rx;
@@ -250,7 +249,9 @@ int main(void)
   //osTimerStart(I2STimerHandle, MIC_PERIOD);
 #if	!UPDATE_SINGLE_THREAD
 #if MIC_TIMER
-  osTimerStart(I2STimerHandle, MIC_PERIOD);
+  uint32_t period = 2.0 * 1000 * MIC_BUFF_SIZE / (hi2s2.Init.AudioFreq);//[ms]
+  //osTimerStart(I2STimerHandle, MIC_PERIOD);
+  osTimerStart(I2STimerHandle, period);
 #endif
 #endif
 #if SPI_SLAVE
@@ -800,7 +801,7 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   /* DMA2_Channel1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, 5, 0);
@@ -808,9 +809,6 @@ static void MX_DMA_Init(void)
   /* DMA2_Channel2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Channel2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Channel2_IRQn);
-  /* DMA2_Channel3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Channel3_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Channel3_IRQn);
 
 }
 
@@ -1185,10 +1183,11 @@ void I2SCallback(void const * argument)
 	//HAL_I2S_Init(&hi2s2);
 	//HAL_Delay(200);
 	float start_time_us = getTimeUs(freqCount);
-	//taskENTER_CRITICAL();
+
 	  //int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1);
-	  //taskEXIT_CRITICAL();
+	taskENTER_CRITICAL();
+	int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+	taskEXIT_CRITICAL();
 	  //HAL_I2S_DeInit(&hi2s2);
 	  freqCount = htim2.Instance->CNT;
 	  sp.mic_elapsed_time = getTimeUs(freqCount) - start_time_us;
