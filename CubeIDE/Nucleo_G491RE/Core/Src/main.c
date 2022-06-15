@@ -45,14 +45,17 @@ ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
+I2C_HandleTypeDef hi2c3;
 
 I2S_HandleTypeDef hi2s2;
+DMA_HandleTypeDef hdma_spi2_rx;
 
-UART_HandleTypeDef hlpuart1;
-
+SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi3;
 DMA_HandleTypeDef hdma_spi3_rx;
 DMA_HandleTypeDef hdma_spi3_tx;
+
+TIM_HandleTypeDef htim2;
 
 osThreadId SPIslaveTaskHandle;
 osThreadId IdleTaskHandle;
@@ -72,12 +75,14 @@ uint8_t txBuffer[44] = {};
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_LPUART1_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_I2S2_Init(void);
 static void MX_SPI3_Init(void);
+static void MX_TIM2_Init(void);
+static void MX_I2C3_Init(void);
+static void MX_SPI1_Init(void);
 void StartSPIslaveTask(void const * argument);
 void StartIdleTask(void const * argument);
 void StartIMUTask(void const * argument);
@@ -94,6 +99,7 @@ void imu_init();
 void imu_init_i2c();
 void imu_update();
 void imu_update_i2c();
+void imu_update_i2c_DMA_gyro();
 void adc_init();
 void adc_update();
 void ps_init();
@@ -125,6 +131,18 @@ void setTxBuffer(uint16_t val, uint8_t idx) {
 	for(int i = 0; i < 2; i++) {
 	    txBuffer[idx * 2 + i] = decomposeDigit(val, i);
 	}
+}
+
+float getTimeUs(uint32_t count)
+{
+  float us = 1000000 * (float)count / (float)SystemCoreClock;
+  return us;
+}
+
+float getTimeMs(uint32_t count)
+{
+  float ms = 1000 * (float)count / (float)SystemCoreClock;
+  return ms;
 }
 
 /* USER CODE END 0 */
@@ -159,22 +177,36 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_LPUART1_UART_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
   MX_I2S2_Init();
   MX_SPI3_Init();
+  MX_TIM2_Init();
+  MX_I2C3_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  sp.imu_select = SELECT_ICM_42688_I2C;
+  sp.imu_select = SELECT_ICM_42688_SPI;
+  sp.flag = 0;
+  sp.error_count = 0;
+  sp.rx_counter = 0;
+  sp.i2c1_dma_flag = 0x00;
+  sp.imu_dma_en = 0x00;
+  sp.imu_prev_frame = 0;
+  sp.imu_count_frame = 0;
+  sp.ps_dma[0] = 0;
+  sp.ps_dma[1] = 0;
+  //HAL_I2S_DeInit(&hi2s2);
+  //HAL_I2S_Init(&hi2s2);
   if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
 #if IMU_SPI_MODE
-	  imu_init(&hspi3);
+	  imu_init(&hspi1);
 #endif
   }else if(sp.imu_select == SELECT_ICM_42688_I2C){
-	  imu_init_i2c(&hi2c2);
+	  //imu_init_i2c(&hi2c1);
+	  //imu_init_i2c(&hi2c2);
+	  imu_init_i2c(&hi2c3);
   }
-  adc_init(&hadc1);
   ps_init(&hi2c1);
   memset(sp.txbuff, 0, sizeof(sp.txbuff));
 
@@ -188,6 +220,12 @@ int main(void)
 	  sp.acc_print[i] = 0;
 	  sp.gyro_print[i] = 0;
   }
+
+#if MIC_DMA
+  HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE);
+#endif
+  //int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1);
+
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -208,11 +246,18 @@ int main(void)
   SPISlaveTimerHandle = osTimerCreate(osTimer(SPISlaveTimer), osTimerPeriodic, NULL);
 
   /* USER CODE BEGIN RTOS_TIMERS */
+  //osTimerStart(I2STimerHandle, MIC_PERIOD);
 #if	!UPDATE_SINGLE_THREAD
-  osTimerStart(I2STimerHandle, MIC_PERIOD);
+#if MIC_TIMER
+  uint32_t period = 2.0 * 1000 * MIC_BUFF_SIZE / (hi2s2.Init.AudioFreq);//[ms]
+  //osTimerStart(I2STimerHandle, MIC_PERIOD);
+  osTimerStart(I2STimerHandle, period);
 #endif
+#endif
+#if SPI_SLAVE
 #if  TIMER_SPISLAVE
   osTimerStart(SPISlaveTimerHandle, SPISLAVE_PERIOD);
+#endif
 #endif
   /* USER CODE END RTOS_TIMERS */
 
@@ -230,7 +275,7 @@ int main(void)
   IdleTaskHandle = osThreadCreate(osThread(IdleTask), NULL);
 
   /* definition and creation of IMUTask */
-  osThreadDef(IMUTask, StartIMUTask, osPriorityIdle, 0, 128);
+  osThreadDef(IMUTask, StartIMUTask, osPriorityIdle, 0, 256);
   IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
 
   /* definition and creation of ADCTask */
@@ -251,6 +296,21 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  int count = 0;
+  // https://garberas.com/archives/244
+  HAL_TIM_Encoder_Start( &htim2, TIM_CHANNEL_ALL );
+#if PS_I2C_DMA
+  ps_update(&hi2c1);
+#endif
+#if IMU_I2C_DMA
+  //imu_update_i2c_DMA_gyro(&hi2c1);
+  imu_update_i2c_DMA_gyro(&hi2c3);
+#endif
+#if SPI_SLAVE
+#if SPI_SLAVE_DMA
+  HAL_SPI_Receive_DMA(&hspi3, sp.rxbuff, 1);
+#endif
+#endif
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -259,7 +319,6 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int count = 0;
   while (1)
   {
     /* USER CODE END WHILE */
@@ -302,12 +361,13 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV4;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV6;
   RCC_OscInitStruct.PLL.PLLN = 85;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
@@ -331,12 +391,12 @@ void SystemClock_Config(void)
   }
   /** Initializes the peripherals clocks
   */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPUART1|RCC_PERIPHCLK_I2C1
-                              |RCC_PERIPHCLK_I2C2|RCC_PERIPHCLK_I2S
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C2
+                              |RCC_PERIPHCLK_I2C3|RCC_PERIPHCLK_I2S
                               |RCC_PERIPHCLK_ADC12;
-  PeriphClkInit.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   PeriphClkInit.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
+  PeriphClkInit.I2c3ClockSelection = RCC_I2C3CLKSOURCE_PCLK1;
   PeriphClkInit.I2sClockSelection = RCC_I2SCLKSOURCE_HSI;
   PeriphClkInit.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -527,6 +587,52 @@ static void MX_I2C2_Init(void)
 }
 
 /**
+  * @brief I2C3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C3_Init(void)
+{
+
+  /* USER CODE BEGIN I2C3_Init 0 */
+
+  /* USER CODE END I2C3_Init 0 */
+
+  /* USER CODE BEGIN I2C3_Init 1 */
+
+  /* USER CODE END I2C3_Init 1 */
+  hi2c3.Instance = I2C3;
+  hi2c3.Init.Timing = 0x30A0A7FB;
+  hi2c3.Init.OwnAddress1 = 0;
+  hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c3.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c3.Init.OwnAddress2 = 0;
+  hi2c3.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C3_Init 2 */
+
+  /* USER CODE END I2C3_Init 2 */
+
+}
+
+/**
   * @brief I2S2 Initialization Function
   * @param None
   * @retval None
@@ -559,49 +665,42 @@ static void MX_I2S2_Init(void)
 }
 
 /**
-  * @brief LPUART1 Initialization Function
+  * @brief SPI1 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_LPUART1_UART_Init(void)
+static void MX_SPI1_Init(void)
 {
 
-  /* USER CODE BEGIN LPUART1_Init 0 */
+  /* USER CODE BEGIN SPI1_Init 0 */
 
-  /* USER CODE END LPUART1_Init 0 */
+  /* USER CODE END SPI1_Init 0 */
 
-  /* USER CODE BEGIN LPUART1_Init 1 */
+  /* USER CODE BEGIN SPI1_Init 1 */
 
-  /* USER CODE END LPUART1_Init 1 */
-  hlpuart1.Instance = LPUART1;
-  hlpuart1.Init.BaudRate = 115200;
-  hlpuart1.Init.WordLength = UART_WORDLENGTH_8B;
-  hlpuart1.Init.StopBits = UART_STOPBITS_1;
-  hlpuart1.Init.Parity = UART_PARITY_NONE;
-  hlpuart1.Init.Mode = UART_MODE_TX_RX;
-  hlpuart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  hlpuart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  hlpuart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-  hlpuart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&hlpuart1) != HAL_OK)
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 7;
+  hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
   {
     Error_Handler();
   }
-  if (HAL_UARTEx_SetTxFifoThreshold(&hlpuart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetRxFifoThreshold(&hlpuart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_DisableFifoMode(&hlpuart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN LPUART1_Init 2 */
+  /* USER CODE BEGIN SPI1_Init 2 */
 
-  /* USER CODE END LPUART1_Init 2 */
+  /* USER CODE END SPI1_Init 2 */
 
 }
 
@@ -645,6 +744,51 @@ static void MX_SPI3_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 0;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 4.294967295E9;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -652,15 +796,19 @@ static void MX_DMA_Init(void)
 
   /* DMA controller clock enable */
   __HAL_RCC_DMAMUX1_CLK_ENABLE();
+  __HAL_RCC_DMA2_CLK_ENABLE();
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
-  /* DMA1_Channel2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  /* DMA2_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel1_IRQn);
+  /* DMA2_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel2_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel2_IRQn);
 
 }
 
@@ -692,6 +840,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : LPUART1_RX_Pin */
+  GPIO_InitStruct.Pin = LPUART1_RX_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF12_LPUART1;
+  HAL_GPIO_Init(LPUART1_RX_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : LD2_Pin */
   GPIO_InitStruct.Pin = LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -721,6 +877,17 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
+	// Send I2S data to serial monitor
+    for(int i = 0; i < MIC_BUFF_SIZE; i++){
+    	sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
+    }
+    //sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
+    //HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
+    // Receive I2S data again
+    HAL_I2S_Receive_DMA( hi2s, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE);
+    //HAL_I2S_Receive_DMA( hi2s, (uint16_t*)&I2S_RX_BUFFER, MIC_BUFF_SIZE);
+}
 
 /* USER CODE END 4 */
 
@@ -737,25 +904,50 @@ void StartSPIslaveTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if SPI_SLAVE
 #if UPDATE_SINGLE_THREAD & !TIMER_SPISLAVE
 	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
 
-	  imu_update_i2c(&hi2c2);
+	  //imu_update_i2c(&hi2c2);
+	  //if(sp.flag == 1){
+	  uint32_t freqCount = htim2.Instance->CNT;
+	  float start_time_us = getTimeUs(freqCount);
+	  imu_update_i2c(&hi2c1);
+	  freqCount = htim2.Instance->CNT;
+	  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
 
+	  //sp.flag = 0;
+		  //HAL_I2S_Init(&hi2s2);
+	  //}
+	  //HAL_Delay(6);
+	  freqCount = htim2.Instance->CNT;
+	  start_time_us = getTimeUs(freqCount);
 	  ps_update(&hi2c1);
+	  freqCount = htim2.Instance->CNT;
+	  sp.ps_elapsed_time = getTimeUs(freqCount) - start_time_us;
 
+	  freqCount = htim2.Instance->CNT;
+	  start_time_us = getTimeUs(freqCount);
 	  adc_update(&hadc1);
+	  freqCount = htim2.Instance->CNT;
+	  sp.adc_elapsed_time = getTimeUs(freqCount) - start_time_us;
 
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
-	  if(ret == HAL_OK){
-		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
-			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
-		  }
-	  }
+	  //if(sp.flag == 0){
+		  //int8_t ret = HAL_I2S_Receive(&hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+		  //HAL_I2S_DeInit(&hi2s2);
+		  //int8_t ret = HAL_OK;
+		  //if(ret == HAL_OK){
+		  //for(int i = 0; i < MIC_BUFF_SIZE; i++){
+			  //sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
+		  //}
+		  //}
+		  //sp.flag = 1;
+	  //}
+	  //HAL_Delay(10);
 
-	  txbuff_update();
 #endif
 
+#if !SPI_SLAVE_DMA
 #if !TIMER_SPISLAVE
 #if SPI_SLAVE_SENSOR_EN
 	  //if (HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000) != HAL_OK) {
@@ -763,13 +955,23 @@ void StartSPIslaveTask(void const * argument)
 		  uint8_t dummy = sp.rxbuff[0];
 	  }
 	  if(sp.rxbuff[0] == READ_COMMAND){
+		  sp.rx_counter += 1;
 		  /*
 		  if (HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000) != HAL_OK) {
 			  printf("HAL_SPI_Transmit failed.\r\n");
 		  }*/
+		  txbuff_update();
 		  taskENTER_CRITICAL();
-		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
+		  //delayUs(10);
+		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 2000);
 		  taskEXIT_CRITICAL();
+	  }else{
+		  sp.error_count += 1;
+		  //if(sp.error_count > 0){
+			  //HAL_SPI_DeInit(&hspi3);
+			  //MX_SPI3_Init();
+			  ///sp.error_count = 0;
+		  //}
 	  }
 #else
 	  if (HAL_SPI_Receive(&hspi3, rxBuffer, 1, 1000) != HAL_OK) {
@@ -786,6 +988,9 @@ void StartSPIslaveTask(void const * argument)
 	  }
 #endif
 #endif
+#endif
+#endif
+//	  osDelay(1);
 	  osDelay(30);
   }
   /* USER CODE END 5 */
@@ -807,7 +1012,7 @@ void StartIdleTask(void const * argument)
 #if !UPDATE_SINGLE_THREAD
 	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
 #endif
-	  osDelay(100 + sp.adc_print[0] / 10);//adc read sample
+	  osDelay(1 + sp.adc_print[0] / 10);//adc read sample
   }
   /* USER CODE END StartIdleTask */
 }
@@ -828,10 +1033,31 @@ void StartIMUTask(void const * argument)
 #if !UPDATE_SINGLE_THREAD
 	  if(sp.imu_select == SELECT_ICM_20600 || sp.imu_select == SELECT_ICM_42605 || sp.imu_select == SELECT_ICM_42688_SPI){
 #if IMU_SPI_MODE
-		  imu_update(&hspi3);
+		  uint32_t freqCount = htim2.Instance->CNT;
+		  float start_time_us = getTimeUs(freqCount);
+		  imu_update(&hspi1);
+		  freqCount = htim2.Instance->CNT;
+		  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
 #endif
 	  }else if(sp.imu_select == SELECT_ICM_42688_I2C){
-		  imu_update_i2c(&hi2c2);
+#if !IMU_I2C_DMA
+		  //uint32_t freqCount = htim2.Instance->CNT;
+		  //float start_time_us = getTimeUs(freqCount);
+		  //imu_update_i2c(&hi2c1);
+		  //imu_update_i2c(&hi2c2);
+		  imu_update_i2c(&hi2c3);
+		  //freqCount = htim2.Instance->CNT;
+		  //sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
+#else
+		  /*
+		  sp.imu_count_frame = getUs() - sp.imu_prev_frame;
+		  if(sp.imu_dma_en == 0 || sp.imu_count_frame > 100000){
+			  sp.imu_prev_frame = getUs();
+			  imu_update_i2c_DMA_gyro(&hi2c1);
+			  sp.imu_dma_en = 1;
+		  }
+		  */
+#endif
 	  }
 #endif
 	  osDelay(1);
@@ -853,7 +1079,11 @@ void StartADCTask(void const * argument)
   for(;;)
   {
 #if !UPDATE_SINGLE_THREAD
+	  uint32_t freqCount = htim2.Instance->CNT;
+	  float start_time_us = getTimeUs(freqCount);
 	  adc_update(&hadc1);
+	  freqCount = htim2.Instance->CNT;
+	  sp.adc_elapsed_time = getTimeUs(freqCount) - start_time_us;
 #endif
 	  osDelay(1);
   }
@@ -894,8 +1124,14 @@ void StartPSTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+#if !PS_I2C_DMA
 #if !UPDATE_SINGLE_THREAD
-	ps_update(&hi2c1);
+	  uint32_t freqCount = htim2.Instance->CNT;
+	  float start_time_us = getTimeUs(freqCount);
+	  ps_update(&hi2c1);
+	  freqCount = htim2.Instance->CNT;
+	  sp.ps_elapsed_time = getTimeUs(freqCount) - start_time_us;
+#endif
 #endif
     osDelay(1);
   }
@@ -942,15 +1178,33 @@ void I2SCallback(void const * argument)
 {
   /* USER CODE BEGIN I2SCallback */
 	  //HAL_Delay(MIC_PERIOD / 2);
-	  taskENTER_CRITICAL();
-	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
-	  taskEXIT_CRITICAL();
+
+	uint32_t freqCount = htim2.Instance->CNT;
+	//HAL_I2S_Init(&hi2s2);
+	//HAL_Delay(200);
+	float start_time_us = getTimeUs(freqCount);
+
+	  //int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+	taskENTER_CRITICAL();
+	int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
+	taskEXIT_CRITICAL();
+	  //HAL_I2S_DeInit(&hi2s2);
+	  freqCount = htim2.Instance->CNT;
+	  sp.mic_elapsed_time = getTimeUs(freqCount) - start_time_us;
 	  if(ret == HAL_OK){
 		  for(int i = 0; i < MIC_BUFF_SIZE; i++){
 			  sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
 		  }
 	  }
-	  osDelay(MIC_PERIOD / 2);
+
+	  //uint32_t freqCount = htim2.Instance->CNT;
+	  //float start_time_us = getTimeUs(freqCount);
+	  //imu_update_i2c(&hi2c2);
+	  //imu_update_i2c(&hi2c1);
+	  //HAL_Delay(6);
+	  //freqCount = htim2.Instance->CNT;
+	  //sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
+	  //osDelay(MIC_PERIOD / 2);
 	  //HAL_Delay(MIC_PERIOD / 2);
 
   /* USER CODE END I2SCallback */
@@ -963,9 +1217,9 @@ void SPISlaveCallback(void const * argument)
 #if UPDATE_SINGLE_THREAD
 	  HAL_SPI_Receive(&hspi3, sp.rxbuff, 1, 1000);
 	  if(sp.rxbuff[0] == READ_COMMAND){
-		  taskENTER_CRITICAL();
+		  // taskENTER_CRITICAL();
 		  HAL_SPI_Transmit(&hspi3, sp.txbuff, sizeof(sp.txbuff), 1000);
-		  taskEXIT_CRITICAL();
+		  // taskEXIT_CRITICAL();
 	  }
 
 	  int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1000);
