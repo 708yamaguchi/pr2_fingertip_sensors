@@ -49,6 +49,7 @@ I2C_HandleTypeDef hi2c3;
 DMA_HandleTypeDef hdma_i2c1_rx;
 
 I2S_HandleTypeDef hi2s2;
+DMA_HandleTypeDef hdma_spi2_rx;
 
 UART_HandleTypeDef hlpuart1;
 
@@ -221,6 +222,10 @@ int main(void)
 	  sp.acc_print[i] = 0;
 	  sp.gyro_print[i] = 0;
   }
+
+  HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE);
+  //int8_t ret = HAL_I2S_Receive( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE ,1);
+
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -797,6 +802,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+  /* DMA1_Channel4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 
 }
 
@@ -857,6 +865,17 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
+	// Send I2S data to serial monitor
+    for(int i = 0; i < MIC_BUFF_SIZE; i++){
+    	sp.i2s_buff_sifted[i] = sp.i2s_rx_buff[i] >> 14;
+    }
+    //sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
+    //HAL_UART_Transmit(&hlpuart1, buffer, 1024, 10);
+    // Receive I2S data again
+    HAL_I2S_Receive_DMA( hi2s, (uint16_t*)&sp.i2s_rx_buff, MIC_BUFF_SIZE);
+    //HAL_I2S_Receive_DMA( hi2s, (uint16_t*)&I2S_RX_BUFFER, MIC_BUFF_SIZE);
+}
 
 /* USER CODE END 4 */
 

@@ -12,19 +12,6 @@ struct sensor_params sp;
 
 void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 	uint8_t index = 0;
-	for(int i=0; i < MIC_CHANNEL_NUM; i++){//4*4=16
-		if(sp.i2s_buff_sifted[i * 2] != 0){
-			sp.txbuff[index] = (sp.i2s_buff_sifted[i * 2] >> 10) & 0x000000ff;
-			sp.txbuff[index + 1] = (sp.i2s_buff_sifted[i * 2] >> 2)& 0x000000ff;
-		}else if(sp.i2s_buff_sifted[i * 2 + 1] != 0){
-			sp.txbuff[index] = (sp.i2s_buff_sifted[i * 2 + 1] >> 10) & 0x000000ff;
-			sp.txbuff[index + 1] = (sp.i2s_buff_sifted[i * 2 + 1] >> 2)& 0x000000ff;
-		}else{
-			sp.txbuff[index] = (12345 * 4 >> 10) & 0x000000ff;
-			sp.txbuff[index + 1] = (12345 * 4 >> 2)& 0x000000ff;
-		}
-		index += 2;
-	}
 	for(int i=0; i < ADC_CHANNEL_NUM; i++){//2*4=8
 		sp.txbuff[index] = sp.adc_print[i] >> 8;
 		sp.txbuff[index + 1] = sp.adc_print[i] & 0x00ff;
@@ -43,6 +30,19 @@ void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 	for(int i=0; i < PS_CHANNEL_NUM; i++){//2*1=2
 		sp.txbuff[index] = sp.ps_print[i] >> 8;
 		sp.txbuff[index + 1] = sp.ps_print[i] & 0x00ff;
+		index += 2;
+	}
+	for(int i=0; i < MIC_CHANNEL_NUM; i++){//4*4=16
+		if(sp.i2s_buff_sifted[i * 2] != 0){
+			sp.txbuff[index] = (sp.i2s_buff_sifted[i * 2] >> 10) & 0x000000ff;
+			sp.txbuff[index + 1] = (sp.i2s_buff_sifted[i * 2] >> 2)& 0x000000ff;
+		}else if(sp.i2s_buff_sifted[i * 2 + 1] != 0){
+			sp.txbuff[index] = (sp.i2s_buff_sifted[i * 2 + 1] >> 10) & 0x000000ff;
+			sp.txbuff[index + 1] = (sp.i2s_buff_sifted[i * 2 + 1] >> 2)& 0x000000ff;
+		}else{
+			sp.txbuff[index] = (12345 * 4 >> 10) & 0x000000ff;
+			sp.txbuff[index + 1] = (12345 * 4 >> 2)& 0x000000ff;
+		}
 		index += 2;
 	}
 	sp.txbuff[index] = sp.mic_elapsed_time >> 8;
