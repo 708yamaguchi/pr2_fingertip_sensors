@@ -889,6 +889,27 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
     //HAL_I2S_Receive_DMA( hi2s, (uint16_t*)&I2S_RX_BUFFER, MIC_BUFF_SIZE);
 }
 
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
+	// hspi3: PR2 SPI slave
+	if (hspi->Instance == SPI3) {
+	  if(sp.rxbuff[0] == READ_COMMAND){
+		  sp.rx_counter += 1;
+		  //taskENTER_CRITICAL();
+		  HAL_SPI_Transmit_DMA(hspi, sp.txbuff, sizeof(sp.txbuff));
+		  //taskEXIT_CRITICAL();
+	  }else{
+		  sp.error_count += 1;
+		  HAL_SPI_Receive_DMA(hspi, sp.rxbuff, 1);
+	  }
+	}
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+	// hspi3: PR2 SPI slave
+	if (hspi->Instance == SPI3) {
+	  HAL_SPI_Receive_DMA(hspi, sp.rxbuff, 1);
+	}
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartSPIslaveTask */
