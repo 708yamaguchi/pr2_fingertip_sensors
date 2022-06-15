@@ -137,7 +137,7 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 #define I2C1_DMA_ACC 1
 #define I2C1_DMA_PS 2
 #define SPI_SLAVE_DMA 1
-#define MIC_DMA 0
+#define MIC_DMA 1
 #define MIC_TIMER 0
 
 // MAIN SPI FLAG

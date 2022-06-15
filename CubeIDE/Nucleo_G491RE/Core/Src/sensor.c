@@ -135,9 +135,9 @@ void imu_init(SPI_HandleTypeDef *hspi){
 
 	if((who == IMU_WHO_AM_I_20600  && sp.imu_select == SELECT_ICM_20600) ||
 			(who == IMU_WHO_AM_I_42605  && sp.imu_select == SELECT_ICM_42605) ||
-			(who == IMU_WHO_AM_I_42688  && sp.imu_select == SELECT_ICM_42688_SPI) ||
-			(who == 0x40  && sp.imu_select == SELECT_ICM_42688_SPI)){
+			(who == IMU_WHO_AM_I_42688  && sp.imu_select == SELECT_ICM_42688_SPI)){
 		sp.imu_en = IMU_EN;
+		HAL_Delay(100);
 		switch(sp.imu_select){
 		case 0:
 			//reset-device
