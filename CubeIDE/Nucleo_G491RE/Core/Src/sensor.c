@@ -466,29 +466,6 @@ void ps_update(I2C_HandleTypeDef *hi2c){
 	}
 }
 
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
-	  if(sp.rxbuff[0] == READ_COMMAND){
-		  sp.rx_counter += 1;
-		  //taskENTER_CRITICAL();
-		  HAL_SPI_Transmit_DMA(hspi, sp.txbuff, sizeof(sp.txbuff));
-		  //taskEXIT_CRITICAL();
-	  }else{
-		  sp.error_count += 1;
-		  HAL_SPI_Receive_DMA(hspi, sp.rxbuff, 1);
-	  }
-}
-
-/*
-void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
-  txBuffer[0] = rxBuffer[0];
-  HAL_SPI_Transmit_DMA(hspi, txBuffer, 1);  // Tx DMA start
-}
-*/
-
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
-	  HAL_SPI_Receive_DMA(hspi, sp.rxbuff, 1);
-}
-
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
 	switch(sp.i2c1_dma_flag){
