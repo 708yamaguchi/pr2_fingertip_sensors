@@ -649,7 +649,8 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-	imu_update(&hspi1);
+	acc_update(&hspi1);
+	gyro_update(&hspi1);
     sprintf(acc_buffer, "imu_en:%d acc[0]:%d acc[1]:%d acc[2]:%d\r\n",
     		sp.imu_en, sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
 	sprintf(acc_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d\r\n",

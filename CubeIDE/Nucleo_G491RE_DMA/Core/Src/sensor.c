@@ -206,22 +206,43 @@ void imu_init(SPI_HandleTypeDef *hspi){
 
 }
 
-void imu_update(SPI_HandleTypeDef *hspi){
-	uint8_t gyro_t_data[1];
+void acc_update(SPI_HandleTypeDef *hspi) {
 	uint8_t acc_t_data[1];
+	switch(sp.imu_select){
+	case 0:
+		acc_t_data[0] = ICM_20600_ACCEL_XOUT_H | 0x80;
+		break;
+	case 1:
+		acc_t_data[0] = ICM_42605_ACCEL_DATA_X1 | 0x80;
+		break;
+	case 2:
+		acc_t_data[0] = ICM_42688_ACCEL_DATA_X1 | 0x80;
+		break;
+	}
+
+	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(hspi, acc_t_data, 1, 10);
+	HAL_SPI_Receive(hspi, sp.acc, 6, 10);
+	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
+	if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
+		sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
+		sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
+		sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
+	}
+}
+
+void gyro_update(SPI_HandleTypeDef *hspi){
+	uint8_t gyro_t_data[1];
 
 	switch(sp.imu_select){
 	case 0:
 		gyro_t_data[0] = ICM_20600_GYRO_XOUT_H | 0x80;
-		acc_t_data[0] = ICM_20600_ACCEL_XOUT_H | 0x80;
 		break;
 	case 1:
 		gyro_t_data[0] = ICM_42605_GYRO_DATA_X1 | 0x80;
-		acc_t_data[0] = ICM_42605_ACCEL_DATA_X1 | 0x80;
 		break;
 	case 2:
 		gyro_t_data[0] = ICM_42688_GYRO_DATA_X1 | 0x80;
-		acc_t_data[0] = ICM_42688_ACCEL_DATA_X1 | 0x80;
 		break;
 	}
 
@@ -230,23 +251,12 @@ void imu_update(SPI_HandleTypeDef *hspi){
 		HAL_SPI_Transmit(hspi, gyro_t_data, 1, 10);
 		HAL_SPI_Receive(hspi, sp.gyro, 6, 10);
 		HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
-
 		if((sp.gyro[0] != 0) || (sp.gyro[1] != 0) || (sp.gyro[2] != 0)){
 			sp.gyro_print[0] = (int16_t)(sp.gyro[0] << 8 | sp.gyro[1]);
 			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
 			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
 		}
 
-		HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_RESET);
-		HAL_SPI_Transmit(hspi, acc_t_data, 1, 10);
-		HAL_SPI_Receive(hspi, sp.acc, 6, 10);
-		HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
-
-		if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
-			sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
-			sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
-			sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
-		}
 	}
 }
 
