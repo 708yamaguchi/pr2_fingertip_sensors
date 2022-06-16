@@ -640,6 +640,7 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 	// IMU
 	if (hspi->Instance == SPI1) {
+		HAL_Delay(1);
 		if (acc_flag == 1) {
 			HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
 			if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
@@ -690,6 +691,7 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 	// IMU
 	if (hspi->Instance == SPI1) {
+		// HAL_Delay(1);
 		if (acc_flag == 1) {
         	HAL_SPI_Receive_DMA(hspi, sp.acc, 6);
 		}
