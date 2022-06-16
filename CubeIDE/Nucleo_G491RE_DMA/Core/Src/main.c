@@ -693,8 +693,6 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
     sprintf(acc_buffer, "imu_en:%d acc[0]:%d acc[1]:%d acc[2]:%d\r\n",
     		sp.imu_en, sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
-	sprintf(acc_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d\r\n",
-			sp.count, sp.acc_print[1], sp.acc_print[2]);
 	sprintf(gyro_buffer, "gyro[0]:%d gyro[1]:%d gyro[2]:%d\r\n",
 			sp.gyro_print[0], sp.gyro_print[1], sp.gyro_print[2]);
 	sprintf(adc_buffer, "adc[0]:%d adc[1]:%d adc[2]:%d adc[3]:%d\r\n",
