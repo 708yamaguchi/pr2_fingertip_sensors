@@ -152,6 +152,10 @@ uint8_t adc_buffer[512];
 uint8_t i2s_buffer[512];
 uint8_t ps_buffer[512];
 
+// acc_flag == 1 -> measure acc
+// acc_flag == 0 -> measure gyro
+uint8_t acc_flag;
+
 struct sensor_params {
 	//buffer
 	uint8_t rxbuff[1];

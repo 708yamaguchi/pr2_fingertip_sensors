@@ -207,6 +207,7 @@ void imu_init(SPI_HandleTypeDef *hspi){
 }
 
 void acc_update(SPI_HandleTypeDef *hspi) {
+	acc_flag = 1;
 	uint8_t acc_t_data[1];
 	switch(sp.imu_select){
 	case 0:
@@ -220,18 +221,14 @@ void acc_update(SPI_HandleTypeDef *hspi) {
 		break;
 	}
 
-	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(hspi, acc_t_data, 1, 10);
-	HAL_SPI_Receive(hspi, sp.acc, 6, 10);
-	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
-	if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
-		sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
-		sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
-		sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
+	if(sp.imu_en == IMU_EN){
+    	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_RESET);
+    	HAL_SPI_Transmit_DMA(hspi, acc_t_data, 1);
 	}
 }
 
 void gyro_update(SPI_HandleTypeDef *hspi){
+	acc_flag = 0;
 	uint8_t gyro_t_data[1];
 
 	switch(sp.imu_select){
@@ -248,15 +245,7 @@ void gyro_update(SPI_HandleTypeDef *hspi){
 
 	if(sp.imu_en == IMU_EN){
 		HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_RESET);
-		HAL_SPI_Transmit(hspi, gyro_t_data, 1, 10);
-		HAL_SPI_Receive(hspi, sp.gyro, 6, 10);
-		HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
-		if((sp.gyro[0] != 0) || (sp.gyro[1] != 0) || (sp.gyro[2] != 0)){
-			sp.gyro_print[0] = (int16_t)(sp.gyro[0] << 8 | sp.gyro[1]);
-			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
-			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
-		}
-
+		HAL_SPI_Transmit_DMA(hspi, gyro_t_data, 1);
 	}
 }
 

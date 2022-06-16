@@ -82,7 +82,8 @@ void StartADCTask(void const * argument);
 void mpuWrite(uint8_t, uint8_t);
 void mpuRead(uint8_t *address, uint8_t *value);
 void imu_init();
-void imu_update();
+void acc_update();
+void gyro_update();
 void adc_init();
 void adc_update();
 void ps_init();
@@ -153,6 +154,9 @@ int main(void)
   // Initialize IMU
   sp.imu_select = SELECT_ICM_42688_SPI;
   imu_init(&hspi1);
+  // acc_update internally calls gyro_update
+  // gyro_update internally calls acc_update
+  acc_update(&hspi1);
   // Start sending sensor data via UART
   HAL_UART_Transmit_DMA(&hlpuart1, debug_buffer, 2048);
   /* USER CODE END 2 */
@@ -627,7 +631,31 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
 }
 
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
-	if (hspi->Instance == SPI3) {
+	// IMU
+	if (hspi->Instance == SPI1) {
+		if (acc_flag == 1) {
+			HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
+			if((sp.acc[0] != 0) || (sp.acc[1] != 0) || (sp.acc[2] != 0)){
+				sp.acc_print[0] = (int16_t)(sp.acc[0] << 8 | sp.acc[1]);
+				sp.acc_print[1] = (int16_t)(sp.acc[2] << 8 | sp.acc[3]);
+				sp.acc_print[2] = (int16_t)(sp.acc[4] << 8 | sp.acc[5]);
+			}
+			acc_flag = 0;
+			gyro_update(hspi);
+		}
+		else {
+    		HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
+    		if((sp.gyro[0] != 0) || (sp.gyro[1] != 0) || (sp.gyro[2] != 0)){
+    			sp.gyro_print[0] = (int16_t)(sp.gyro[0] << 8 | sp.gyro[1]);
+    			sp.gyro_print[1] = (int16_t)(sp.gyro[2] << 8 | sp.gyro[3]);
+    			sp.gyro_print[2] = (int16_t)(sp.gyro[4] << 8 | sp.gyro[5]);
+    		}
+			acc_flag = 1;
+			acc_update(hspi);
+		}
+	}
+	// PR2 SPI slave
+	else if (hspi->Instance == SPI3) {
         for(int i=0; i<20; i++){
         	txbuff[i*2] = (sp.i2s_buff_sifted[i] >> 10) & 0x000000ff;
         	txbuff[i*2+1] = (sp.i2s_buff_sifted[i] >> 2) & 0x000000ff;
@@ -645,7 +673,17 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
-	if (hspi->Instance == SPI3) {
+	// IMU
+	if (hspi->Instance == SPI1) {
+		if (acc_flag == 1) {
+        	HAL_SPI_Receive_DMA(hspi, sp.acc, 6);
+		}
+		else {
+			HAL_SPI_Receive_DMA(hspi, sp.gyro, 6);
+		}
+	}
+	// PR2 SPI slave
+    else if (hspi->Instance == SPI3) {
     	// HAL_Delay(1) is magic number
 	    HAL_Delay(1);
 	    HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
@@ -653,8 +691,6 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-	acc_update(&hspi1);
-	gyro_update(&hspi1);
     sprintf(acc_buffer, "imu_en:%d acc[0]:%d acc[1]:%d acc[2]:%d\r\n",
     		sp.imu_en, sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
 	sprintf(acc_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d\r\n",
