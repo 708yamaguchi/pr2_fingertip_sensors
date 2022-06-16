@@ -64,3 +64,7 @@ This repository will develop boards and firmware with the following features.
   - Current consumption constraints
     - According to [PR2 official documents](https://drive.google.com/drive/u/0/folders/10u_ev0fsHuU6k2bqzVA1QDX5yvDKZRMa), current consumption should be kept within 30 mA total for both fingers.
     - Minimum power consumption mode for [VCNL4040 proximity sensor](https://github.com/708yamaguchi/pr2_fingertip_sensors/blob/master/Datasheets/vcnl4040.pdf) requires 50mA peak. However, when the on/off ratio of the IR LEDs was set to 1:320, the power supplied by PR2 was found to be sufficient.
+  - CPU resource limitations
+    - The board developed in this project must function as an SPI slave for PR2.
+    - Responding to every data request from SPI master (PR2) makes it difficult for the microcontroller to read other sensors at the appropriate timing.
+    - To save microcontroller CPU resources as much as possible, the DMA function is effective.
