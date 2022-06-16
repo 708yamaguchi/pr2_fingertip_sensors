@@ -144,21 +144,28 @@ int main(void)
   // so HAL_I2S_RxCpltCallback() is executed continuously.
   HAL_Delay(100); // After using MX_GPIO_Init(), HAL_Delay() is needed.
   HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, BUFF_SIZE);
-  // Start SPI slave with PR2
-  HAL_SPI_Receive_DMA( &hspi3, rxbuff, sizeof(rxbuff));
   // Initialize and Start proximity sensor
+  HAL_Delay(100);
   ps_init(&hi2c1);
+  HAL_Delay(100);
   ps_update(&hi2c1);
   // Initialize adc
   adc_init(&hadc2);
   // Initialize IMU
+  HAL_Delay(100);
   sp.imu_select = SELECT_ICM_42688_SPI;
   imu_init(&hspi1);
   // acc_update internally calls gyro_update
   // gyro_update internally calls acc_update
+  HAL_Delay(100);
   acc_update(&hspi1);
   // Start sending sensor data via UART
-  HAL_UART_Transmit_DMA(&hlpuart1, debug_buffer, 2048);
+  // HAL_Delay(100);
+  // HAL_UART_Transmit_DMA(&hlpuart1, debug_buffer, 2048);
+  // Start SPI slave with PR2
+  // HAL_SPI_Receive_DMA should be called at last(?)
+  HAL_Delay(100);
+  HAL_SPI_Receive_DMA( &hspi3, rxbuff, sizeof(rxbuff));
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -550,10 +557,10 @@ static void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
   /* DMA2_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Channel1_IRQn);
   /* DMA2_Channel2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Channel2_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA2_Channel2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Channel2_IRQn);
 
 }
@@ -656,6 +663,7 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 	}
 	// PR2 SPI slave
 	else if (hspi->Instance == SPI3) {
+		/*
         for(int i=0; i<20; i++){
         	txbuff[i*2] = (sp.i2s_buff_sifted[i] >> 10) & 0x000000ff;
         	txbuff[i*2+1] = (sp.i2s_buff_sifted[i] >> 2) & 0x000000ff;
@@ -669,6 +677,13 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
     	}else{
 	    	HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
     	}
+    	*/
+        if(rxbuff[0] == READ_COMMAND){
+        	txbuff_update();
+        	HAL_SPI_Transmit_DMA(hspi, sp.txbuff, sizeof(sp.txbuff));
+        }else{
+        	HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+        }
 	}
 }
 
@@ -685,7 +700,6 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 	// PR2 SPI slave
     else if (hspi->Instance == SPI3) {
     	// HAL_Delay(1) is magic number
-	    HAL_Delay(1);
 	    HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
 	}
 }
