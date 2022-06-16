@@ -52,6 +52,7 @@ I2S_HandleTypeDef hi2s2;
 DMA_HandleTypeDef hdma_spi2_rx;
 
 UART_HandleTypeDef hlpuart1;
+DMA_HandleTypeDef hdma_lpuart1_tx;
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi3;
@@ -60,7 +61,6 @@ DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi3_rx;
 DMA_HandleTypeDef hdma_spi3_tx;
 
-osThreadId SerialTaskHandle;
 osThreadId ADCTaskHandle;
 /* USER CODE BEGIN PV */
 
@@ -76,7 +76,6 @@ static void MX_I2S2_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_ADC2_Init(void);
 static void MX_SPI1_Init(void);
-void StartSerialTask(void const * argument);
 void StartADCTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -154,6 +153,8 @@ int main(void)
   // Initialize IMU
   sp.imu_select = SELECT_ICM_42688_SPI;
   imu_init(&hspi1);
+  // Start sending sensor data via UART
+  HAL_UART_Transmit_DMA(&hlpuart1, debug_buffer, 2048);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -173,12 +174,8 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of SerialTask */
-  osThreadDef(SerialTask, StartSerialTask, osPriorityNormal, 0, 128);
-  SerialTaskHandle = osThreadCreate(osThread(SerialTask), NULL);
-
   /* definition and creation of ADCTask */
-  osThreadDef(ADCTask, StartADCTask, osPriorityIdle, 0, 128);
+  osThreadDef(ADCTask, StartADCTask, osPriorityNormal, 0, 128);
   ADCTaskHandle = osThreadCreate(osThread(ADCTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -545,6 +542,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+  /* DMA1_Channel6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
   /* DMA2_Channel1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Channel1_IRQn);
@@ -647,21 +647,8 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 	  HAL_Delay(1);
 	  HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
 }
-/* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartSerialTask */
-/**
-  * @brief  Function implementing the SerialTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartSerialTask */
-void StartSerialTask(void const * argument)
-{
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
 	imu_update(&hspi1);
     sprintf(acc_buffer, "imu_en:%d acc[0]:%d acc[1]:%d acc[2]:%d\r\n",
     		sp.imu_en, sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
@@ -677,11 +664,9 @@ void StartSerialTask(void const * argument)
 			sp.ps_print[0]);
 	sprintf(debug_buffer, "%s%s%s%s%s\r\n",
 			acc_buffer, gyro_buffer, adc_buffer, i2s_buffer, ps_buffer);
-	HAL_UART_Transmit(&hlpuart1, debug_buffer, 2048, 100);
-    osDelay(100);
-  }
-  /* USER CODE END 5 */
+	HAL_UART_Transmit_DMA(huart, debug_buffer, 2048);
 }
+/* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartADCTask */
 /**
@@ -692,14 +677,14 @@ void StartSerialTask(void const * argument)
 /* USER CODE END Header_StartADCTask */
 void StartADCTask(void const * argument)
 {
-  /* USER CODE BEGIN StartADCTask */
+  /* USER CODE BEGIN 5 */
   /* Infinite loop */
   for(;;)
   {
-    adc_update(&hadc2);
-    osDelay(10);
+	adc_update(&hadc2);
+	osDelay(10);
   }
-  /* USER CODE END StartADCTask */
+  /* USER CODE END 5 */
 }
 
  /**
