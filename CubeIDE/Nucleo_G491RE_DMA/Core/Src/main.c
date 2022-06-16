@@ -78,12 +78,10 @@ static void MX_SPI1_Init(void);
 void StartSerialTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
-/*
 void mpuWrite(uint8_t, uint8_t);
-void mpuRead(uint8_t *address, uint8_t *value)
+void mpuRead(uint8_t *address, uint8_t *value);
 void imu_init();
 void imu_update();
-*/
 void adc_init();
 void adc_update();
 void ps_init();
@@ -142,7 +140,7 @@ int main(void)
   // Start receiving I2S microphone data
   // HAL_I2S_RxCpltCallback() is called at the end of HAL_I2S_Receive_DMA,
   // so HAL_I2S_RxCpltCallback() is executed continuously.
-  HAL_Delay(100); // Delay is needed. why?
+  HAL_Delay(100); // After using MX_GPIO_Init(), HAL_Delay() is needed.
   HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&sp.i2s_rx_buff, BUFF_SIZE);
   // Start SPI slave with PR2
   HAL_SPI_Receive_DMA( &hspi3, rxbuff, sizeof(rxbuff));
@@ -151,6 +149,9 @@ int main(void)
   ps_update(&hi2c1);
   // Initialize adc
   adc_init(&hadc2);
+  // Initialize IMU
+  sp.imu_select = SELECT_ICM_42688_SPI;
+  imu_init(&hspi1);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -656,6 +657,7 @@ void StartSerialTask(void const * argument)
   for(;;)
   {
 	adc_update(&hadc2);
+	imu_update(&hspi1);
     sprintf(acc_buffer, "imu_en:%d acc[0]:%d acc[1]:%d acc[2]:%d\r\n",
     		sp.imu_en, sp.acc_print[0], sp.acc_print[1], sp.acc_print[2]);
 	sprintf(acc_buffer, "acc[0]:%d acc[1]:%d acc[2]:%d\r\n",

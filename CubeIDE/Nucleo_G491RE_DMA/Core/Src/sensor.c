@@ -100,7 +100,6 @@ void delayUs(uint16_t micros) {
 		asm("nop");
 	}
 }
-/*
 
 void mpuWrite(SPI_HandleTypeDef *hspi, uint8_t address, uint8_t value)
 {
@@ -250,7 +249,6 @@ void imu_update(SPI_HandleTypeDef *hspi){
 		}
 	}
 }
-*/
 
 void adc_init(ADC_HandleTypeDef *hadc){
    if (HAL_ADC_Start(hadc) !=  HAL_OK)
