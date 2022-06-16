@@ -627,25 +627,29 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
 }
 
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
-    for(int i=0; i<20; i++){
-    	txbuff[i*2] = (sp.i2s_buff_sifted[i] >> 10) & 0x000000ff;
-    	txbuff[i*2+1] = (sp.i2s_buff_sifted[i] >> 2) & 0x000000ff;
-    }
-    txbuff[20*2] = ((int32_t)1000 >> 8) & 0x000000ff;
-    txbuff[20*2+1] = ((int32_t)1000 >> 0) & 0x000000ff;
-    txbuff[21*2] = ((int32_t)2000 >> 8) & 0x000000ff;
-    txbuff[21*2+1] = ((int32_t)2000 >> 0) & 0x000000ff;
-    if(rxbuff[0] == READ_COMMAND){
-    	HAL_SPI_Transmit_DMA(hspi, txbuff, sizeof(txbuff));
-	}else{
-		HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+	if (hspi->Instance == SPI3) {
+        for(int i=0; i<20; i++){
+        	txbuff[i*2] = (sp.i2s_buff_sifted[i] >> 10) & 0x000000ff;
+        	txbuff[i*2+1] = (sp.i2s_buff_sifted[i] >> 2) & 0x000000ff;
+        }
+        txbuff[20*2] = ((int32_t)1000 >> 8) & 0x000000ff;
+        txbuff[20*2+1] = ((int32_t)1000 >> 0) & 0x000000ff;
+        txbuff[21*2] = ((int32_t)2000 >> 8) & 0x000000ff;
+        txbuff[21*2+1] = ((int32_t)2000 >> 0) & 0x000000ff;
+        if(rxbuff[0] == READ_COMMAND){
+        	HAL_SPI_Transmit_DMA(hspi, txbuff, sizeof(txbuff));
+    	}else{
+	    	HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+    	}
 	}
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
-	// HAL_Delay(1) is magic number
-	  HAL_Delay(1);
-	  HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+	if (hspi->Instance == SPI3) {
+    	// HAL_Delay(1) is magic number
+	    HAL_Delay(1);
+	    HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+	}
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
