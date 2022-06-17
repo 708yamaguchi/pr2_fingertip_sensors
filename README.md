@@ -18,9 +18,13 @@ This repository will develop boards and firmware with the following features.
 
 - CubeIDE
 
+  - Nucleo_G491RE_DMA
+
+    Main project of this repository. Nucleo G491RE firmware for PR2 fingertip. All communication except ADC is implemented by DMA.
+
   - Nucleo_G491RE
 
-    Main project of this repository. Nucleo G491RE firmware for PR2 fingertip. SPI communication loop with DMA runs on FreeRTOS.
+    A project that has been in development for a long time. Various communication types can be tested with the define flag.
 
   - Nucleo_G491RE_PR2_slave
 
