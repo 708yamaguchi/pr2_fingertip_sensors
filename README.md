@@ -56,6 +56,8 @@ This repository will develop boards and firmware with the following features.
 
 - [Our progress 2](https://docs.google.com/presentation/d/1VxRJWDqeDk_ryu-x1Vhj3_6BDu3gscwvNpngHKwfR4M/edit?usp=sharing)
 
+- [BOM](https://drive.google.com/file/d/1cyWvVVvMDZyYSMVXUAKyK9CF-KghAjUk/view)
+
 # Notes
 
   - Why G491RE?
