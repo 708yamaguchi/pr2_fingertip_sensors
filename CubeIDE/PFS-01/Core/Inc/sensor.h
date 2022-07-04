@@ -6,10 +6,6 @@
 // COMMUNICATION const
 static const uint8_t READ_COMMAND = 0x12;
 
-// EXTERNAL SWITCH PIN
-#define SWITCH_PORT GPIOB
-#define SWITCH_GPIO_PIN_9
-
 // IMU selection
 static const uint8_t SELECT_ICM_20600 = 0x00;
 static const uint8_t SELECT_ICM_42605 = 0x01;
@@ -77,10 +73,6 @@ static const uint8_t ICM_42688_PWR_MGMT0_VAL =  0x0F;//Turn on gyro and acc with
 
 // ICM-42688-P I2C VAL
 static const uint8_t ICM_42688_I2C_ADDR = 0x68<<1;
-
-// IMU CS PIN
-#define IMU_CS_PORT GPIOC
-#define IMU_CS_PIN GPIO_PIN_4
 
 // IMU CONST
 #define ACC_CHANNEL_NUM 3
