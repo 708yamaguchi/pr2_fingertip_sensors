@@ -58,10 +58,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define SWITCH_Pin GPIO_PIN_13
+#define SWITCH_GPIO_Port GPIOC
 #define IMU_CS_Pin GPIO_PIN_4
 #define IMU_CS_GPIO_Port GPIOC
-#define SWITCH_Pin GPIO_PIN_6
-#define SWITCH_GPIO_Port GPIOB
 #define LED_Pin GPIO_PIN_9
 #define LED_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
