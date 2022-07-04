@@ -18,9 +18,13 @@ This repository will develop boards and firmware with the following features.
 
 - CubeIDE
 
+  - PFS-01
+
+    A main project of this repository. STM32 G491RE firmware for PR2 fingertip.
+
   - Nucleo_G491RE_DMA
 
-    Main project of this repository. Nucleo G491RE firmware for PR2 fingertip. All communication except ADC is implemented by DMA.
+    A project used in final verification of sensor behavior with Nucleo G491RE. All communication except ADC is implemented by DMA.
 
   - Nucleo_G491RE
 
