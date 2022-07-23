@@ -22,7 +22,7 @@ This repository will develop boards and firmware with the following features.
 
     A main project of this repository. STM32 G491RE firmware for PR2 fingertip.
 
-    PFS-01: First revision of PR2 Finger Sensorboard
+    PFS-01: First revision of PR2 Finger Sensorboard.
 
   - Nucleo_G491RE_DMA
 
@@ -52,7 +52,7 @@ This repository will develop boards and firmware with the following features.
 
     A sample project of sensor boards using a STM32 micro microcontroller.
 
-    KJS-03: Third revision of Kondo Jointbase Sensorboard
+    KJS-03: Third revision of Kondo Jointbase Sensorboard.
 
 - Datasheets
 
