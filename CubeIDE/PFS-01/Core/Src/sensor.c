@@ -5,6 +5,7 @@
  *      Author: makabe
  */
 
+#include "main.h"
 #include "sensor.h"
 #include "cmsis_os.h"
 
@@ -103,18 +104,18 @@ void delayUs(uint16_t micros) {
 
 void mpuWrite(SPI_HandleTypeDef *hspi, uint8_t address, uint8_t value)
 {
-	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(IMU_nCS_GPIO_Port, IMU_nCS_Pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(hspi, &address, 1, 1000);
 	HAL_SPI_Transmit(hspi, &value, 1, 1000);
-	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(IMU_nCS_GPIO_Port, IMU_nCS_Pin, GPIO_PIN_SET);
 }
 
 void mpuRead(SPI_HandleTypeDef *hspi, uint8_t *address, uint8_t *value)
 {
-	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(IMU_nCS_GPIO_Port, IMU_nCS_Pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(hspi, &*address, 1, 1000);
 	HAL_SPI_Receive(hspi, &*value, 1, 1000);
-	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(IMU_nCS_GPIO_Port, IMU_nCS_Pin, GPIO_PIN_SET);
 }
 
 void imu_init(SPI_HandleTypeDef *hspi){
@@ -222,7 +223,7 @@ void acc_update(SPI_HandleTypeDef *hspi) {
 	}
 
 	if(sp.imu_en == IMU_EN){
-    	HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_RESET);
+    	HAL_GPIO_WritePin(IMU_nCS_GPIO_Port, IMU_nCS_Pin, GPIO_PIN_RESET);
     	HAL_SPI_Transmit_DMA(hspi, acc_t_data, 1);
 	}
 }
@@ -244,7 +245,7 @@ void gyro_update(SPI_HandleTypeDef *hspi){
 	}
 
 	if(sp.imu_en == IMU_EN){
-		HAL_GPIO_WritePin(IMU_CS_PORT, IMU_CS_PIN, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(IMU_nCS_GPIO_Port, IMU_nCS_Pin, GPIO_PIN_RESET);
 		HAL_SPI_Transmit_DMA(hspi, gyro_t_data, 1);
 	}
 }
