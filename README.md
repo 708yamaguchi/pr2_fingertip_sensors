@@ -22,6 +22,8 @@ This repository will develop boards and firmware with the following features.
 
     A main project of this repository. STM32 G491RE firmware for PR2 fingertip.
 
+    PFS-01: First revision of PR2 Finger Sensorboard
+
   - Nucleo_G491RE_DMA
 
     A project used in final verification of sensor behavior with Nucleo G491RE. All communication except ADC is implemented by DMA.
@@ -45,6 +47,12 @@ This repository will develop boards and firmware with the following features.
   - Arduino_Nano_PR2_slave
 
     Arduino Nano firmware communicating with PR2 as fingertip SPI slave. This firmware is for reference only in this project and is not for actual use.
+
+  - KJS-03
+
+    A sample project of sensor boards using a STM32 micro microcontroller.
+
+    KJS-03: Third revision of Kondo Jointbase Sensorboard
 
 - Datasheets
 
@@ -78,3 +86,38 @@ This repository will develop boards and firmware with the following features.
     - The board developed in this project must function as an SPI slave for PR2.
     - Responding to every data request from SPI master (PR2) makes it difficult for the microcontroller to read other sensors at the appropriate timing.
     - To save microcontroller CPU resources as much as possible, the DMA function is effective.
+
+# Design of PCB
+For JSK users only
+  - Sensor board
+    - PFS-01A
+
+    A main circuit board of PFS-01.
+
+    PFS-01: First revision of PR2 Finger Sensorboard.
+
+    [PCB project](https://drive.google.com/drive/u/1/folders/1ek_gkk0nL_mesC0ZjxZoTLl6uysGZHwz)
+
+    - PFS-01B
+
+    A side circuit board of PFS-01.
+
+    - PFS-01C
+
+    A front circuit board of PFS-01.
+
+    - PFS-01D
+
+    A top circuit board of PFS-01.
+
+  - Conversion board
+    - ICSC-01
+    ICSC-01: First revision of ICS Conversionboard.
+
+    [PCB project](https://drive.google.com/drive/u/1/folders/1huTPeMoCkxRJL4r8LULCaVruhAkjkXQm)
+
+    A conversion board of ICS(12V) to ICS(5V).
+
+    Function1:step down ICS VCC(12V) to ICS VCC(5V).
+
+    Function2:connect UART_TX and UART_RX via 2.2k resistor [Document P9](https://kondo-robot.com/w/wp-content/uploads/ICS3.5_SoftwareManual_1_1.pdf).
