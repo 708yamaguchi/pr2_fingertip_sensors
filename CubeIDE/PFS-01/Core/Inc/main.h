@@ -58,6 +58,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define Software_RESET_Pin GPIO_PIN_13
+#define Software_RESET_GPIO_Port GPIOC
 #define LED_Pin GPIO_PIN_4
 #define LED_GPIO_Port GPIOC
 #define IMU_FSYNC_Pin GPIO_PIN_11
