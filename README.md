@@ -24,6 +24,8 @@ This repository will develop boards and firmware with the following features.
 
     PFS-01: First revision of PR2 Finger Sensorboard.
 
+    	    develop-PFS-01A: main branch for developping PFS-01 (now only test PFS-01A)
+
   - Nucleo_G491RE_DMA
 
     A project used in final verification of sensor behavior with Nucleo G491RE. All communication except ADC is implemented by DMA.
@@ -100,15 +102,7 @@ For JSK users only
 
     - PFS-01B
 
-    A side circuit board of PFS-01.
-
-    - PFS-01C
-
-    A front circuit board of PFS-01.
-
-    - PFS-01D
-
-    A top circuit board of PFS-01.
+    Front, side, top circuit boards of PFS-01.
 
   - Conversion board
     - ICSC-01
