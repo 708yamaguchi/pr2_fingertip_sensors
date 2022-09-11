@@ -276,8 +276,13 @@ void adc_update(ADC_HandleTypeDef *hadc){
 	HAL_ADC_Stop (hadc);
 }
 
+void ps_select_channel(I2C_HandleTypeDef *hi2c, uint8_t ch){
+	uint8_t tx;
+	tx = 0x08 | ch;//PCA9547 format
+	HAL_I2C_Master_Transmit(hi2c, PCA9547_ADDR, &tx, 1, HAL_MAX_DELAY);//select i2c channel
+}
+
 void ps_init(I2C_HandleTypeDef *hi2c){
-	volatile int a = 0;
 	uint8_t init_buff[2];
 	uint8_t start_buff[2];
 	uint8_t id_buff[2];
@@ -295,20 +300,18 @@ void ps_init(I2C_HandleTypeDef *hi2c){
 	start_buff[1] = 0x08;//16bit
 
 	for (int i = 0; i < PS_CHANNEL_NUM; i++){
-		// HAL_I2C_Mem_Read_DMA(hi2c, VCNL4040_ADDR, ID_L, 1, id_buff, 2);//check sensor ID
-		HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, ID_L, 1, id_buff, 2, 100);//check sensor ID
-		HAL_Delay(1);
+		ps_select_channel(hi2c, PS_CHANNEL_ARRAY_PCA9457[i]);
+
+		HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, ID_L, 1, id_buff, 2, HAL_MAX_DELAY);//check sensor ID
+
 		if(id_buff[0] == ID_L_VAL && id_buff[1] == ID_H_VAL){
 			sp.ps_en[i] = PS_EN;
-			// HAL_I2C_Mem_Write_DMA(hi2c, VCNL4040_ADDR, PS_CONF3, 1, init_buff, 2);//LED setting
-			HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF3, 1, init_buff, 2, 100);//LED setting
-			HAL_Delay(1);
-			// HAL_I2C_Mem_Write_DMA(hi2c, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2);//Turn on LED
-			HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, 100);//Turn on LED
-			HAL_Delay(1);
+			HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF3, 1, init_buff, 2, HAL_MAX_DELAY);//LED setting
+			HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
 		}else{
 			sp.ps_en[i] = PS_NOT_EN;
 		}
+
 	}
 }
 
@@ -317,41 +320,37 @@ uint8_t ps_data_tmp[2];
 void ps_update(I2C_HandleTypeDef *hi2c){
 	uint8_t start_buff[2];
 	uint8_t stop_buff[2];
+	uint8_t data[2];
 	uint8_t ps_ret = 0xff;
 	start_buff[0] = 0x0e;
 	start_buff[1] = 0x08;
 	stop_buff[0] = 0x01;
 	stop_buff[1] = 0x00;
 
-	// Currently, PS_CHANNEL_NUM must be 1
 	for (int i = 0; i < PS_CHANNEL_NUM; i++){
-		ps_data_tmp[0] = 0x00;
-		ps_data_tmp[1] = 0x00;
+		data[0] = 0x00;
+		data[1] = 0x00;
 
 		if(sp.ps_en[i] == PS_EN){
+			ps_select_channel(hi2c, PS_CHANNEL_ARRAY_PCA9457[i]);
+
 			//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
 			//HAL_Delay(10);
 			//HAL_I2C_Mem_Read(hi2c1, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, 1);
-			//ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, HAL_MAX_DELAY);
-#if !PS_I2C_DMA
-			ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, ps_data_tmp, 2, 1);
+			ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, HAL_MAX_DELAY);
+
 			if(ps_ret == HAL_OK){
-				sp.ps_print[i] = (uint16_t)(ps_data_tmp[1] << 8 | ps_data_tmp[0]);
+				sp.ps_print[i] = (uint16_t)(data[1] << 8 | data[0]);
 
-				sp.ps[i * 2] = ps_data_tmp[1];
+				sp.ps[i * 2] = data[1];
 
-				sp.ps[i * 2 + 1] = ps_data_tmp[0];
+				sp.ps[i * 2 + 1] = data[0];
 			}
-			HAL_Delay(1);
-#else
-			// sp.i2c1_dma_flag = I2C1_DMA_PS;
-			// HAL_I2C_Mem_Read_DMA(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, sp.ps_dma, 2);
-			ps_ret = HAL_I2C_Mem_Read_DMA(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, ps_data_tmp, 2);
-#endif
 		}
 		//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, stop_buff, 2, HAL_MAX_DELAY);//Turn off LED
 	}
 }
+
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 	if (hi2c->Instance == I2C1) {
 		sp.ps_print[0] = (uint16_t)(ps_data_tmp[1] << 8 | ps_data_tmp[0]);

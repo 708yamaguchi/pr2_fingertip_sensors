@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -77,6 +77,19 @@ void StartPSTask(void const * argument);
 void StartIMUTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
+void mpuWrite(uint8_t, uint8_t);
+void ps_select_channel();
+void ps_init();
+void imu_init();
+void ps_update();
+void imu_update();
+void adc_update();
+void sw_update();
+uint32_t UART_IsEnabledIT_RX();
+uint8_t getlen();
+//void ics_init();
+//void ics_init_DMA();
+void txbuff_update();
 
 /* USER CODE END PFP */
 
@@ -121,6 +134,13 @@ int main(void)
   MX_SPI3_Init();
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
+  sp.imu_select = SELECT_ICM_20600;
+
+  sp.com_en = 0;
+
+  ps_init(&hi2c1);
+
+//  imu_init(&hspi1);
 
   /* USER CODE END 2 */
 
@@ -259,7 +279,7 @@ static void MX_ADC1_Init(void)
   /** Common config
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.GainCompensation = 0;
@@ -553,7 +573,7 @@ static void MX_SPI3_Init(void)
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -663,6 +683,7 @@ void StartADCTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+	  adc_update(&hadc1);
     osDelay(1);
   }
   /* USER CODE END 5 */
@@ -700,6 +721,7 @@ void StartPSTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+	ps_update(&hi2c1);
     osDelay(1);
   }
   /* USER CODE END StartPSTask */

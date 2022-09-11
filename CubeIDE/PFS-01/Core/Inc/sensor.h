@@ -102,9 +102,7 @@ static const uint8_t PS_NOT_EN = 0x00;
 // PS ADDR
 static const uint8_t VCNL4040_ADDR = 0x60<<1;
 static const uint8_t PCA9547_ADDR = 0x74<<1; //1,1,1,0,A2,A1,A0 A2=1, A1=A0=0
-static const uint8_t PCA9548_ADDR = 0x74<<1; //1,1,1,0,A2,A1,A0 A2=1, A1=A0=0
-static const uint8_t PS_CHANNEL_ARRAY_PCA9458[4] = {0x01,0x08,0x10,0x80};//KJS-03-revA PCA9458 channel format ch0,3,4,7
-static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-03-revB PCA9457 channel format ch0,3,4,7
+static const uint8_t PS_CHANNEL_ARRAY_PCA9457[8] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07};//PCA9457 channel format ch0,1,2,3,4,5,6,7
 // Currently, PS_CHANNEL_NUM must be 1
 #define PS_CHANNEL_NUM 8
 #define PS_I2C_DMA 0
