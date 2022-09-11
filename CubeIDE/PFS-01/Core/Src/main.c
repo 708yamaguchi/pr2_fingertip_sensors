@@ -54,6 +54,7 @@ SPI_HandleTypeDef hspi3;
 PCD_HandleTypeDef hpcd_USB_FS;
 
 osThreadId ADCTaskHandle;
+osThreadId LEDTaskHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -69,6 +70,7 @@ static void MX_SPI1_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USB_PCD_Init(void);
 void StartADCTask(void const * argument);
+void StartLEDTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -138,6 +140,10 @@ int main(void)
   /* definition and creation of ADCTask */
   osThreadDef(ADCTask, StartADCTask, osPriorityNormal, 0, 128);
   ADCTaskHandle = osThreadCreate(osThread(ADCTask), NULL);
+
+  /* definition and creation of LEDTask */
+  osThreadDef(LEDTask, StartLEDTask, osPriorityIdle, 0, 128);
+  LEDTaskHandle = osThreadCreate(osThread(LEDTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -632,6 +638,25 @@ void StartADCTask(void const * argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartLEDTask */
+/**
+* @brief Function implementing the LEDTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartLEDTask */
+void StartLEDTask(void const * argument)
+{
+  /* USER CODE BEGIN StartLEDTask */
+  /* Infinite loop */
+  for(;;)
+  {
+	  HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
+	  osDelay(100);
+  }
+  /* USER CODE END StartLEDTask */
 }
 
  /**
