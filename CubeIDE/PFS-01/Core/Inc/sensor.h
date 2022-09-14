@@ -132,6 +132,17 @@ static const uint8_t PS_CHANNEL_2DARRAY_PCA9457[PCA9547_NUM][PS_CHANNEL_NUM] =
 // ADC CONST
 #define ADC_CHANNEL_NUM 9
 
+// ADS7828 ADDR
+#define ADC_CHANNEL_NUM_ADS 4
+#define ADS7828_NUM 4
+static const uint8_t ADC_CHANNEL_ARRAY[ADC_CHANNEL_NUM_ADS] = {0x80,0xC0,0xB0,0xF0};//ADS7828 channel format ch0,1,6,7
+
+static const uint8_t ADS7828_ADDR_ARRAY[ADS7828_NUM] = {0x48<<1, 0x49<<1, 0x4A<<1, 0x4B<<1};
+//PFS-01B(Right): 1,0,0,1,0,A1,A0 A1=0, A0=0
+//PFS-01A(Left) : 1,0,0,1,0,A1,A0 A1=0, A0=1
+//PFS-01A(Front): 1,0,0,1,0,A1,A0 A1=1, A0=0
+//PFS-01A(Top)  : 1,0,0,1,0,A1,A0 A1=1, A0=1
+
 // Buffer CONST
 #define TXBUFF_LENGTH 44
 
@@ -206,6 +217,8 @@ struct sensor_params {
 	uint8_t adc[ADC_CHANNEL_NUM * 2];
 	uint16_t adc_print[ADC_CHANNEL_NUM];
 	uint16_t adc_elapsed_time;
+	uint8_t adc_ADS_2d[ADS7828_NUM][ADC_CHANNEL_NUM_ADS * 2];
+	uint16_t adc_print_ADS_2d[ADS7828_NUM][ADC_CHANNEL_NUM_ADS];
 	int32_t i2s_rx_buff[MIC_BUFF_SIZE];
 	int32_t i2s_buff_sifted[MIC_BUFF_SIZE];
 	uint16_t mic_elapsed_time;

@@ -687,7 +687,8 @@ void StartADCTask(void const * argument)
   for(;;)
   {
 	  adc_update(&hadc1);
-    osDelay(1);
+	  adc_update_ADS7828(&hi2c1);
+	  osDelay(1);
   }
   /* USER CODE END 5 */
 }

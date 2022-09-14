@@ -473,3 +473,34 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 		ps_update(hi2c);
 	}
 }
+
+void adc_update_ADS7828(I2C_HandleTypeDef *hi2c){
+	uint8_t command;
+	uint8_t command_PD;
+	uint8_t adc_ret;
+	command_PD = 0x00; //power down between ADC conversions
+	//command_PD = 0x02; //Internal reference off and ADC on
+	//command_PD = 0x04; //Internal reference on and ADC off
+	//command_PD = 0x06; //Internal reference on and ADC on
+
+	uint8_t data[2];
+
+	for (int i = 0; i < ADS7828_NUM; i++){
+		for (int j = 0; j < ADC_CHANNEL_NUM_ADS; j++){
+			data[0] = 0x00;
+			data[1] = 0x00;
+			command = command_PD | ADC_CHANNEL_ARRAY[j];
+
+			adc_ret = HAL_I2C_Mem_Read(hi2c, ADS7828_ADDR_ARRAY[i], command, 1, data, 2, HAL_MAX_DELAY);
+			HAL_Delay(10);
+			//adc_ret = HAL_I2C_Mem_Read(hi2c, 0x34, command, 1, data, 2, HAL_MAX_DELAY);
+
+			if(adc_ret == HAL_OK){
+				sp.adc_print_ADS_2d[i][j] = (uint16_t)(data[0] << 8 | data[1]);
+
+				sp.adc_ADS_2d[i][j * 2] = data[0];
+				sp.adc_ADS_2d[i][j * 2 + 1] = data[1];
+			}
+		}
+	}
+}
