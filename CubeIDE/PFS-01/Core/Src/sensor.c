@@ -282,6 +282,20 @@ void ps_select_channel(I2C_HandleTypeDef *hi2c, uint8_t ch){
 	HAL_I2C_Master_Transmit(hi2c, PCA9547_ADDR, &tx, 1, HAL_MAX_DELAY);//select i2c channel
 }
 
+void ps_select_channel_ADDR(I2C_HandleTypeDef *hi2c, uint8_t ch, uint8_t ADDR){
+	uint8_t tx;
+	tx = 0x08 | ch;//PCA9547 format
+	HAL_I2C_Master_Transmit(hi2c, ADDR, &tx, 1, HAL_MAX_DELAY);//select i2c channel
+}
+
+void disable_all_mux(I2C_HandleTypeDef *hi2c){
+	uint8_t tx;
+	tx = 0x00;//PCA9547 format, disable IC
+	for (int i = 0; i < PCA9547_NUM; i++){
+		HAL_I2C_Master_Transmit(hi2c, PCA9547_ADDR_ARRAY[i], &tx, 1, HAL_MAX_DELAY);//select i2c channel
+	}
+}
+
 void ps_init(I2C_HandleTypeDef *hi2c){
 	uint8_t init_buff[2];
 	uint8_t start_buff[2];
@@ -311,7 +325,43 @@ void ps_init(I2C_HandleTypeDef *hi2c){
 		}else{
 			sp.ps_en[i] = PS_NOT_EN;
 		}
+	}
+}
 
+void ps_init_multi(I2C_HandleTypeDef *hi2c){
+	uint8_t init_buff[2];
+	uint8_t start_buff[2];
+	uint8_t id_buff[2];
+	id_buff[0] = 0x00;
+	id_buff[1] = 0x00;
+	init_buff[0] = 0x00;
+	//init_buff[1] = 0x06;//180[mA]
+	//init_buff[1] = 0x02;//100[mA]
+	init_buff[1] = 0x00;//50[mA]
+	//start_buff[0] = 0xce;//1/320,8T
+	//start_buff[0] = 0x0e;//1/40,8T
+	//start_buff[0] = 0x0c;//1/40,4T
+	//start_buff[0] = 0x04;//1/40,2T
+	start_buff[0] = 0x00;//1/40,1T
+	start_buff[1] = 0x08;//16bit
+
+	for (int i = 0; i < PCA9547_NUM; i++){
+		for (int j = 0; j < PS_CHANNEL_NUM; j++){
+			if(PS_CHANNEL_2DARRAY_PCA9457[i][j] < 0x08){
+				disable_all_mux(hi2c);
+				ps_select_channel_ADDR(hi2c, PS_CHANNEL_2DARRAY_PCA9457[i][j], PCA9547_ADDR_ARRAY[i]);
+				HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, ID_L, 1, id_buff, 2, 100);//check sensor ID
+				if(id_buff[0] == ID_L_VAL && id_buff[1] == ID_H_VAL){
+					sp.ps_en_2d[i][j] = PS_EN;
+					HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF3, 1, init_buff, 2, HAL_MAX_DELAY);//LED setting
+					HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
+				}else{
+					sp.ps_en_2d[i][j] = PS_NOT_EN;
+				}
+			}else{
+				sp.ps_en_2d[i][j] = PS_NOT_EN;
+			}
+		}
 	}
 }
 

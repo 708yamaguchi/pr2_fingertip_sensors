@@ -80,6 +80,7 @@ void StartIMUTask(void const * argument);
 void mpuWrite(uint8_t, uint8_t);
 void ps_select_channel();
 void ps_init();
+void ps_init_multi();
 void imu_init();
 void ps_update();
 void imu_update();
@@ -138,7 +139,8 @@ int main(void)
 
   sp.com_en = 0;
 
-  ps_init(&hi2c1);
+  //ps_init(&hi2c1);
+  ps_init_multi(&hi2c1);
 
 //  imu_init(&hspi1);
 

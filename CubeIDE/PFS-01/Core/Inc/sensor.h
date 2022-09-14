@@ -100,11 +100,29 @@ static const uint8_t PS_EN = 0x01;
 static const uint8_t PS_NOT_EN = 0x00;
 
 // PS ADDR
+#define PS_CHANNEL_NUM 8
+#define PCA9547_NUM 5
 static const uint8_t VCNL4040_ADDR = 0x60<<1;
 static const uint8_t PCA9547_ADDR = 0x74<<1; //1,1,1,0,A2,A1,A0 A2=1, A1=A0=0
-static const uint8_t PS_CHANNEL_ARRAY_PCA9457[8] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07};//PCA9457 channel format ch0,1,2,3,4,5,6,7
-// Currently, PS_CHANNEL_NUM must be 1
-#define PS_CHANNEL_NUM 8
+static const uint8_t PS_CHANNEL_ARRAY_PCA9457[PS_CHANNEL_NUM] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07};//PCA9457 channel format ch0,1,2,3,4,5,6,7
+
+static const uint8_t PCA9547_ADDR_ARRAY[PCA9547_NUM] = {0x74<<1, 0x70<<1, 0x71<<1, 0x72<<1, 0x73<<1};
+//PFS-01A       : 1,1,1,0,A2,A1,A0 A2=1, A1=0, A0=0
+//PFS-01B(Right): 1,1,1,0,A2,A1,A0 A2=0, A1=0, A0=0
+//PFS-01A(Left) : 1,1,1,0,A2,A1,A0 A2=0, A1=0, A0=1
+//PFS-01A(Front): 1,1,1,0,A2,A1,A0 A2=0, A1=1, A0=0
+//PFS-01A(Top)  : 1,1,1,0,A2,A1,A0 A2=0, A1=1, A0=1
+static const uint8_t PS_CHANNEL_NUM_ARRAY[PCA9547_NUM] = {8,4,4,4,4};
+
+static const uint8_t PS_CHANNEL_2DARRAY_PCA9457[PCA9547_NUM][PS_CHANNEL_NUM] =
+{
+		{0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07},
+		{0x00,0x02,0x05,0x07,0x10,0x10,0x10,0x10},
+		{0x00,0x02,0x05,0x07,0x10,0x10,0x10,0x10},
+		{0x00,0x02,0x05,0x07,0x10,0x10,0x10,0x10},
+		{0x00,0x02,0x05,0x07,0x10,0x10,0x10,0x10}
+};//PCA9457 channel format
+
 #define PS_I2C_DMA 0
 
 // ADC CONST
@@ -166,6 +184,7 @@ struct sensor_params {
 	uint8_t ps[PS_CHANNEL_NUM * 2];//0H,0L,1H,1L,4H,4L,7H,7L
 	uint16_t ps_print[PS_CHANNEL_NUM];
 	uint8_t ps_en[PS_CHANNEL_NUM]; //0x00:disable 0x01:enable
+	uint8_t ps_en_2d[PCA9547_NUM][PS_CHANNEL_NUM]; //0x00:disable 0x01:enable
 	uint16_t ps_elapsed_time;
 	uint8_t ps_dma[2];
 	uint8_t gyro[GYRO_CHANNEL_NUM * 2];
