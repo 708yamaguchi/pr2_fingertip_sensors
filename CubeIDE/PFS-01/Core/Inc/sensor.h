@@ -6,6 +6,10 @@
 // COMMUNICATION const
 static const uint8_t READ_COMMAND = 0x12;
 
+//BOARD selection
+static const uint8_t SELECT_PFS_01_SINGLE = 0x00;
+static const uint8_t SELECT_PFS_01_ASM = 0x01;
+
 // IMU selection
 static const uint8_t SELECT_ICM_20600 = 0x00;
 static const uint8_t SELECT_ICM_42605 = 0x01;
@@ -181,8 +185,10 @@ struct sensor_params {
 	uint8_t board_select;
 
 	// read data
-	uint8_t ps[PS_CHANNEL_NUM * 2];//0H,0L,1H,1L,4H,4L,7H,7L
+	uint8_t ps[PS_CHANNEL_NUM * 2];
 	uint16_t ps_print[PS_CHANNEL_NUM];
+	uint8_t ps_2d[PCA9547_NUM][PS_CHANNEL_NUM * 2];
+	uint16_t ps_print_2d[PCA9547_NUM][PS_CHANNEL_NUM];
 	uint8_t ps_en[PS_CHANNEL_NUM]; //0x00:disable 0x01:enable
 	uint8_t ps_en_2d[PCA9547_NUM][PS_CHANNEL_NUM]; //0x00:disable 0x01:enable
 	uint16_t ps_elapsed_time;

@@ -288,11 +288,15 @@ void ps_select_channel_ADDR(I2C_HandleTypeDef *hi2c, uint8_t ch, uint8_t ADDR){
 	HAL_I2C_Master_Transmit(hi2c, ADDR, &tx, 1, HAL_MAX_DELAY);//select i2c channel
 }
 
-void disable_all_mux(I2C_HandleTypeDef *hi2c){
+void disable_mux(I2C_HandleTypeDef *hi2c, uint8_t ADDR){
 	uint8_t tx;
 	tx = 0x00;//PCA9547 format, disable IC
+	HAL_I2C_Master_Transmit(hi2c, ADDR, &tx, 1, HAL_MAX_DELAY);//select i2c channel
+}
+
+void disable_all_mux(I2C_HandleTypeDef *hi2c){
 	for (int i = 0; i < PCA9547_NUM; i++){
-		HAL_I2C_Master_Transmit(hi2c, PCA9547_ADDR_ARRAY[i], &tx, 1, HAL_MAX_DELAY);//select i2c channel
+		disable_mux(hi2c, PCA9547_ADDR_ARRAY[i]);
 	}
 }
 
@@ -313,55 +317,44 @@ void ps_init(I2C_HandleTypeDef *hi2c){
 	start_buff[0] = 0x00;//1/40,1T
 	start_buff[1] = 0x08;//16bit
 
-	for (int i = 0; i < PS_CHANNEL_NUM; i++){
-		ps_select_channel(hi2c, PS_CHANNEL_ARRAY_PCA9457[i]);
+	switch(sp.board_select){
+	case 0:
+		for (int i = 0; i < PS_CHANNEL_NUM; i++){
+			ps_select_channel(hi2c, PS_CHANNEL_ARRAY_PCA9457[i]);
 
-		HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, ID_L, 1, id_buff, 2, HAL_MAX_DELAY);//check sensor ID
+			HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, ID_L, 1, id_buff, 2, HAL_MAX_DELAY);//check sensor ID
 
-		if(id_buff[0] == ID_L_VAL && id_buff[1] == ID_H_VAL){
-			sp.ps_en[i] = PS_EN;
-			HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF3, 1, init_buff, 2, HAL_MAX_DELAY);//LED setting
-			HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
-		}else{
-			sp.ps_en[i] = PS_NOT_EN;
+			if(id_buff[0] == ID_L_VAL && id_buff[1] == ID_H_VAL){
+				sp.ps_en[i] = PS_EN;
+				HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF3, 1, init_buff, 2, HAL_MAX_DELAY);//LED setting
+				HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
+			}else{
+				sp.ps_en[i] = PS_NOT_EN;
+			}
 		}
-	}
-}
-
-void ps_init_multi(I2C_HandleTypeDef *hi2c){
-	uint8_t init_buff[2];
-	uint8_t start_buff[2];
-	uint8_t id_buff[2];
-	id_buff[0] = 0x00;
-	id_buff[1] = 0x00;
-	init_buff[0] = 0x00;
-	//init_buff[1] = 0x06;//180[mA]
-	//init_buff[1] = 0x02;//100[mA]
-	init_buff[1] = 0x00;//50[mA]
-	//start_buff[0] = 0xce;//1/320,8T
-	//start_buff[0] = 0x0e;//1/40,8T
-	//start_buff[0] = 0x0c;//1/40,4T
-	//start_buff[0] = 0x04;//1/40,2T
-	start_buff[0] = 0x00;//1/40,1T
-	start_buff[1] = 0x08;//16bit
-
-	for (int i = 0; i < PCA9547_NUM; i++){
-		for (int j = 0; j < PS_CHANNEL_NUM; j++){
-			if(PS_CHANNEL_2DARRAY_PCA9457[i][j] < 0x08){
-				disable_all_mux(hi2c);
-				ps_select_channel_ADDR(hi2c, PS_CHANNEL_2DARRAY_PCA9457[i][j], PCA9547_ADDR_ARRAY[i]);
-				HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, ID_L, 1, id_buff, 2, 100);//check sensor ID
-				if(id_buff[0] == ID_L_VAL && id_buff[1] == ID_H_VAL){
-					sp.ps_en_2d[i][j] = PS_EN;
-					HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF3, 1, init_buff, 2, HAL_MAX_DELAY);//LED setting
-					HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
+		break;
+	case 1:
+		disable_all_mux(hi2c);
+		for (int i = 0; i < PCA9547_NUM; i++){
+			for (int j = 0; j < PS_CHANNEL_NUM; j++){
+				if(PS_CHANNEL_2DARRAY_PCA9457[i][j] < 0x08){
+					ps_select_channel_ADDR(hi2c, PS_CHANNEL_2DARRAY_PCA9457[i][j], PCA9547_ADDR_ARRAY[i]);
+					HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, ID_L, 1, id_buff, 2, 100);//check sensor ID
+					if(id_buff[0] == ID_L_VAL && id_buff[1] == ID_H_VAL){
+						sp.ps_en_2d[i][j] = PS_EN;
+						HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF3, 1, init_buff, 2, HAL_MAX_DELAY);//LED setting
+						HAL_I2C_Mem_Write(hi2c, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
+					}else{
+						sp.ps_en_2d[i][j] = PS_NOT_EN;
+					}
 				}else{
 					sp.ps_en_2d[i][j] = PS_NOT_EN;
 				}
-			}else{
-				sp.ps_en_2d[i][j] = PS_NOT_EN;
 			}
+			disable_mux(hi2c,PCA9547_ADDR_ARRAY[i]);
 		}
+		disable_all_mux(hi2c);
+		break;
 	}
 }
 
@@ -377,27 +370,54 @@ void ps_update(I2C_HandleTypeDef *hi2c){
 	stop_buff[0] = 0x01;
 	stop_buff[1] = 0x00;
 
-	for (int i = 0; i < PS_CHANNEL_NUM; i++){
-		data[0] = 0x00;
-		data[1] = 0x00;
+	switch(sp.board_select){
+	case 0:
+		for (int i = 0; i < PS_CHANNEL_NUM; i++){
+			data[0] = 0x00;
+			data[1] = 0x00;
 
-		if(sp.ps_en[i] == PS_EN){
-			ps_select_channel(hi2c, PS_CHANNEL_ARRAY_PCA9457[i]);
+			if(sp.ps_en[i] == PS_EN){
+				ps_select_channel(hi2c, PS_CHANNEL_ARRAY_PCA9457[i]);
 
-			//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
-			//HAL_Delay(10);
-			//HAL_I2C_Mem_Read(hi2c1, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, 1);
-			ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, HAL_MAX_DELAY);
+				//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
+				//HAL_Delay(10);
+				//HAL_I2C_Mem_Read(hi2c1, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, 1);
+				ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, HAL_MAX_DELAY);
 
-			if(ps_ret == HAL_OK){
-				sp.ps_print[i] = (uint16_t)(data[1] << 8 | data[0]);
+				if(ps_ret == HAL_OK){
+					sp.ps_print[i] = (uint16_t)(data[1] << 8 | data[0]);
 
-				sp.ps[i * 2] = data[1];
+					sp.ps[i * 2] = data[1];
 
-				sp.ps[i * 2 + 1] = data[0];
+					sp.ps[i * 2 + 1] = data[0];
+				}
 			}
+			//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, stop_buff, 2, HAL_MAX_DELAY);//Turn off LED
 		}
-		//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, stop_buff, 2, HAL_MAX_DELAY);//Turn off LED
+		break;
+	case 1:
+		for (int i = 0; i < PCA9547_NUM; i++){
+			for (int j = 0; j < PS_CHANNEL_NUM; j++){
+				data[0] = 0x00;
+				data[1] = 0x00;
+
+				if(sp.ps_en_2d[i][j] == PS_EN){
+					ps_select_channel_ADDR(hi2c, PS_CHANNEL_2DARRAY_PCA9457[i][j], PCA9547_ADDR_ARRAY[i]);
+
+					ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, HAL_MAX_DELAY);
+
+					if(ps_ret == HAL_OK){
+						sp.ps_print_2d[i][j] = (uint16_t)(data[1] << 8 | data[0]);
+
+						sp.ps_2d[i][j * 2] = data[1];
+
+						sp.ps_2d[i][j * 2 + 1] = data[0];
+					}
+				}
+			}
+			disable_mux(hi2c,PCA9547_ADDR_ARRAY[i]);
+		}
+		break;
 	}
 }
 
