@@ -16,6 +16,9 @@ void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 	for(int i=0; i < GYRO_CHANNEL_NUM; i++){//2*3=6
 		sp.txbuff[index] = sp.gyro_print[i] >> 8;
 		sp.txbuff[index + 1] = sp.gyro_print[i] & 0x00ff;
+		// [Temporary change] Check if the message is correctly sent
+		sp.txbuff[index] = 0;
+		sp.txbuff[index + 1] = 100;
 		index += 2;
 	}
 	for(int i=0; i < ACC_CHANNEL_NUM; i++){//2*3=6
