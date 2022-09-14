@@ -53,12 +53,10 @@ SPI_HandleTypeDef hspi3;
 
 PCD_HandleTypeDef hpcd_USB_FS;
 
-osThreadId ADCTaskHandle;
-osThreadId LEDTaskHandle;
-osThreadId PSTaskHandle;
-osThreadId IMUTaskHandle;
+osThreadId SPISlaveTaskHandle;
 /* USER CODE BEGIN PV */
-
+uint8_t rxBuffer[1] = {};
+uint8_t txBuffer[44] = {};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -71,10 +69,7 @@ static void MX_I2S2_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USB_PCD_Init(void);
-void StartADCTask(void const * argument);
-void StartLEDTask(void const * argument);
-void StartPSTask(void const * argument);
-void StartIMUTask(void const * argument);
+void StartSPISlaveTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void mpuWrite(uint8_t, uint8_t);
@@ -95,7 +90,26 @@ void txbuff_update();
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+// PR2に送信したいuint16型の数字を、uint8型の数字2つに分解する。
+// 引数のvalは分解元のuint16型の数字
+// 引数のdigitは分解された2つ数字のうち上から何番目を取り出すか
+uint8_t decomposeDigit(uint16_t val, uint8_t digit){
+	uint8_t num;
+	num = val >> ((1 - digit) * 8);
+	return num;
+}
 
+// PR2に送信したいuint16型の数字を、グローバル変数txBuffer[44]に格納する
+// 引数のvalは、PR2に送信したいuint16型の数字
+// 引数のidxは、PR2のトピック(/pressure/l(r)_gripper_motor)の配列の何番目にvalを格納するか。
+// idx = 0, 1, 2, ... 21
+// 44個の要素は2個で1つの数字となり、PR2に送信される。
+// 1つの数字を2要素に分解するための関数がdecomposeDigit()
+void setTxBuffer(uint16_t val, uint8_t idx) {
+	for(int i = 0; i < 2; i++) {
+	    txBuffer[idx * 2 + i] = decomposeDigit(val, i);
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -142,6 +156,9 @@ int main(void)
 
 //  imu_init(&hspi1);
 
+  for(int i = 0; i < 22; i++) {
+  	  setTxBuffer(i*100, i);
+  }
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -161,21 +178,9 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of ADCTask */
-  osThreadDef(ADCTask, StartADCTask, osPriorityNormal, 0, 128);
-  ADCTaskHandle = osThreadCreate(osThread(ADCTask), NULL);
-
-  /* definition and creation of LEDTask */
-  osThreadDef(LEDTask, StartLEDTask, osPriorityIdle, 0, 128);
-  LEDTaskHandle = osThreadCreate(osThread(LEDTask), NULL);
-
-  /* definition and creation of PSTask */
-  osThreadDef(PSTask, StartPSTask, osPriorityIdle, 0, 128);
-  PSTaskHandle = osThreadCreate(osThread(PSTask), NULL);
-
-  /* definition and creation of IMUTask */
-  osThreadDef(IMUTask, StartIMUTask, osPriorityIdle, 0, 128);
-  IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
+  /* definition and creation of SPISlaveTask */
+  osThreadDef(SPISlaveTask, StartSPISlaveTask, osPriorityNormal, 0, 128);
+  SPISlaveTaskHandle = osThreadCreate(osThread(SPISlaveTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -530,7 +535,7 @@ static void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_SLAVE;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_HARD_INPUT;
@@ -670,79 +675,30 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartADCTask */
+/* USER CODE BEGIN Header_StartSPISlaveTask */
 /**
-  * @brief  Function implementing the ADCTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartADCTask */
-void StartADCTask(void const * argument)
-{
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-	  adc_update(&hadc1);
-    osDelay(1);
-  }
-  /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_StartLEDTask */
-/**
-* @brief Function implementing the LEDTask thread.
+* @brief Function implementing the SPISlaveTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartLEDTask */
-void StartLEDTask(void const * argument)
+/* USER CODE END Header_StartSPISlaveTask */
+void StartSPISlaveTask(void const * argument)
 {
-  /* USER CODE BEGIN StartLEDTask */
+  /* USER CODE BEGIN StartSPISlaveTask */
   /* Infinite loop */
   for(;;)
   {
-	  HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
-	  osDelay(100);
+	  if (HAL_SPI_Receive(&hspi1, rxBuffer, 1, 1000) != HAL_OK) {
+		  uint8_t dummy = rxBuffer[0];
+	  }
+	  if(rxBuffer[0] == 0x12){
+		  if (HAL_SPI_Transmit(&hspi1, txBuffer, sizeof(txBuffer), 1000) != HAL_OK) {
+			  printf("HAL_SPI_Transmit failed.\r\n");
+		  }
+	  }
+	  osDelay(1);
   }
-  /* USER CODE END StartLEDTask */
-}
-
-/* USER CODE BEGIN Header_StartPSTask */
-/**
-* @brief Function implementing the PSTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartPSTask */
-void StartPSTask(void const * argument)
-{
-  /* USER CODE BEGIN StartPSTask */
-  /* Infinite loop */
-  for(;;)
-  {
-	ps_update(&hi2c1);
-    osDelay(1);
-  }
-  /* USER CODE END StartPSTask */
-}
-
-/* USER CODE BEGIN Header_StartIMUTask */
-/**
-* @brief Function implementing the IMUTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartIMUTask */
-void StartIMUTask(void const * argument)
-{
-  /* USER CODE BEGIN StartIMUTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartIMUTask */
+  /* USER CODE END StartSPISlaveTask */
 }
 
  /**
