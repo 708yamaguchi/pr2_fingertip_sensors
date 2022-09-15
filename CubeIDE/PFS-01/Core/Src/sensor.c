@@ -88,7 +88,7 @@ void txbuff_update(){//max: uint8_t * 44:
 		}
 		break;
 	}
-	for(int i = 0; i < (MAX_FS_SENSOR_NUM / 2) * 3 + GYRO_CHANNEL_NUM * 2; i += 2){//36 + 6 =42
+	for(int i = 1; i < (MAX_FS_SENSOR_NUM / 2) * 3 + GYRO_CHANNEL_NUM * 2; i += 2){//36 + 6 =42
 		check_sum += sp.txbuff_state[sp.spi_slave_flag][i];
 	}
 
