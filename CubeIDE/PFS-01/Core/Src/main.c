@@ -738,7 +738,9 @@ void StartADCTask(void const * argument)
   for(;;)
   {
 	  adc_update(&hadc1);
-	  //adc_update_ADS7828(&hi2c1);
+	  if(sp.board_select == SELECT_PFS_01_ASM){
+		  adc_update_ADS7828(&hi2c1);
+	  }
 	  osDelay(1);
   }
   /* USER CODE END 5 */
