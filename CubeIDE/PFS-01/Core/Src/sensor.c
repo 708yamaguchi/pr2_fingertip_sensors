@@ -569,10 +569,10 @@ void adc_update_ADS7828(I2C_HandleTypeDef *hi2c){
 	uint8_t command;
 	uint8_t command_PD;
 	uint8_t adc_ret;
-	command_PD = 0x00; //power down between ADC conversions
-	//command_PD = 0x02; //Internal reference off and ADC on
-	//command_PD = 0x04; //Internal reference on and ADC off
-	//command_PD = 0x06; //Internal reference on and ADC on
+	//command_PD = 0x00; //power down between ADC conversions
+	//command_PD = 0x04	; //Internal reference off and ADC on
+	//command_PD = 0x08; //Internal reference on and ADC off
+	command_PD = 0x0C; //Internal reference on and ADC on
 
 	uint8_t data[2];
 

@@ -143,8 +143,8 @@ int main(void)
   MX_SPI3_Init();
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
-  sp.board_select = SELECT_PFS_01_SINGLE;
-  //sp.board_select = SELECT_PFS_01_ASM;
+  //sp.board_select = SELECT_PFS_01_SINGLE;
+  sp.board_select = SELECT_PFS_01_ASM;
   sp.imu_select = SELECT_ICM_20600;
 
   sp.com_en = 0;
