@@ -7,7 +7,7 @@ Middlewares
 .cproject
 .mxproject
 # .project
-KFS-01\ Debug.launch
+PFS-01\ Debug.launch
 STM32G491CCUX_FLASH.ld
 
 Core/Inc/stm32g4xx_hal_conf.h

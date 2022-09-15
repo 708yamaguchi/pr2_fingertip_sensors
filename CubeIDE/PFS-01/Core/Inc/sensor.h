@@ -6,6 +6,10 @@
 // COMMUNICATION const
 static const uint8_t READ_COMMAND = 0x12;
 
+//BOARD selection
+static const uint8_t SELECT_PFS_01_SINGLE = 0x00;
+static const uint8_t SELECT_PFS_01_ASM = 0x01;
+
 // IMU selection
 static const uint8_t SELECT_ICM_20600 = 0x00;
 static const uint8_t SELECT_ICM_42605 = 0x01;
@@ -100,17 +104,49 @@ static const uint8_t PS_EN = 0x01;
 static const uint8_t PS_NOT_EN = 0x00;
 
 // PS ADDR
+#define PS_CHANNEL_NUM 8
+#define PCA9547_NUM 5
 static const uint8_t VCNL4040_ADDR = 0x60<<1;
-static const uint8_t PCA9547_ADDR = 0x70<<1; //1,1,1,0,A2,A1,A0 A2=A1=A0=0
-static const uint8_t PCA9548_ADDR = 0x70<<1; //1,1,1,0,A2,A1,A0 A2=A1=A0=0
-static const uint8_t PS_CHANNEL_ARRAY_PCA9458[4] = {0x01,0x08,0x10,0x80};//KJS-03-revA PCA9458 channel format ch0,3,4,7
-static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-03-revB PCA9457 channel format ch0,3,4,7
-// Currently, PS_CHANNEL_NUM must be 1
-#define PS_CHANNEL_NUM 1
-#define PS_I2C_DMA 1
+static const uint8_t PCA9547_ADDR = 0x74<<1; //1,1,1,0,A2,A1,A0 A2=1, A1=A0=0
+static const uint8_t PS_CHANNEL_ARRAY_PCA9457[PS_CHANNEL_NUM] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07};//PCA9457 channel format ch0,1,2,3,4,5,6,7
+
+static const uint8_t PCA9547_ADDR_ARRAY[PCA9547_NUM] = {0x74<<1, 0x70<<1, 0x71<<1, 0x72<<1, 0x73<<1};
+//PFS-01A       : 1,1,1,0,A2,A1,A0 A2=1, A1=0, A0=0
+//PFS-01B(Right): 1,1,1,0,A2,A1,A0 A2=0, A1=0, A0=0
+//PFS-01A(Left) : 1,1,1,0,A2,A1,A0 A2=0, A1=0, A0=1
+//PFS-01A(Front): 1,1,1,0,A2,A1,A0 A2=0, A1=1, A0=0
+//PFS-01A(Top)  : 1,1,1,0,A2,A1,A0 A2=0, A1=1, A0=1
+static const uint8_t PS_CHANNEL_NUM_ARRAY[PCA9547_NUM] = {8,4,4,4,4};
+
+static const uint8_t PS_CHANNEL_2DARRAY_PCA9457[PCA9547_NUM][PS_CHANNEL_NUM] =
+{
+		{0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07},
+		{0x00,0x02,0x05,0x07,0x10,0x10,0x10,0x10},
+		{0x00,0x02,0x05,0x07,0x10,0x10,0x10,0x10},
+		{0x00,0x02,0x05,0x07,0x10,0x10,0x10,0x10},
+		{0x00,0x02,0x05,0x07,0x10,0x10,0x10,0x10}
+};//PCA9457 channel format
+
+#define PS_I2C_DMA 0
 
 // ADC CONST
 #define ADC_CHANNEL_NUM 9
+#define FS_CHANNEL_NUM 8 //force sensor
+
+// ADS7828 ADDR
+#define ADC_CHANNEL_NUM_ADS 4
+#define ADS7828_NUM 4
+static const uint8_t ADC_CHANNEL_ARRAY[ADC_CHANNEL_NUM_ADS] = {0x80,0xC0,0xB0,0xF0};//ADS7828 channel format ch0,1,6,7
+
+static const uint8_t ADS7828_ADDR_ARRAY[ADS7828_NUM] = {0x48<<1, 0x49<<1, 0x4A<<1, 0x4B<<1};
+//PFS-01B(Right): 1,0,0,1,0,A1,A0 A1=0, A0=0
+//PFS-01A(Left) : 1,0,0,1,0,A1,A0 A1=0, A0=1
+//PFS-01A(Front): 1,0,0,1,0,A1,A0 A1=1, A0=0
+//PFS-01A(Top)  : 1,0,0,1,0,A1,A0 A1=1, A0=1
+
+// sensor CONST
+#define MAX_PS_SENSOR_NUM (PS_CHANNEL_NUM + (PCA9547_NUM - 1) * (PS_CHANNEL_NUM - 4))
+#define MAX_FS_SENSOR_NUM (FS_CHANNEL_NUM + ADS7828_NUM * ADC_CHANNEL_NUM_ADS)
 
 // Buffer CONST
 #define TXBUFF_LENGTH 44
@@ -140,6 +176,7 @@ static const uint8_t PS_CHANNEL_ARRAY_PCA9457[4] = {0x00,0x03,0x04,0x07};//KJS-0
 
 // MAIN SPI FLAG
 #define SPI_SLAVE 1
+#define SPI_SLAVE_STATENUM 2
 
 uint8_t debug_buffer[2048];
 uint8_t gyro_buffer[512];
@@ -156,6 +193,7 @@ struct sensor_params {
 	//buffer
 	uint8_t rxbuff[1];
 	uint8_t txbuff[TXBUFF_LENGTH];
+	uint8_t txbuff_state[SPI_SLAVE_STATENUM][TXBUFF_LENGTH];
 
 	// read write data
 	uint8_t id;
@@ -165,9 +203,13 @@ struct sensor_params {
 	uint8_t board_select;
 
 	// read data
-	uint8_t ps[PS_CHANNEL_NUM * 2];//0H,0L,1H,1L,4H,4L,7H,7L
+	uint8_t ps[PS_CHANNEL_NUM * 2];
 	uint16_t ps_print[PS_CHANNEL_NUM];
+	uint8_t ps_2d[PCA9547_NUM][PS_CHANNEL_NUM * 2];
+	uint16_t ps_print_2d[PCA9547_NUM][PS_CHANNEL_NUM];
+	uint16_t ps_print_flatten[MAX_PS_SENSOR_NUM];//PFS-01A:8 * 1, PFS-01B:4 * 4
 	uint8_t ps_en[PS_CHANNEL_NUM]; //0x00:disable 0x01:enable
+	uint8_t ps_en_2d[PCA9547_NUM][PS_CHANNEL_NUM]; //0x00:disable 0x01:enable
 	uint16_t ps_elapsed_time;
 	uint8_t ps_dma[2];
 	uint8_t gyro[GYRO_CHANNEL_NUM * 2];
@@ -183,6 +225,9 @@ struct sensor_params {
 	uint8_t adc[ADC_CHANNEL_NUM * 2];
 	uint16_t adc_print[ADC_CHANNEL_NUM];
 	uint16_t adc_elapsed_time;
+	uint8_t adc_ADS_2d[ADS7828_NUM][ADC_CHANNEL_NUM_ADS * 2];
+	uint16_t adc_print_ADS_2d[ADS7828_NUM][ADC_CHANNEL_NUM_ADS];
+	uint16_t adc_print_flatten[MAX_FS_SENSOR_NUM];//PFS-01A:8 * 1, PFS-01B:4 * 4
 	int32_t i2s_rx_buff[MIC_BUFF_SIZE];
 	int32_t i2s_buff_sifted[MIC_BUFF_SIZE];
 	uint16_t mic_elapsed_time;
@@ -195,6 +240,8 @@ struct sensor_params {
 	uint16_t error_count;
 	uint16_t rx_counter;
 	uint8_t i2c1_dma_flag;
+
+	uint8_t spi_slave_flag;
 };
 
 extern struct sensor_params sp;

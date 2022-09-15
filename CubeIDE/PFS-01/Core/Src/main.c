@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,17 +50,24 @@ I2S_HandleTypeDef hi2s2;
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi3;
+DMA_HandleTypeDef hdma_spi1_rx;
+DMA_HandleTypeDef hdma_spi1_tx;
 
 PCD_HandleTypeDef hpcd_USB_FS;
 
 osThreadId ADCTaskHandle;
+osThreadId LEDTaskHandle;
+osThreadId PSTaskHandle;
+osThreadId IMUTaskHandle;
+osThreadId TXBuffTaskHandle;
 /* USER CODE BEGIN PV */
-
+uint8_t rxbuff[1];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
@@ -69,8 +76,28 @@ static void MX_SPI1_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USB_PCD_Init(void);
 void StartADCTask(void const * argument);
+void StartLEDTask(void const * argument);
+void StartPSTask(void const * argument);
+void StartIMUTask(void const * argument);
+void StartTXBuffTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
+void mpuWrite(uint8_t, uint8_t);
+void ps_select_channel();
+void ps_init();
+void ps_init_multi();
+void imu_init();
+void ps_update();
+void ps_update_multi();
+void imu_update();
+void adc_update();
+void adc_update_ADS7828();
+void sw_update();
+uint32_t UART_IsEnabledIT_RX();
+uint8_t getlen();
+//void ics_init();
+//void ics_init_DMA();
+void txbuff_update();
 
 /* USER CODE END PFP */
 
@@ -107,6 +134,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
@@ -115,6 +143,22 @@ int main(void)
   MX_SPI3_Init();
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
+  sp.board_select = SELECT_PFS_01_SINGLE;
+  //sp.board_select = SELECT_PFS_01_ASM;
+  sp.imu_select = SELECT_ICM_20600;
+
+  sp.com_en = 0;
+
+  sp.spi_slave_flag = 0;
+
+  ps_init(&hi2c1);
+
+  imu_init(&hspi3);
+
+  // Start SPI slave with PR2
+  // HAL_SPI_Receive_DMA should be called at last(?)
+  HAL_Delay(100);
+  HAL_SPI_Receive_DMA( &hspi1, rxbuff, sizeof(rxbuff));
 
   /* USER CODE END 2 */
 
@@ -138,6 +182,22 @@ int main(void)
   /* definition and creation of ADCTask */
   osThreadDef(ADCTask, StartADCTask, osPriorityNormal, 0, 128);
   ADCTaskHandle = osThreadCreate(osThread(ADCTask), NULL);
+
+  /* definition and creation of LEDTask */
+  osThreadDef(LEDTask, StartLEDTask, osPriorityIdle, 0, 128);
+  LEDTaskHandle = osThreadCreate(osThread(LEDTask), NULL);
+
+  /* definition and creation of PSTask */
+  osThreadDef(PSTask, StartPSTask, osPriorityIdle, 0, 128);
+  PSTaskHandle = osThreadCreate(osThread(PSTask), NULL);
+
+  /* definition and creation of IMUTask */
+  osThreadDef(IMUTask, StartIMUTask, osPriorityIdle, 0, 128);
+  IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
+
+  /* definition and creation of TXBuffTask */
+  osThreadDef(TXBuffTask, StartTXBuffTask, osPriorityIdle, 0, 128);
+  TXBuffTaskHandle = osThreadCreate(osThread(TXBuffTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -170,15 +230,23 @@ void SystemClock_Config(void)
 
   /** Configure the main internal regulator output voltage
   */
-  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSI48;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSI48
+                              |RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
+  RCC_OscInitStruct.PLL.PLLN = 40;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -187,12 +255,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -203,7 +271,7 @@ void SystemClock_Config(void)
                               |RCC_PERIPHCLK_ADC12;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   PeriphClkInit.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
-  PeriphClkInit.I2sClockSelection = RCC_I2SCLKSOURCE_SYSCLK;
+  PeriphClkInit.I2sClockSelection = RCC_I2SCLKSOURCE_HSI;
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
   PeriphClkInit.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -233,7 +301,7 @@ static void MX_ADC1_Init(void)
   /** Common config
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.GainCompensation = 0;
@@ -263,7 +331,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_92CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
@@ -273,6 +341,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
+  sConfig.Channel = ADC_CHANNEL_2;
   sConfig.Rank = ADC_REGULAR_RANK_2;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -280,6 +349,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
+  sConfig.Channel = ADC_CHANNEL_3;
   sConfig.Rank = ADC_REGULAR_RANK_3;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -287,6 +357,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
+  sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = ADC_REGULAR_RANK_4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -294,6 +365,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
+  sConfig.Channel = ADC_CHANNEL_5;
   sConfig.Rank = ADC_REGULAR_RANK_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -301,6 +373,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
+  sConfig.Channel = ADC_CHANNEL_12;
   sConfig.Rank = ADC_REGULAR_RANK_6;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -308,6 +381,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
+  sConfig.Channel = ADC_CHANNEL_14;
   sConfig.Rank = ADC_REGULAR_RANK_7;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -315,6 +389,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
+  sConfig.Channel = ADC_CHANNEL_15;
   sConfig.Rank = ADC_REGULAR_RANK_8;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -322,6 +397,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure Regular Channel
   */
+  sConfig.Channel = ADC_CHANNEL_VBAT;
   sConfig.Rank = ADC_REGULAR_RANK_9;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -349,7 +425,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00303D5B;
+  hi2c1.Init.Timing = 0x30909DEC;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -395,7 +471,7 @@ static void MX_I2C2_Init(void)
 
   /* USER CODE END I2C2_Init 1 */
   hi2c2.Instance = I2C2;
-  hi2c2.Init.Timing = 0x00303D5B;
+  hi2c2.Init.Timing = 0x30909DEC;
   hi2c2.Init.OwnAddress1 = 0;
   hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -476,7 +552,7 @@ static void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_SLAVE;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_HARD_INPUT;
@@ -519,7 +595,7 @@ static void MX_SPI3_Init(void)
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -570,6 +646,26 @@ static void MX_USB_PCD_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMAMUX1_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -613,7 +709,19 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
+    if(rxbuff[0] == READ_COMMAND){//as possible as light processing
+    	//txbuff_update();
+        HAL_SPI_Transmit_DMA(hspi, sp.txbuff_state[sp.spi_slave_flag], TXBUFF_LENGTH);
+    }else{
+       	HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+    }
+}
 
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+   	// HAL_Delay(1) is magic number
+    HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartADCTask */
@@ -629,9 +737,87 @@ void StartADCTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	  adc_update(&hadc1);
+	  //adc_update_ADS7828(&hi2c1);
+	  osDelay(1);
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartLEDTask */
+/**
+* @brief Function implementing the LEDTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartLEDTask */
+void StartLEDTask(void const * argument)
+{
+  /* USER CODE BEGIN StartLEDTask */
+  /* Infinite loop */
+  for(;;)
+  {
+	  HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
+	  osDelay(50);
+  }
+  /* USER CODE END StartLEDTask */
+}
+
+/* USER CODE BEGIN Header_StartPSTask */
+/**
+* @brief Function implementing the PSTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartPSTask */
+void StartPSTask(void const * argument)
+{
+  /* USER CODE BEGIN StartPSTask */
+  /* Infinite loop */
+  for(;;)
+  {
+	ps_update(&hi2c1);
+    osDelay(1);
+  }
+  /* USER CODE END StartPSTask */
+}
+
+/* USER CODE BEGIN Header_StartIMUTask */
+/**
+* @brief Function implementing the IMUTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartIMUTask */
+void StartIMUTask(void const * argument)
+{
+  /* USER CODE BEGIN StartIMUTask */
+  /* Infinite loop */
+  for(;;)
+  {
+	  imu_update(&hspi3);
+	  osDelay(1);
+  }
+  /* USER CODE END StartIMUTask */
+}
+
+/* USER CODE BEGIN Header_StartTXBuffTask */
+/**
+* @brief Function implementing the TXBuffTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTXBuffTask */
+void StartTXBuffTask(void const * argument)
+{
+  /* USER CODE BEGIN StartTXBuffTask */
+  /* Infinite loop */
+  for(;;)
+  {
+	  txbuff_update();
+	  osDelay(1);
+  }
+  /* USER CODE END StartTXBuffTask */
 }
 
  /**
