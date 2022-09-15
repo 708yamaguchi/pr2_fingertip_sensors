@@ -57,6 +57,7 @@ osThreadId ADCTaskHandle;
 osThreadId LEDTaskHandle;
 osThreadId PSTaskHandle;
 osThreadId IMUTaskHandle;
+osThreadId TXBuffTaskHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -75,6 +76,7 @@ void StartADCTask(void const * argument);
 void StartLEDTask(void const * argument);
 void StartPSTask(void const * argument);
 void StartIMUTask(void const * argument);
+void StartTXBuffTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void mpuWrite(uint8_t, uint8_t);
@@ -137,7 +139,8 @@ int main(void)
   MX_SPI3_Init();
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
-  sp.board_select = SELECT_PFS_01_ASM;
+  sp.board_select = SELECT_PFS_01_SINGLE;
+  //sp.board_select = SELECT_PFS_01_ASM;
   sp.imu_select = SELECT_ICM_20600;
 
   sp.com_en = 0;
@@ -182,6 +185,10 @@ int main(void)
   /* definition and creation of IMUTask */
   osThreadDef(IMUTask, StartIMUTask, osPriorityIdle, 0, 128);
   IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
+
+  /* definition and creation of TXBuffTask */
+  osThreadDef(TXBuffTask, StartTXBuffTask, osPriorityIdle, 0, 128);
+  TXBuffTaskHandle = osThreadCreate(osThread(TXBuffTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -709,9 +716,8 @@ void StartLEDTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  txbuff_update();
 	  HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
-	  osDelay(100);
+	  osDelay(50);
   }
   /* USER CODE END StartLEDTask */
 }
@@ -752,6 +758,25 @@ void StartIMUTask(void const * argument)
 	  osDelay(1);
   }
   /* USER CODE END StartIMUTask */
+}
+
+/* USER CODE BEGIN Header_StartTXBuffTask */
+/**
+* @brief Function implementing the TXBuffTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTXBuffTask */
+void StartTXBuffTask(void const * argument)
+{
+  /* USER CODE BEGIN StartTXBuffTask */
+  /* Infinite loop */
+  for(;;)
+  {
+	  txbuff_update();
+	  osDelay(1);
+  }
+  /* USER CODE END StartTXBuffTask */
 }
 
  /**
