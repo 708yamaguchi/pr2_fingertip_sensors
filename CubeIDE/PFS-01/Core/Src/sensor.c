@@ -92,7 +92,6 @@ void txbuff_update(){//max: uint8_t * 44:
 		check_sum += sp.txbuff_state[sp.spi_slave_flag][i];
 	}
 
-	check_sum = 123;
 	sp.txbuff_state[sp.spi_slave_flag][TXBUFF_LENGTH - 2] = sp.spi_slave_flag;
 	sp.txbuff_state[sp.spi_slave_flag][TXBUFF_LENGTH - 1] = check_sum & 0x00ff;
 
