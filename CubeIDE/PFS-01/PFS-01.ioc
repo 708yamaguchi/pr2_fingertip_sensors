@@ -1,13 +1,13 @@
 #MicroXplorer Configuration settings - do not modify
-ADC1.Channel-10\#ChannelRegularConversion=ADC_CHANNEL_1
-ADC1.Channel-19\#ChannelRegularConversion=ADC_CHANNEL_2
-ADC1.Channel-20\#ChannelRegularConversion=ADC_CHANNEL_3
-ADC1.Channel-21\#ChannelRegularConversion=ADC_CHANNEL_4
-ADC1.Channel-22\#ChannelRegularConversion=ADC_CHANNEL_5
-ADC1.Channel-23\#ChannelRegularConversion=ADC_CHANNEL_12
-ADC1.Channel-24\#ChannelRegularConversion=ADC_CHANNEL_14
-ADC1.Channel-25\#ChannelRegularConversion=ADC_CHANNEL_15
-ADC1.Channel-9\#ChannelRegularConversion=ADC_CHANNEL_VBAT
+ADC1.Channel-10\#ChannelRegularConversion=ADC_CHANNEL_2
+ADC1.Channel-19\#ChannelRegularConversion=ADC_CHANNEL_3
+ADC1.Channel-20\#ChannelRegularConversion=ADC_CHANNEL_4
+ADC1.Channel-21\#ChannelRegularConversion=ADC_CHANNEL_5
+ADC1.Channel-22\#ChannelRegularConversion=ADC_CHANNEL_12
+ADC1.Channel-23\#ChannelRegularConversion=ADC_CHANNEL_14
+ADC1.Channel-24\#ChannelRegularConversion=ADC_CHANNEL_15
+ADC1.Channel-25\#ChannelRegularConversion=ADC_CHANNEL_VBAT
+ADC1.Channel-9\#ChannelRegularConversion=ADC_CHANNEL_1
 ADC1.ClockPrescaler=ADC_CLOCK_ASYNC_DIV4
 ADC1.IPParameters=Rank-9\#ChannelRegularConversion,Channel-9\#ChannelRegularConversion,SamplingTime-9\#ChannelRegularConversion,OffsetNumber-9\#ChannelRegularConversion,NbrOfConversionFlag,master,Rank-10\#ChannelRegularConversion,Channel-10\#ChannelRegularConversion,SamplingTime-10\#ChannelRegularConversion,OffsetNumber-10\#ChannelRegularConversion,NbrOfConversion,ClockPrescaler,Rank-19\#ChannelRegularConversion,Channel-19\#ChannelRegularConversion,SamplingTime-19\#ChannelRegularConversion,OffsetNumber-19\#ChannelRegularConversion,Rank-20\#ChannelRegularConversion,Channel-20\#ChannelRegularConversion,SamplingTime-20\#ChannelRegularConversion,OffsetNumber-20\#ChannelRegularConversion,Rank-21\#ChannelRegularConversion,Channel-21\#ChannelRegularConversion,SamplingTime-21\#ChannelRegularConversion,OffsetNumber-21\#ChannelRegularConversion,Rank-22\#ChannelRegularConversion,Channel-22\#ChannelRegularConversion,SamplingTime-22\#ChannelRegularConversion,OffsetNumber-22\#ChannelRegularConversion,Rank-23\#ChannelRegularConversion,Channel-23\#ChannelRegularConversion,SamplingTime-23\#ChannelRegularConversion,OffsetNumber-23\#ChannelRegularConversion,Rank-24\#ChannelRegularConversion,Channel-24\#ChannelRegularConversion,SamplingTime-24\#ChannelRegularConversion,OffsetNumber-24\#ChannelRegularConversion,Rank-25\#ChannelRegularConversion,Channel-25\#ChannelRegularConversion,SamplingTime-25\#ChannelRegularConversion,OffsetNumber-25\#ChannelRegularConversion
 ADC1.NbrOfConversion=9

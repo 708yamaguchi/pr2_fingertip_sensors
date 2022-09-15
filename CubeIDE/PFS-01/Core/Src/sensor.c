@@ -11,7 +11,96 @@
 
 struct sensor_params sp;
 
-void txbuff_update(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
+void flatten_sensor_val(){
+	uint8_t index = 0;
+	for(int i = 0; i < PS_CHANNEL_NUM; i++){//1 * 8 = 8
+		sp.ps_print_flatten[index] = sp.ps_print_2d[0][i];
+		index++;
+	}
+	switch(sp.spi_slave_flag){
+	case 0:
+		for (int i = index; i < MAX_PS_SENSOR_NUM; i++){
+			sp.ps_print_flatten[i] = 12345;
+		}
+		break;
+	case 1:
+		for(int j=1; j < PCA9547_NUM; j++){//4 * 4 = 16
+			for (int i=0; i < (PS_CHANNEL_NUM - 4); i++){
+				sp.ps_print_flatten[index] = sp.ps_print_2d[j][i];
+				index++;
+			}
+		}
+		break;
+	}
+
+	index = 0;
+	for(int i = 0; i < FS_CHANNEL_NUM; i++){//1 * 8 = 8
+		sp.adc_print_flatten[index] = sp.adc_print[i];
+		index++;
+	}
+	switch(sp.spi_slave_flag){
+	case 0:
+		for (int i = index; i < MAX_FS_SENSOR_NUM; i++){
+			sp.adc_print_flatten[i] = 56789;
+		}
+		break;
+	case 1:
+		for(int j=0; j < ADS7828_NUM; j++){//4 * 4 = 16
+			for (int i=0; i < ADC_CHANNEL_NUM_ADS; i++){
+				sp.adc_print_flatten[index] = sp.adc_print_ADS_2d[j][i];
+				index++;
+			}
+		}
+		break;
+	}
+}
+
+void txbuff_update(){//max: uint8_t * 44:
+	flatten_sensor_val();
+	uint8_t index = 0;
+	uint16_t check_sum = 0;
+
+	switch(sp.spi_slave_flag){
+	case 0:
+		for(int i = 0; i < (MAX_FS_SENSOR_NUM / 2); i++){//(24 / 2) * 3 = 36
+			sp.txbuff_state[sp.spi_slave_flag][index] = (sp.ps_print_flatten[i] & 0x0ff0) >> 4;
+			sp.txbuff_state[sp.spi_slave_flag][index + 1] = ((sp.ps_print_flatten[i] & 0x000f) << 4) | ((sp.adc_print_flatten[i] & 0x0f00) >> 8);
+			sp.txbuff_state[sp.spi_slave_flag][index + 2] = (sp.adc_print_flatten[i] & 0x00ff);
+			index += 3;
+		}
+		for(int i = 0; i < GYRO_CHANNEL_NUM; i++){//2 * 3 = 6
+			sp.txbuff_state[sp.spi_slave_flag][index] = sp.gyro_print[i] >> 8;
+			sp.txbuff_state[sp.spi_slave_flag][index + 1] = sp.gyro_print[i] & 0x00ff;
+			index += 2;
+		}
+		break;
+	case 1:
+		for(int i = (MAX_FS_SENSOR_NUM / 2); i < MAX_FS_SENSOR_NUM; i++){//(24 / 2) * 3 = 36
+			sp.txbuff_state[sp.spi_slave_flag][index] = (sp.ps_print_flatten[i] & 0x0ff0) >> 4;
+			sp.txbuff_state[sp.spi_slave_flag][index + 1] = ((sp.ps_print_flatten[i] & 0x000f) << 4) | ((sp.adc_print_flatten[i] & 0x0f00) >> 8);
+			sp.txbuff_state[sp.spi_slave_flag][index + 2] = (sp.adc_print_flatten[i] & 0x00ff);
+			index += 3;
+		}
+		for(int i = 0; i < ACC_CHANNEL_NUM; i++){//2 * 3 = 6
+			sp.txbuff_state[sp.spi_slave_flag][index] = sp.acc_print[i] >> 8;
+			sp.txbuff_state[sp.spi_slave_flag][index + 1] = sp.acc_print[i] & 0x00ff;
+			index += 2;
+		}
+		break;
+	}
+	for(int i = 0; i < (MAX_FS_SENSOR_NUM / 2) * 3 + GYRO_CHANNEL_NUM * 2; i += 2){//36 + 6 =42
+		check_sum += sp.txbuff_state[sp.spi_slave_flag][i];
+	}
+	sp.txbuff_state[sp.spi_slave_flag][TXBUFF_LENGTH - 2] = sp.spi_slave_flag;
+	sp.txbuff_state[sp.spi_slave_flag][TXBUFF_LENGTH - 1] = check_sum & 0x00ff;
+
+	sp.spi_slave_flag += 1;
+	if(sp.spi_slave_flag == SPI_SLAVE_STATENUM){
+		sp.spi_slave_flag = 0;
+	}
+}
+
+void txbuff_update_old(){//max: uint8_t * 44: 44-(8+6+6+2+16)=6
 	uint8_t index = 0;
 	for(int i=0; i < GYRO_CHANNEL_NUM; i++){//2*3=6
 		sp.txbuff[index] = sp.gyro_print[i] >> 8;
@@ -492,7 +581,6 @@ void adc_update_ADS7828(I2C_HandleTypeDef *hi2c){
 			command = command_PD | ADC_CHANNEL_ARRAY[j];
 
 			adc_ret = HAL_I2C_Mem_Read(hi2c, ADS7828_ADDR_ARRAY[i], command, 1, data, 2, HAL_MAX_DELAY);
-			HAL_Delay(10);
 			//adc_ret = HAL_I2C_Mem_Read(hi2c, 0x34, command, 1, data, 2, HAL_MAX_DELAY);
 
 			if(adc_ret == HAL_OK){
