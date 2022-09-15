@@ -67,7 +67,7 @@ void txbuff_update(){//max: uint8_t * 44:
 			sp.txbuff_state[sp.spi_slave_flag][index + 1] = ((sp.ps_print_flatten[i] & 0x000f) << 4) | ((sp.adc_print_flatten[i] & 0x0f00) >> 8);
 			sp.txbuff_state[sp.spi_slave_flag][index + 2] = (sp.adc_print_flatten[i] & 0x00ff);
 			index += 3;
-		}
+		}//need time for coppy?
 		for(int i = 0; i < GYRO_CHANNEL_NUM; i++){//2 * 3 = 6
 			sp.txbuff_state[sp.spi_slave_flag][index] = sp.gyro_print[i] >> 8;
 			sp.txbuff_state[sp.spi_slave_flag][index + 1] = sp.gyro_print[i] & 0x00ff;
@@ -80,7 +80,7 @@ void txbuff_update(){//max: uint8_t * 44:
 			sp.txbuff_state[sp.spi_slave_flag][index + 1] = ((sp.ps_print_flatten[i] & 0x000f) << 4) | ((sp.adc_print_flatten[i] & 0x0f00) >> 8);
 			sp.txbuff_state[sp.spi_slave_flag][index + 2] = (sp.adc_print_flatten[i] & 0x00ff);
 			index += 3;
-		}
+		}//need time for coppy?
 		for(int i = 0; i < ACC_CHANNEL_NUM; i++){//2 * 3 = 6
 			sp.txbuff_state[sp.spi_slave_flag][index] = sp.acc_print[i] >> 8;
 			sp.txbuff_state[sp.spi_slave_flag][index + 1] = sp.acc_print[i] & 0x00ff;
@@ -91,6 +91,8 @@ void txbuff_update(){//max: uint8_t * 44:
 	for(int i = 0; i < (MAX_FS_SENSOR_NUM / 2) * 3 + GYRO_CHANNEL_NUM * 2; i += 2){//36 + 6 =42
 		check_sum += sp.txbuff_state[sp.spi_slave_flag][i];
 	}
+
+	check_sum = 123;
 	sp.txbuff_state[sp.spi_slave_flag][TXBUFF_LENGTH - 2] = sp.spi_slave_flag;
 	sp.txbuff_state[sp.spi_slave_flag][TXBUFF_LENGTH - 1] = check_sum & 0x00ff;
 

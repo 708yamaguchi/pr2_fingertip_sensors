@@ -50,6 +50,8 @@ I2S_HandleTypeDef hi2s2;
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi3;
+DMA_HandleTypeDef hdma_spi1_rx;
+DMA_HandleTypeDef hdma_spi1_tx;
 
 PCD_HandleTypeDef hpcd_USB_FS;
 
@@ -59,12 +61,13 @@ osThreadId PSTaskHandle;
 osThreadId IMUTaskHandle;
 osThreadId TXBuffTaskHandle;
 /* USER CODE BEGIN PV */
-
+uint8_t rxbuff[1];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
@@ -131,6 +134,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
@@ -150,6 +154,11 @@ int main(void)
   ps_init(&hi2c1);
 
   imu_init(&hspi3);
+
+  // Start SPI slave with PR2
+  // HAL_SPI_Receive_DMA should be called at last(?)
+  HAL_Delay(100);
+  HAL_SPI_Receive_DMA( &hspi1, rxbuff, sizeof(rxbuff));
 
   /* USER CODE END 2 */
 
@@ -543,7 +552,7 @@ static void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_SLAVE;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_HARD_INPUT;
@@ -637,6 +646,26 @@ static void MX_USB_PCD_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMAMUX1_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -680,7 +709,19 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
+    if(rxbuff[0] == READ_COMMAND){//as possible as light processing
+    	//txbuff_update();
+        HAL_SPI_Transmit_DMA(hspi, sp.txbuff_state[sp.spi_slave_flag], TXBUFF_LENGTH);
+    }else{
+       	HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+    }
+}
 
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+   	// HAL_Delay(1) is magic number
+    HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartADCTask */
@@ -697,7 +738,7 @@ void StartADCTask(void const * argument)
   for(;;)
   {
 	  adc_update(&hadc1);
-	  adc_update_ADS7828(&hi2c1);
+	  //adc_update_ADS7828(&hi2c1);
 	  osDelay(1);
   }
   /* USER CODE END 5 */
