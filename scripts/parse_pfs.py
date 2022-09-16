@@ -78,6 +78,19 @@ class ParsePFS(object):
         pfs_msg.imu.angular_velocity.z = gyro[2]
         self.pub[gripper][fingertip].publish(pfs_msg)
 
+    def binary_to_int(self, binary_string):
+        """
+Args: binary string. e.g. '1010101'
+return: int value. e.g. -11
+"""
+        uint = int(binary_string, 2)
+        bits = len(binary_string)
+        if (uint & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
+            int_val = uint - (1 << bits)        # compute negative value
+        else:
+            int_val = uint
+        return int_val
+
     def parse(self, packet):
         """
 Args: packet is int16[22] array
@@ -116,21 +129,21 @@ https://docs.google.com/presentation/d/1VxRJWDqeDk_ryu-x1Vhj3_6BDu3gscwvNpngHKwf
         force = []
         for i in range(12):
             prox_bin = packet_bin[i*24:i*24+12]
-            prox_int = int(prox_bin, 2)
+            prox_int = self.binary_to_int(prox_bin)
             prox.append(prox_int)
             force_bin = packet_bin[i*24+12:i*24+24]
-            force_int = int(force_bin, 2)
+            force_int = self.binary_to_int(force_bin)
             force.append(force_int)
         # imu
         imu = []
         for i in range(3):
             imu_bin = packet_bin[288+i*16:288+i*16+16]
-            imu_int = int(imu_bin, 2)
+            imu_int = self.binary_to_int(imu_bin)
             imu.append(imu_int)
         # footer
         footer_bin = packet_bin[336:344]
-        footer = int(footer_bin, 2)
-        # check_sum
+        footer = self.binary_to_int(footer_bin)
+        # check_sum (Note that check_sum is uint while others are int)
         check_sum_bin = packet_bin[344:352]
         check_sum = int(check_sum_bin, 2)
         # calculate check_sum in this node
