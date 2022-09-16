@@ -17,7 +17,7 @@ void flatten_sensor_val(){
 		sp.ps_print_flatten[index] = sp.ps_print_2d[0][i];
 		index++;
 	}
-	switch(sp.spi_slave_flag){
+	switch(sp.board_select){
 	case 0:
 		for (int i = index; i < MAX_PS_SENSOR_NUM; i++){
 			sp.ps_print_flatten[i] = 12345;
@@ -38,7 +38,7 @@ void flatten_sensor_val(){
 		sp.adc_print_flatten[index] = sp.adc_print[i];
 		index++;
 	}
-	switch(sp.spi_slave_flag){
+	switch(sp.board_select){
 	case 0:
 		for (int i = index; i < MAX_FS_SENSOR_NUM; i++){
 			sp.adc_print_flatten[i] = 56789;
