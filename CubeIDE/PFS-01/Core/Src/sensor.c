@@ -44,7 +44,7 @@ void flatten_sensor_val(){
 			index++;
 		}
 		for (int i=0; i < ADC_CHANNEL_NUM_ADS; i++){ // 1 * 4 = 4
-			sp.adc_print_flatten[i] = sp.adc_print_ADS_2d[1][i];
+			sp.adc_print_flatten[index+i] = sp.adc_print_ADS_2d[1][i];
 		}
 		break;
 	case 1: // The latter 12 force sensors
