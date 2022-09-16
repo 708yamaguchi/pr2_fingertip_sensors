@@ -12,44 +12,40 @@
 struct sensor_params sp;
 
 void flatten_sensor_val(){
-	uint8_t index;
-	// Proximity sensors
+	uint8_t index = 0;
+	for(int i = 0; i < PS_CHANNEL_NUM; i++){//1 * 8 = 8
+		sp.ps_print_flatten[index] = sp.ps_print_2d[0][i];
+		index++;
+	}
 	switch(sp.spi_slave_flag){
-	case 0: // The former 12 proximity sensors
-		index = 0;
-        for(int i = 0; i < PS_CHANNEL_NUM; i++){//1 * 8 = 8
-            sp.ps_print_flatten[index] = sp.ps_print_2d[0][i];
-            index++;
-        }
-		for (int i = 0; i < (PS_CHANNEL_NUM - 4); i++){ // 1 * 4 = 4
-            sp.ps_print_flatten[index+i] = sp.ps_print_2d[1][i];
+	case 0:
+		for (int i = index; i < MAX_PS_SENSOR_NUM; i++){
+			sp.ps_print_flatten[i] = 12345;
 		}
 		break;
-	case 1: // The latter 12 proximity sensors
-		index = 12;
-		for(int j=2; j < PCA9547_NUM; j++){// 3 * 4 = 12
+	case 1:
+		for(int j=1; j < PCA9547_NUM; j++){//4 * 4 = 16
 			for (int i=0; i < (PS_CHANNEL_NUM - 4); i++){
-                sp.ps_print_flatten[index] = sp.ps_print_2d[j][i];
+				sp.ps_print_flatten[index] = sp.ps_print_2d[j][i];
 				index++;
 			}
 		}
 		break;
 	}
-	// Force sensors
+
+	index = 0;
+	for(int i = 0; i < FS_CHANNEL_NUM; i++){//1 * 8 = 8
+		sp.adc_print_flatten[index] = sp.adc_print[i];
+		index++;
+	}
 	switch(sp.spi_slave_flag){
-	case 0: // The former 12 force sensors
-		index = 0;
-		for(int i = 0; i < FS_CHANNEL_NUM; i++){//1 * 8 = 8
-			sp.adc_print_flatten[index] = sp.adc_print[i];
-			index++;
-		}
-		for (int i=0; i < ADC_CHANNEL_NUM_ADS; i++){ // 1 * 4 = 4
-			sp.adc_print_flatten[i] = sp.adc_print_ADS_2d[1][i];
+	case 0:
+		for (int i = index; i < MAX_FS_SENSOR_NUM; i++){
+			sp.adc_print_flatten[i] = 56789;
 		}
 		break;
-	case 1: // The latter 12 force sensors
-		index = 12;
-		for(int j=1; j < ADS7828_NUM; j++){//3 * 4 = 12
+	case 1:
+		for(int j=0; j < ADS7828_NUM; j++){//4 * 4 = 16
 			for (int i=0; i < ADC_CHANNEL_NUM_ADS; i++){
 				sp.adc_print_flatten[index] = sp.adc_print_ADS_2d[j][i];
 				index++;
