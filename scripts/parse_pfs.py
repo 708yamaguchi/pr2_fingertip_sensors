@@ -44,7 +44,7 @@ class ParsePFS(object):
             if fingertip == 'r_fingertip':
                 data = self.parse(msg.r_finger_tip)
             # Store parsed sensor data
-            self.pfs_data[gripper][fingertip][data['footer']] = data
+            self.pfs_data[gripper][fingertip][data['packet_type']] = data
             # If all sensor data is stored, append them
             if self.pfs_data[gripper][fingertip][0] is not None \
                and self.pfs_data[gripper][fingertip][1] is not None:
@@ -94,7 +94,9 @@ return: int value. e.g. -11
     def parse(self, packet):
         """
 Args: packet is int16[22] array
-Return: prox[12], force[12], imu[3](acc/gyro), footer, check_sum
+Return: dict:
+          {prox[12], force[12], imu[3](acc/gyro),
+           board_select, packet_type, check_sum}
 
 c.f.
 parse input
@@ -140,9 +142,12 @@ https://docs.google.com/presentation/d/1VxRJWDqeDk_ryu-x1Vhj3_6BDu3gscwvNpngHKwf
             imu_bin = packet_bin[288+i*16:288+i*16+16]
             imu_int = self.binary_to_int(imu_bin)
             imu.append(imu_int)
-        # footer
-        footer_bin = packet_bin[336:344]
-        footer = self.binary_to_int(footer_bin)
+        # board_select. 0: SELECT_PFS_01_SINGLE, 1: SELECT_PFS_01_ASM
+        board_select_bin = packet_bin[336:340]
+        board_select = self.binary_to_int(board_select_bin)
+        # packet type. 0 or 1
+        packet_type_bin = packet_bin[340:344]
+        packet_type = self.binary_to_int(packet_type_bin)
         # check_sum (Note that check_sum is uint while others are int)
         check_sum_bin = packet_bin[344:352]
         check_sum = int(check_sum_bin, 2)
@@ -163,7 +168,8 @@ https://docs.google.com/presentation/d/1VxRJWDqeDk_ryu-x1Vhj3_6BDu3gscwvNpngHKwf
         return {'proximity': prox,
                 'force': force,
                 'imu': imu,
-                'footer': footer,
+                'board_select': board_select,
+                'packet_type': packet_type,
                 'check_sum': check_sum}
 
 
