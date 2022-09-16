@@ -59,7 +59,6 @@ osThreadId ADCTaskHandle;
 osThreadId LEDTaskHandle;
 osThreadId PSTaskHandle;
 osThreadId IMUTaskHandle;
-osThreadId TXBuffTaskHandle;
 /* USER CODE BEGIN PV */
 uint8_t rxbuff[1];
 /* USER CODE END PV */
@@ -79,7 +78,6 @@ void StartADCTask(void const * argument);
 void StartLEDTask(void const * argument);
 void StartPSTask(void const * argument);
 void StartIMUTask(void const * argument);
-void StartTXBuffTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void mpuWrite(uint8_t, uint8_t);
@@ -194,10 +192,6 @@ int main(void)
   /* definition and creation of IMUTask */
   osThreadDef(IMUTask, StartIMUTask, osPriorityIdle, 0, 128);
   IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
-
-  /* definition and creation of TXBuffTask */
-  osThreadDef(TXBuffTask, StartTXBuffTask, osPriorityIdle, 0, 128);
-  TXBuffTaskHandle = osThreadCreate(osThread(TXBuffTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -711,7 +705,9 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
     if(rxbuff[0] == READ_COMMAND){//as possible as light processing
-    	//txbuff_update();
+    	// Do not call txbuff_update() before HAL_SPI_Transmit_DMA();
+    	// There is only 36us for txbuff_update() to be processed
+    	// due to PR2 Gripper MCB specification
         HAL_SPI_Transmit_DMA(hspi, sp.txbuff_state[sp.spi_slave_flag], TXBUFF_LENGTH);
     }else{
        	HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
@@ -719,6 +715,7 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+	txbuff_update();
    	// HAL_Delay(1) is magic number
     HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
 }
@@ -801,25 +798,6 @@ void StartIMUTask(void const * argument)
 	  osDelay(1);
   }
   /* USER CODE END StartIMUTask */
-}
-
-/* USER CODE BEGIN Header_StartTXBuffTask */
-/**
-* @brief Function implementing the TXBuffTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartTXBuffTask */
-void StartTXBuffTask(void const * argument)
-{
-  /* USER CODE BEGIN StartTXBuffTask */
-  /* Infinite loop */
-  for(;;)
-  {
-	  txbuff_update();
-	  osDelay(1);
-  }
-  /* USER CODE END StartTXBuffTask */
 }
 
  /**

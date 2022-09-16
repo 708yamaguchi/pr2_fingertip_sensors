@@ -14,6 +14,38 @@ This repository will develop boards and firmware with the following features.
 ![](https://user-images.githubusercontent.com/19769486/173611179-30e323f4-dfa1-4e34-83eb-a86424cd380a.png)
 *Fig. Development using an evaluation board before designing a board*
 
+# Usage
+
+- Create ROS workspace
+
+  ```
+  mkdir ~/pr2_fingertip_ws/src -p
+  cd ~/pr2_fingertip_ws/src
+  git clone https://github.com/708yamaguchi/pr2_fingertip_sensors
+  cd ..
+  rosdep install --from-paths src --ignore-src -y -r
+  catkin build
+  ```
+
+- Write `PFS-01` project to main board (PFS-01A)
+
+- Run parser node for PFS sensor data. In PFS-01 project, two rostopics are combined to represent the whole sensor data.
+
+  ```
+  # Set ROS_MASTER_URI to your PR2
+  source ~/pr2_fingertip_ws/devel/setup.bash
+  rosrun pr2_fingertip_sensors parse_pfs.py
+  ```
+
+- Subscribe sensor data
+
+  ```
+  rostopic echo /pfs/l_gripper/l_fingertip
+  rostopic echo /pfs/l_gripper/r_fingertip
+  rostopic echo /pfs/r_gripper/l_fingertip
+  rostopic echo /pfs/r_gripper/r_fingertip
+  ```
+
 # Directories
 
 - CubeIDE
