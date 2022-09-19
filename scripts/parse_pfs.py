@@ -131,11 +131,11 @@ https://docs.google.com/presentation/d/1VxRJWDqeDk_ryu-x1Vhj3_6BDu3gscwvNpngHKwf
         force = []
         for i in range(12):
             prox_bin = packet_bin[i*24:i*24+12]
-            prox_int = self.binary_to_int(prox_bin)
-            prox.append(prox_int)
+            prox_uint = int(prox_bin, 2)
+            prox.append(prox_uint)
             force_bin = packet_bin[i*24+12:i*24+24]
-            force_int = self.binary_to_int(force_bin)
-            force.append(force_int)
+            force_uint = int(force_bin, 2)
+            force.append(force_uint)
         # imu
         imu = []
         for i in range(3):
