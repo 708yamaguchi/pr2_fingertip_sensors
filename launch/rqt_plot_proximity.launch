@@ -1,0 +1,32 @@
+<launch>
+  <arg name="gripper" default="r_gripper" />
+  <arg name="fingertip" default="l_fingertip" />
+
+  <node name="pfs_proximity_plot"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/pfs/$(arg gripper)/$(arg fingertip)/proximity[0]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[1]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[2]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[3]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[4]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[5]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[6]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[7]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[8]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[9]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[10]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[11]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[12]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[13]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[14]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[15]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[16]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[17]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[18]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[19]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[20]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[21]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[22]
+              /pfs/$(arg gripper)/$(arg fingertip)/proximity[23]" />
+</launch>
