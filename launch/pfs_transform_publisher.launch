@@ -1,0 +1,43 @@
+<launch>
+
+  <!-- Publish each sensor tf from left gripper left finger -->
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs_to_sensor_transform_publisher.launch">
+    <arg name="gripper" value="l" />
+    <arg name="finger" value="l" />
+  </include>
+
+  <!-- Publish each sensor tf from left gripper right finger -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="l_gripper_r_finger_tip_link_flipped_broadcaster"
+        args="0 0 0
+              1 0 0 0
+              l_gripper_r_finger_tip_link
+              l_gripper_r_finger_tip_link_flipped
+              100" />
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs_to_sensor_transform_publisher.launch">
+    <arg name="gripper" value="l" />
+    <arg name="finger" value="r" />
+    <arg name="parent_link" value="l_gripper_r_finger_tip_link_flipped" />
+  </include>
+
+  <!-- Publish each sensor tf from right gripper left finger -->
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs_to_sensor_transform_publisher.launch">
+    <arg name="gripper" value="r" />
+    <arg name="finger" value="l" />
+  </include>
+
+  <!-- Publish each sensor tf from right gripper right finger -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="r_gripper_r_finger_tip_link_flipped_broadcaster"
+        args="0 0 0
+              1 0 0 0
+              r_gripper_r_finger_tip_link
+              r_gripper_r_finger_tip_link_flipped
+              100" />
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs_to_sensor_transform_publisher.launch">
+    <arg name="gripper" value="r" />
+    <arg name="finger" value="r" />
+    <arg name="parent_link" value="r_gripper_r_finger_tip_link_flipped" />
+  </include>
+
+</launch>

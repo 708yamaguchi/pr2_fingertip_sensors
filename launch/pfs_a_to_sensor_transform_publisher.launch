@@ -1,0 +1,64 @@
+<launch>
+  <!-- static_transform_publisher's args -->
+  <!-- x y z qx qy qz qw frame_id child_frame_id  period_in_ms -->
+
+  <arg name="gripper" default="l" doc="'l' or 'r'" />
+  <arg name="finger" default="l" doc="'l' or 'r'" />
+  <arg name="parent_link" value="$(arg gripper)_gripper_$(arg finger)_finger_pfs_a" />
+
+  <!-- PFS-01A's sensor 0 -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_a_0_broadcaster"
+        args="-0.003 -0.006 0 0 0 0 1
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_a_0
+              100" />
+
+  <!-- PFS-01A's sensor 1 -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_a_1_broadcaster"
+        args="0.003 -0.006 0 0 0 0 1
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_a_1
+              100" />
+
+  <!-- PFS-01A's sensor 2 -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_a_2_broadcaster"
+        args="-0.003 -0.002 0 0 0 0 1
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_a_2
+              100" />
+
+  <!-- PFS-01A's sensor 3 -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_a_3_broadcaster"
+        args="0.003 -0.002 0 0 0 0 1
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_a_3
+              100" />
+
+  <!-- PFS-01A's sensor 4 -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_a_4_broadcaster"
+        args="-0.003 0.002 0 0 0 0 1
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_a_4
+              100" />
+
+  <!-- PFS-01A's sensor 5 -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_a_5_broadcaster"
+        args="0.003 0.002 0 0 0 0 1
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_a_5
+              100" />
+
+  <!-- PFS-01A's sensor 6 -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_a_6_broadcaster"
+        args="-0.003 0.002 0 0 0 0 1
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_a_6
+              100" />
+
+  <!-- PFS-01A's sensor 7 -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_a_7_broadcaster"
+        args="0.003 0.002 0 0 0 0 1
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_a_7
+              100" />
+</launch>

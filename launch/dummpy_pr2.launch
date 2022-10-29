@@ -12,6 +12,9 @@
   <!-- Publish dummy /tf -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
+  <!-- Publish transform from fingertip to each pfs board -->
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs_transform_publisher.launch" />
+
   <!-- RViz for PFS proximity and force sensors -->
   <node name="rviz" pkg="rviz" type="rviz"
         args="-d $(find pr2_fingertip_sensors)/config/pfs.rviz" />
