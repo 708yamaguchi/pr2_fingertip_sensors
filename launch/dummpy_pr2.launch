@@ -1,0 +1,19 @@
+<launch>
+
+  <!-- The following packages are not included to package.xml -->
+  <!-- because we add only ROS packages which is needed for real PR2 -->
+
+  <arg name="model" value="$(find pr2_description)/robots/pr2.urdf.xacro" />
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+
+  <!-- Publish dummy /joint_states -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+
+  <!-- Publish dummy /tf -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+  <!-- RViz for PFS proximity and force sensors -->
+  <node name="rviz" pkg="rviz" type="rviz"
+        args="-d $(find pr2_fingertip_sensors)/config/pfs.rviz" />
+
+</launch>
