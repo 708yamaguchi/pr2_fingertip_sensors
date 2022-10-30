@@ -5,33 +5,33 @@
   <arg name="gripper" default="l" doc="'l' or 'r'" />
   <arg name="finger" default="l" doc="'l' or 'r'" />
   <arg name="part" default="top" doc="'top', 'back', 'left' or 'right'" />
-  <arg name="parent_link" value="$(arg gripper)_gripper_$(arg finger)_finger_pfs_b_$(arg part)" />
+  <arg name="parent_link" value="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)" />
 
   <!-- PFS-01B's sensor 0 -->
   <node pkg="tf" type="static_transform_publisher"
-        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_b_$(arg part)_0_broadcaster"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_0_broadcaster"
         args="-0.003 -0.003 0 0 0 0 1
-              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_b_$(arg part)_0
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_0
               100" />
 
   <!-- PFS-01B's sensor 1 -->
   <node pkg="tf" type="static_transform_publisher"
-        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_b_$(arg part)_1_broadcaster"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_1_broadcaster"
         args="0.003 -0.003 0 0 0 0 1
-              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_b_$(arg part)_1
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_1
               100" />
 
   <!-- PFS-01B's sensor 2 -->
   <node pkg="tf" type="static_transform_publisher"
-        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_b_$(arg part)_2_broadcaster"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_2_broadcaster"
         args="-0.003 0.003 0 0 0 0 1
-              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_b_$(arg part)_2
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_2
               100" />
 
   <!-- PFS-01B's sensor 3 -->
   <node pkg="tf" type="static_transform_publisher"
-        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_b_$(arg part)_3_broadcaster"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_3_broadcaster"
         args="0.003 0.003 0 0 0 0 1
-              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_b_$(arg part)_3
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_3
               100" />
 </launch>

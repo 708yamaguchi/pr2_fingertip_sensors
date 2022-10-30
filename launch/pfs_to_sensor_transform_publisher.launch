@@ -13,10 +13,10 @@
 
   <!-- Publish each sensor tf on PFS-01A tf from fingertip -->
   <node pkg="tf" type="static_transform_publisher"
-        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_a_broadcaster"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_a_broadcaster"
         args="0.01 -0.015 0
               0.5 0.5 -0.5 0.5
-              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_a
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_a
               100" />
   <include file="$(find pr2_fingertip_sensors)/launch/pfs_a_to_sensor_transform_publisher.launch">
     <arg name="gripper" default="$(arg gripper)" />
@@ -25,10 +25,10 @@
 
   <!-- Publish each sensor tf on PFS-01B top tf from fingertip -->
   <node pkg="tf" type="static_transform_publisher"
-        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_b_top_broadcaster"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_top_broadcaster"
         args="0.03 -0.01 0
               0.0 0.707107 0.0 0.707107
-              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_b_top
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_top
               100" />
   <include file="$(find pr2_fingertip_sensors)/launch/pfs_b_to_sensor_transform_publisher.launch">
     <arg name="gripper" default="$(arg gripper)" />
@@ -38,10 +38,10 @@
 
   <!-- Publish each sensor tf on PFS-01B back tf from fingertip -->
   <node pkg="tf" type="static_transform_publisher"
-        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_b_back_broadcaster"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_back_broadcaster"
         args="0.03 -0.005 0
               -0.5 0.5 0.5 0.5
-              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_b_back
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_back
               100" />
   <include file="$(find pr2_fingertip_sensors)/launch/pfs_b_to_sensor_transform_publisher.launch">
     <arg name="gripper" default="$(arg gripper)" />
@@ -51,10 +51,10 @@
 
   <!-- Publish each sensor tf on PFS-01B left tf from fingertip -->
   <node pkg="tf" type="static_transform_publisher"
-        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_b_left_broadcaster"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_left_broadcaster"
         args="0.015 -0.01 0.01
               0 0 0 1
-              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_b_left
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_left
               100" />
   <include file="$(find pr2_fingertip_sensors)/launch/pfs_b_to_sensor_transform_publisher.launch">
     <arg name="gripper" default="$(arg gripper)" />
@@ -64,10 +64,10 @@
 
   <!-- Publish each sensor tf on PFS-01B right tf from fingertip -->
   <node pkg="tf" type="static_transform_publisher"
-        name="$(arg gripper)_gripper_$(arg finger)_finger_pfs_b_right_broadcaster"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_right_broadcaster"
         args="0.015 -0.01 -0.01
               0 1 0 0
-              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_finger_pfs_b_right
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_right
               100" />
   <include file="$(find pr2_fingertip_sensors)/launch/pfs_b_to_sensor_transform_publisher.launch">
     <arg name="gripper" default="$(arg gripper)" />
