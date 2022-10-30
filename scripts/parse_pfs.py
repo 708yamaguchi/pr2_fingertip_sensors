@@ -41,8 +41,10 @@ class ParsePFS(object):
         for fingertip in self.fingertips:
             if fingertip == 'l_fingertip':
                 data = self.parse(msg.l_finger_tip)
+                frame_id = gripper + '_l_finger_tip_link'
             if fingertip == 'r_fingertip':
                 data = self.parse(msg.r_finger_tip)
+                frame_id = gripper + '_r_finger_tip_link'
             # Store parsed sensor data
             self.pfs_data[gripper][fingertip][data['packet_type']] = data
             # If all sensor data is stored, append them
@@ -50,6 +52,7 @@ class ParsePFS(object):
                and self.pfs_data[gripper][fingertip][1] is not None:
                 # Create method?
                 header = msg.header
+                header.frame_id = frame_id
                 prox = self.pfs_data[gripper][fingertip][0]['proximity'] + \
                     self.pfs_data[gripper][fingertip][1]['proximity']
                 force = self.pfs_data[gripper][fingertip][0]['force'] + \
