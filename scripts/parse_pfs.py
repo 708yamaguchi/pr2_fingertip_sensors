@@ -6,6 +6,10 @@ from pr2_fingertip_sensors.msg import PR2FingertipSensor
 
 
 class ParsePFS(object):
+    """
+    Get and parse two /pressure/{l or r}_gripper_motor topics.
+    Concatenate them into one /pfs/{l or r}_gripper/{l or r}_finger topic.
+    """
     def __init__(self):
         self.grippers = ['l_gripper', 'r_gripper']
         self.fingertips = ['l_fingertip', 'r_fingertip']
@@ -73,6 +77,9 @@ class ParsePFS(object):
         pfs_msg.header = header
         pfs_msg.proximity = proximity
         pfs_msg.force = force
+        pfs_msg.imu.header.stamp = header.stamp
+        imu_frame_id = '/' + gripper + '_' + fingertip + '_' + 'pfs_a'
+        pfs_msg.imu.header.frame_id = imu_frame_id
         pfs_msg.imu.linear_acceleration.x = acc[0]
         pfs_msg.imu.linear_acceleration.y = acc[1]
         pfs_msg.imu.linear_acceleration.z = acc[2]
