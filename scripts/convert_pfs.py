@@ -55,7 +55,7 @@ class ConvertPFS(object):
         fingertip = args[1]
         self.publish_pointcloud(msg, gripper, fingertip)
         self.publish_wrenchstamped(msg, gripper, fingertip)
-        self.pub[gripper][fingertip]['pfs_a_front']['imu'].publish(msg.imu)
+        self.publish_imu(msg, gripper, fingertip)
 
     def sensor_num(self, part):
         """
@@ -146,6 +146,22 @@ class ConvertPFS(object):
             force_scale = 0.00005  # TODO: Convert force topic value into [N]
             force_msg.wrench.force.z = average_force * force_scale
             self.pub[gripper][fingertip][part]['force'].publish(force_msg)
+
+    def publish_imu(self, msg, gripper, fingertip):
+        imu = msg.imu
+        # Gyro
+        gyro = imu.angular_velocity
+        gyro_scale = 0.001  # TODO: Proper unit?
+        msg.imu.angular_velocity.x = gyro.x * gyro_scale
+        msg.imu.angular_velocity.y = gyro.y * gyro_scale
+        msg.imu.angular_velocity.z = gyro.z * gyro_scale
+        # Acceleration
+        acc = imu.linear_acceleration
+        acc_scale = 0.001  # TODO: Proper unit?
+        msg.imu.linear_acceleration.x = acc.x * acc_scale
+        msg.imu.linear_acceleration.y = acc.y * acc_scale
+        msg.imu.linear_acceleration.z = acc.z * acc_scale
+        self.pub[gripper][fingertip]['pfs_a_front']['imu'].publish(msg.imu)
 
 
 if __name__ == '__main__':

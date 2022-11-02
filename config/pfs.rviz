@@ -719,6 +719,15 @@ Visualization Manager:
               Value: true
           Enabled: true
           Name: Wrench
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: true
+          History Length: 1
+          Name: Imu
+          Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/imu
+          Unreliable: false
+          Value: true
       Enabled: true
       Name: L_Gripper_L_Finger
     - Class: rviz/Group
@@ -951,6 +960,15 @@ Visualization Manager:
               Value: true
           Enabled: true
           Name: Wrench
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: true
+          History Length: 1
+          Name: Imu
+          Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/imu
+          Unreliable: false
+          Value: true
       Enabled: true
       Name: L_Gripper_R_Finger
     - Class: rviz/Group
@@ -1183,6 +1201,15 @@ Visualization Manager:
               Value: true
           Enabled: true
           Name: Wrench
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: true
+          History Length: 1
+          Name: Imu
+          Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/imu
+          Unreliable: false
+          Value: true
       Enabled: true
       Name: R_Gripper_L_Finger
     - Class: rviz/Group
@@ -1415,6 +1442,15 @@ Visualization Manager:
               Value: true
           Enabled: true
           Name: Wrench
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: true
+          History Length: 1
+          Name: Imu
+          Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/imu
+          Unreliable: false
+          Value: true
       Enabled: true
       Name: R_Gripper_R_Finger
   Enabled: true
@@ -1462,10 +1498,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.579797625541687
+      Pitch: 0.3347975015640259
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 5.792049407958984
+      Yaw: 5.557054042816162
     Saved: ~
 Window Geometry:
   Displays:
