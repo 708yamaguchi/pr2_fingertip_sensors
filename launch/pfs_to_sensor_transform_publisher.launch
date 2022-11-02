@@ -1,0 +1,83 @@
+<launch>
+  <!-- static_transform_publisher's args are -->
+  <!-- x y z qx qy qz qw frame_id child_frame_id  period_in_ms -->
+
+  <!-- To calculate quaternion, You can use (matrix2quaternion) function in euslisp -->
+  <!-- Note that (matrix2quaternion) returns (qw qx qy qz), not (qx qy qz qw) -->
+  <!-- Example -->
+  <!-- matrix2quaternion (rotate-matrix (rotate-matrix (unit-matrix 3) pi/2 :y) -pi/2 :z)) -->
+
+  <arg name="gripper" doc="'l' or 'r'" />
+  <arg name="finger" doc="'l' or 'r'" />
+  <arg name="parent_link" />
+
+  <!-- Publish each sensor tf on PFS-01A tf from fingertip -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_a_front_broadcaster"
+        args="0.01 -0.015 0
+              0.5 0.5 -0.5 0.5
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_a_front
+              100" />
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs_a_to_sensor_transform_publisher.launch">
+    <arg name="gripper" value="$(arg gripper)" />
+    <arg name="finger" value="$(arg finger)" />
+    <arg name="parent_link" value="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_a_front" />
+  </include>
+
+  <!-- Publish each sensor tf on PFS-01B top tf from fingertip -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_top_broadcaster"
+        args="0.03 -0.01 0
+              0.0 0.707107 0.0 0.707107
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_top
+              100" />
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs_b_to_sensor_transform_publisher.launch">
+    <arg name="gripper" value="$(arg gripper)" />
+    <arg name="finger" value="$(arg finger)" />
+    <arg name="part" value="top" />
+    <arg name="parent_link" value="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_top" />
+  </include>
+
+  <!-- Publish each sensor tf on PFS-01B back tf from fingertip -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_back_broadcaster"
+        args="0.03 -0.005 0
+              -0.5 0.5 0.5 0.5
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_back
+              100" />
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs_b_to_sensor_transform_publisher.launch">
+    <arg name="gripper" value="$(arg gripper)" />
+    <arg name="finger" value="$(arg finger)" />
+    <arg name="part" value="back" />
+    <arg name="parent_link" value="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_back" />
+  </include>
+
+  <!-- Publish each sensor tf on PFS-01B left tf from fingertip -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_left_broadcaster"
+        args="0.015 -0.01 0.01
+              0 0 0 1
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_left
+              100" />
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs_b_to_sensor_transform_publisher.launch">
+    <arg name="gripper" value="$(arg gripper)" />
+    <arg name="finger" value="$(arg finger)" />
+    <arg name="part" value="left" />
+    <arg name="parent_link" value="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_left" />
+  </include>
+
+  <!-- Publish each sensor tf on PFS-01B right tf from fingertip -->
+  <node pkg="tf" type="static_transform_publisher"
+        name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_right_broadcaster"
+        args="0.015 -0.01 -0.01
+              0 1 0 0
+              $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_right
+              100" />
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs_b_to_sensor_transform_publisher.launch">
+    <arg name="gripper" value="$(arg gripper)" />
+    <arg name="finger" value="$(arg finger)" />
+    <arg name="part" value="right" />
+    <arg name="parent_link" value="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_right" />
+  </include>
+
+</launch>

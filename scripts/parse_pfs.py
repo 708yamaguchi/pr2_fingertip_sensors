@@ -6,6 +6,10 @@ from pr2_fingertip_sensors.msg import PR2FingertipSensor
 
 
 class ParsePFS(object):
+    """
+    Get and parse two /pressure/{l or r}_gripper_motor topics.
+    Concatenate them into one /pfs/{l or r}_gripper/{l or r}_finger topic.
+    """
     def __init__(self):
         self.grippers = ['l_gripper', 'r_gripper']
         self.fingertips = ['l_fingertip', 'r_fingertip']
@@ -15,8 +19,8 @@ class ParsePFS(object):
             self.pub[gripper] = {}
             for fingertip in self.fingertips:
                 self.pub[gripper][fingertip] = rospy.Publisher(
-                    '/pfs/' + gripper + '/' + fingertip, PR2FingertipSensor,
-                    queue_size=1)
+                    '/pfs/' + gripper + '/' + fingertip + '/raw',
+                    PR2FingertipSensor, queue_size=1)
         # Subscribers
         rospy.Subscriber(
             "/pressure/l_gripper_motor", PressureState, self.cb, "l_gripper")
@@ -41,8 +45,10 @@ class ParsePFS(object):
         for fingertip in self.fingertips:
             if fingertip == 'l_fingertip':
                 data = self.parse(msg.l_finger_tip)
+                frame_id = gripper + '_l_finger_tip_link'
             if fingertip == 'r_fingertip':
                 data = self.parse(msg.r_finger_tip)
+                frame_id = gripper + '_r_finger_tip_link'
             # Store parsed sensor data
             self.pfs_data[gripper][fingertip][data['packet_type']] = data
             # If all sensor data is stored, append them
@@ -50,6 +56,7 @@ class ParsePFS(object):
                and self.pfs_data[gripper][fingertip][1] is not None:
                 # Create method?
                 header = msg.header
+                header.frame_id = frame_id
                 prox = self.pfs_data[gripper][fingertip][0]['proximity'] + \
                     self.pfs_data[gripper][fingertip][1]['proximity']
                 force = self.pfs_data[gripper][fingertip][0]['force'] + \
@@ -70,6 +77,9 @@ class ParsePFS(object):
         pfs_msg.header = header
         pfs_msg.proximity = proximity
         pfs_msg.force = force
+        pfs_msg.imu.header.stamp = header.stamp
+        imu_frame_id = '/' + gripper + '_' + fingertip + '_' + 'pfs_a_front'
+        pfs_msg.imu.header.frame_id = imu_frame_id
         pfs_msg.imu.linear_acceleration.x = acc[0]
         pfs_msg.imu.linear_acceleration.y = acc[1]
         pfs_msg.imu.linear_acceleration.z = acc[2]

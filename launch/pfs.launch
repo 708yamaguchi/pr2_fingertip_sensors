@@ -1,0 +1,20 @@
+<launch>
+  <arg name="publish_pfs_tf" default="true"
+       doc="Publish static tf for pfs sensors. If you use PR2's default urdf, set this value as true" />
+  <arg name="gui" default="true" doc="Launch RViz or not" />
+
+  <node name="parse_pfs" pkg="pr2_fingertip_sensors" type="parse_pfs.py" output="screen" />
+  <node name="calibrate_pfs" pkg="pr2_fingertip_sensors" type="calibrate_pfs.py" output="screen" />
+  <node name="convert_pfs" pkg="pr2_fingertip_sensors" type="convert_pfs.py" output="screen" />
+
+  <!-- Publish transform from fingertip to each pfs board -->
+  <group if="$(arg publish_pfs_tf)">
+    <include file="$(find pr2_fingertip_sensors)/launch/pfs_transform_publisher.launch" />
+  </group>
+
+  <!-- RViz for PFS proximity and force sensors -->
+  <group if="$(arg gui)">
+    <node name="rviz" pkg="rviz" type="rviz"
+          args="-d $(find pr2_fingertip_sensors)/config/pfs.rviz" />
+  </group>
+</launch>
