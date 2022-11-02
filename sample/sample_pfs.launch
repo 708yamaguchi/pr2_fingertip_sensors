@@ -1,0 +1,15 @@
+<launch>
+  <arg name="model" value="$(find pr2_description)/robots/pr2.urdf.xacro" />
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+  <param name="use_sim_time" value="true" />
+
+  <!-- Play rosbag including /pressure/{l or r}_gripper_motor topics -->
+  <node name="play_pfs" pkg="rosbag" type="play"
+        args="--clock --loop $(find pr2_fingertip_sensors)/data/sample_pfs.bag" />
+
+  <!-- Launch pfs.launch -->
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs.launch">
+    <arg name="publish_pfs_tf" value="true" />
+    <arg name="gui" value="true" />
+  </include>
+</launch>

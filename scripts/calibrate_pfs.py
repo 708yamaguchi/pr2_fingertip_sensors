@@ -18,24 +18,27 @@ class CalibratePFS(object):
                 # Subscribe raw data
                 rospy.Subscriber(
                     '/pfs/{}/{}/raw'.format(gripper, fingertip),
-                    PR2FingertipSensor, self.cb, gripper, fingertip)
+                    PR2FingertipSensor, self.cb, (gripper, fingertip))
                 # Publish calibrated data
                 self.pub[gripper][fingertip] = rospy.Publisher(
                     '/pfs/{}/{}'.format(gripper, fingertip),
                     PR2FingertipSensor, queue_size=1)
 
-    def cb(self, msg, gripper, fingertip):
+    def cb(self, msg, args):
         """
         Publish calibrated PFS sensor data
+        args must be tuple of (gripper, fingertip)
         """
+        gripper = args[0]
+        fingertip = args[1]
         msg_calibrated = self.calibrate(msg)
         self.pub[gripper][fingertip].publish(msg_calibrated)
 
-    def calibrate(msg):
+    def calibrate(self, msg):
         """
         Calibrate sensor data
         """
-        # TODO
+        # Need calibration for proximity and force sensors
         return msg
 
 

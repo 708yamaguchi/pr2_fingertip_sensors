@@ -5,11 +5,12 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Status1
-        - /TF1
-        - /TF1/Frames1
-      Splitter Ratio: 0.5
-    Tree Height: 728
+        - /L_Gripper_L_Finger1
+        - /L_Gripper_R_Finger1
+        - /R_Gripper_L_Finger1
+        - /R_Gripper_R_Finger1
+      Splitter Ratio: 0.5575540065765381
+    Tree Height: 1088
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -28,7 +29,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: A_Front
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -475,767 +476,947 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
-        All Enabled: false
-        base_bellow_link:
-          Value: false
-        base_footprint:
-          Value: false
-        base_laser_link:
-          Value: false
-        base_link:
-          Value: false
-        bl_caster_l_wheel_link:
-          Value: false
-        bl_caster_r_wheel_link:
-          Value: false
-        bl_caster_rotation_link:
-          Value: false
-        br_caster_l_wheel_link:
-          Value: false
-        br_caster_r_wheel_link:
-          Value: false
-        br_caster_rotation_link:
-          Value: false
-        double_stereo_link:
-          Value: false
-        fl_caster_l_wheel_link:
-          Value: false
-        fl_caster_r_wheel_link:
-          Value: false
-        fl_caster_rotation_link:
-          Value: false
-        fr_caster_l_wheel_link:
-          Value: false
-        fr_caster_r_wheel_link:
-          Value: false
-        fr_caster_rotation_link:
-          Value: false
-        head_pan_link:
-          Value: false
-        head_plate_frame:
-          Value: false
-        head_tilt_link:
-          Value: false
-        high_def_frame:
-          Value: false
-        high_def_optical_frame:
-          Value: false
-        imu_link:
-          Value: false
-        l_elbow_flex_link:
-          Value: false
-        l_forearm_cam_frame:
-          Value: false
-        l_forearm_cam_optical_frame:
-          Value: false
-        l_forearm_link:
-          Value: false
-        l_forearm_roll_link:
-          Value: false
-        l_gripper_l_finger_link:
-          Value: false
-        l_gripper_l_finger_tip_frame:
-          Value: false
-        l_gripper_l_finger_tip_link:
-          Value: false
-        l_gripper_l_fingertip_pfs_a:
-          Value: true
-        l_gripper_l_fingertip_pfs_a_0:
-          Value: false
-        l_gripper_l_fingertip_pfs_a_1:
-          Value: false
-        l_gripper_l_fingertip_pfs_a_2:
-          Value: false
-        l_gripper_l_fingertip_pfs_a_3:
-          Value: false
-        l_gripper_l_fingertip_pfs_a_4:
-          Value: false
-        l_gripper_l_fingertip_pfs_a_5:
-          Value: false
-        l_gripper_l_fingertip_pfs_a_6:
-          Value: false
-        l_gripper_l_fingertip_pfs_a_7:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_back:
-          Value: true
-        l_gripper_l_fingertip_pfs_b_back_0:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_back_1:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_back_2:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_back_3:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_left:
-          Value: true
-        l_gripper_l_fingertip_pfs_b_left_0:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_left_1:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_left_2:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_left_3:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_right:
-          Value: true
-        l_gripper_l_fingertip_pfs_b_right_0:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_right_1:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_right_2:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_right_3:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_top:
-          Value: true
-        l_gripper_l_fingertip_pfs_b_top_0:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_top_1:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_top_2:
-          Value: false
-        l_gripper_l_fingertip_pfs_b_top_3:
-          Value: false
-        l_gripper_led_frame:
-          Value: false
-        l_gripper_motor_accelerometer_link:
-          Value: false
-        l_gripper_motor_screw_link:
-          Value: false
-        l_gripper_motor_slider_link:
-          Value: false
-        l_gripper_palm_link:
-          Value: false
-        l_gripper_r_finger_link:
-          Value: false
-        l_gripper_r_finger_tip_link:
-          Value: false
-        l_gripper_r_finger_tip_link_flipped:
-          Value: false
-        l_gripper_r_fingertip_pfs_a:
-          Value: false
-        l_gripper_r_fingertip_pfs_a_0:
-          Value: false
-        l_gripper_r_fingertip_pfs_a_1:
-          Value: false
-        l_gripper_r_fingertip_pfs_a_2:
-          Value: false
-        l_gripper_r_fingertip_pfs_a_3:
-          Value: false
-        l_gripper_r_fingertip_pfs_a_4:
-          Value: false
-        l_gripper_r_fingertip_pfs_a_5:
-          Value: false
-        l_gripper_r_fingertip_pfs_a_6:
-          Value: false
-        l_gripper_r_fingertip_pfs_a_7:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_back:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_back_0:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_back_1:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_back_2:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_back_3:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_left:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_left_0:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_left_1:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_left_2:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_left_3:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_right:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_right_0:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_right_1:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_right_2:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_right_3:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_top:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_top_0:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_top_1:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_top_2:
-          Value: false
-        l_gripper_r_fingertip_pfs_b_top_3:
-          Value: false
-        l_gripper_tool_frame:
-          Value: false
-        l_shoulder_lift_link:
-          Value: false
-        l_shoulder_pan_link:
-          Value: false
-        l_torso_lift_side_plate_link:
-          Value: false
-        l_upper_arm_link:
-          Value: false
-        l_upper_arm_roll_link:
-          Value: false
-        l_wrist_flex_link:
-          Value: false
-        l_wrist_roll_link:
-          Value: false
-        laser_tilt_link:
-          Value: false
-        laser_tilt_mount_link:
-          Value: false
-        narrow_stereo_l_stereo_camera_frame:
-          Value: false
-        narrow_stereo_l_stereo_camera_optical_frame:
-          Value: false
-        narrow_stereo_link:
-          Value: false
-        narrow_stereo_optical_frame:
-          Value: false
-        narrow_stereo_r_stereo_camera_frame:
-          Value: false
-        narrow_stereo_r_stereo_camera_optical_frame:
-          Value: false
-        projector_wg6802418_child_frame:
-          Value: false
-        projector_wg6802418_frame:
-          Value: false
-        r_elbow_flex_link:
-          Value: false
-        r_forearm_cam_frame:
-          Value: false
-        r_forearm_cam_optical_frame:
-          Value: false
-        r_forearm_link:
-          Value: false
-        r_forearm_roll_link:
-          Value: false
-        r_gripper_l_finger_link:
-          Value: false
-        r_gripper_l_finger_tip_frame:
-          Value: false
-        r_gripper_l_finger_tip_link:
-          Value: false
-        r_gripper_l_fingertip_pfs_a:
-          Value: false
-        r_gripper_l_fingertip_pfs_a_0:
-          Value: false
-        r_gripper_l_fingertip_pfs_a_1:
-          Value: false
-        r_gripper_l_fingertip_pfs_a_2:
-          Value: false
-        r_gripper_l_fingertip_pfs_a_3:
-          Value: false
-        r_gripper_l_fingertip_pfs_a_4:
-          Value: false
-        r_gripper_l_fingertip_pfs_a_5:
-          Value: false
-        r_gripper_l_fingertip_pfs_a_6:
-          Value: false
-        r_gripper_l_fingertip_pfs_a_7:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_back:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_back_0:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_back_1:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_back_2:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_back_3:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_left:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_left_0:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_left_1:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_left_2:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_left_3:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_right:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_right_0:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_right_1:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_right_2:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_right_3:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_top:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_top_0:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_top_1:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_top_2:
-          Value: false
-        r_gripper_l_fingertip_pfs_b_top_3:
-          Value: false
-        r_gripper_led_frame:
-          Value: false
-        r_gripper_motor_accelerometer_link:
-          Value: false
-        r_gripper_motor_screw_link:
-          Value: false
-        r_gripper_motor_slider_link:
-          Value: false
-        r_gripper_palm_link:
-          Value: false
-        r_gripper_r_finger_link:
-          Value: false
-        r_gripper_r_finger_tip_link:
-          Value: false
-        r_gripper_r_finger_tip_link_flipped:
-          Value: false
-        r_gripper_r_fingertip_pfs_a:
-          Value: false
-        r_gripper_r_fingertip_pfs_a_0:
-          Value: false
-        r_gripper_r_fingertip_pfs_a_1:
-          Value: false
-        r_gripper_r_fingertip_pfs_a_2:
-          Value: false
-        r_gripper_r_fingertip_pfs_a_3:
-          Value: false
-        r_gripper_r_fingertip_pfs_a_4:
-          Value: false
-        r_gripper_r_fingertip_pfs_a_5:
-          Value: false
-        r_gripper_r_fingertip_pfs_a_6:
-          Value: false
-        r_gripper_r_fingertip_pfs_a_7:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_back:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_back_0:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_back_1:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_back_2:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_back_3:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_left:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_left_0:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_left_1:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_left_2:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_left_3:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_right:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_right_0:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_right_1:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_right_2:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_right_3:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_top:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_top_0:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_top_1:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_top_2:
-          Value: false
-        r_gripper_r_fingertip_pfs_b_top_3:
-          Value: false
-        r_gripper_tool_frame:
-          Value: false
-        r_shoulder_lift_link:
-          Value: false
-        r_shoulder_pan_link:
-          Value: false
-        r_torso_lift_side_plate_link:
-          Value: false
-        r_upper_arm_link:
-          Value: false
-        r_upper_arm_roll_link:
-          Value: false
-        r_wrist_flex_link:
-          Value: false
-        r_wrist_roll_link:
-          Value: false
-        sensor_mount_link:
-          Value: false
-        torso_lift_link:
-          Value: false
-        torso_lift_motor_screw_link:
-          Value: false
-        wide_stereo_l_stereo_camera_frame:
-          Value: false
-        wide_stereo_l_stereo_camera_optical_frame:
-          Value: false
-        wide_stereo_link:
-          Value: false
-        wide_stereo_optical_frame:
-          Value: false
-        wide_stereo_r_stereo_camera_frame:
-          Value: false
-        wide_stereo_r_stereo_camera_optical_frame:
-          Value: false
-      Marker Scale: 0.30000001192092896
+        All Enabled: true
+      Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
-      Show Names: false
+      Show Names: true
       Tree:
-        base_footprint:
-          base_link:
-            base_bellow_link:
-              {}
-            base_laser_link:
-              {}
-            bl_caster_rotation_link:
-              bl_caster_l_wheel_link:
-                {}
-              bl_caster_r_wheel_link:
-                {}
-            br_caster_rotation_link:
-              br_caster_l_wheel_link:
-                {}
-              br_caster_r_wheel_link:
-                {}
-            fl_caster_rotation_link:
-              fl_caster_l_wheel_link:
-                {}
-              fl_caster_r_wheel_link:
-                {}
-            fr_caster_rotation_link:
-              fr_caster_l_wheel_link:
-                {}
-              fr_caster_r_wheel_link:
-                {}
-            torso_lift_link:
-              head_pan_link:
-                head_tilt_link:
-                  head_plate_frame:
-                    projector_wg6802418_frame:
-                      projector_wg6802418_child_frame:
-                        {}
-                    sensor_mount_link:
-                      double_stereo_link:
-                        narrow_stereo_link:
-                          narrow_stereo_l_stereo_camera_frame:
-                            narrow_stereo_l_stereo_camera_optical_frame:
-                              {}
-                            narrow_stereo_r_stereo_camera_frame:
-                              narrow_stereo_r_stereo_camera_optical_frame:
-                                {}
-                          narrow_stereo_optical_frame:
-                            {}
-                        wide_stereo_link:
-                          wide_stereo_l_stereo_camera_frame:
-                            wide_stereo_l_stereo_camera_optical_frame:
-                              {}
-                            wide_stereo_r_stereo_camera_frame:
-                              wide_stereo_r_stereo_camera_optical_frame:
-                                {}
-                          wide_stereo_optical_frame:
-                            {}
-                      high_def_frame:
-                        high_def_optical_frame:
-                          {}
-              imu_link:
-                {}
-              l_shoulder_pan_link:
-                l_shoulder_lift_link:
-                  l_upper_arm_roll_link:
-                    l_upper_arm_link:
-                      l_elbow_flex_link:
-                        l_forearm_roll_link:
-                          l_forearm_cam_frame:
-                            l_forearm_cam_optical_frame:
-                              {}
-                          l_forearm_link:
-                            l_wrist_flex_link:
-                              l_wrist_roll_link:
-                                l_gripper_palm_link:
-                                  l_gripper_l_finger_link:
-                                    l_gripper_l_finger_tip_link:
-                                      l_gripper_l_fingertip_pfs_a:
-                                        l_gripper_l_fingertip_pfs_a_0:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_a_1:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_a_2:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_a_3:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_a_4:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_a_5:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_a_6:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_a_7:
-                                          {}
-                                      l_gripper_l_fingertip_pfs_b_back:
-                                        l_gripper_l_fingertip_pfs_b_back_0:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_back_1:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_back_2:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_back_3:
-                                          {}
-                                      l_gripper_l_fingertip_pfs_b_left:
-                                        l_gripper_l_fingertip_pfs_b_left_0:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_left_1:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_left_2:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_left_3:
-                                          {}
-                                      l_gripper_l_fingertip_pfs_b_right:
-                                        l_gripper_l_fingertip_pfs_b_right_0:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_right_1:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_right_2:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_right_3:
-                                          {}
-                                      l_gripper_l_fingertip_pfs_b_top:
-                                        l_gripper_l_fingertip_pfs_b_top_0:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_top_1:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_top_2:
-                                          {}
-                                        l_gripper_l_fingertip_pfs_b_top_3:
-                                          {}
-                                  l_gripper_led_frame:
-                                    {}
-                                  l_gripper_motor_accelerometer_link:
-                                    {}
-                                  l_gripper_motor_slider_link:
-                                    l_gripper_motor_screw_link:
-                                      {}
-                                  l_gripper_r_finger_link:
-                                    l_gripper_r_finger_tip_link:
-                                      l_gripper_l_finger_tip_frame:
-                                        {}
-                                      l_gripper_r_finger_tip_link_flipped:
-                                        l_gripper_r_fingertip_pfs_a:
-                                          l_gripper_r_fingertip_pfs_a_0:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_a_1:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_a_2:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_a_3:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_a_4:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_a_5:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_a_6:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_a_7:
-                                            {}
-                                        l_gripper_r_fingertip_pfs_b_back:
-                                          l_gripper_r_fingertip_pfs_b_back_0:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_back_1:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_back_2:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_back_3:
-                                            {}
-                                        l_gripper_r_fingertip_pfs_b_left:
-                                          l_gripper_r_fingertip_pfs_b_left_0:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_left_1:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_left_2:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_left_3:
-                                            {}
-                                        l_gripper_r_fingertip_pfs_b_right:
-                                          l_gripper_r_fingertip_pfs_b_right_0:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_right_1:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_right_2:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_right_3:
-                                            {}
-                                        l_gripper_r_fingertip_pfs_b_top:
-                                          l_gripper_r_fingertip_pfs_b_top_0:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_top_1:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_top_2:
-                                            {}
-                                          l_gripper_r_fingertip_pfs_b_top_3:
-                                            {}
-                                  l_gripper_tool_frame:
-                                    {}
-              l_torso_lift_side_plate_link:
-                {}
-              laser_tilt_mount_link:
-                laser_tilt_link:
-                  {}
-              r_shoulder_pan_link:
-                r_shoulder_lift_link:
-                  r_upper_arm_roll_link:
-                    r_upper_arm_link:
-                      r_elbow_flex_link:
-                        r_forearm_roll_link:
-                          r_forearm_cam_frame:
-                            r_forearm_cam_optical_frame:
-                              {}
-                          r_forearm_link:
-                            r_wrist_flex_link:
-                              r_wrist_roll_link:
-                                r_gripper_palm_link:
-                                  r_gripper_l_finger_link:
-                                    r_gripper_l_finger_tip_link:
-                                      r_gripper_l_fingertip_pfs_a:
-                                        r_gripper_l_fingertip_pfs_a_0:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_a_1:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_a_2:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_a_3:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_a_4:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_a_5:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_a_6:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_a_7:
-                                          {}
-                                      r_gripper_l_fingertip_pfs_b_back:
-                                        r_gripper_l_fingertip_pfs_b_back_0:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_back_1:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_back_2:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_back_3:
-                                          {}
-                                      r_gripper_l_fingertip_pfs_b_left:
-                                        r_gripper_l_fingertip_pfs_b_left_0:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_left_1:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_left_2:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_left_3:
-                                          {}
-                                      r_gripper_l_fingertip_pfs_b_right:
-                                        r_gripper_l_fingertip_pfs_b_right_0:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_right_1:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_right_2:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_right_3:
-                                          {}
-                                      r_gripper_l_fingertip_pfs_b_top:
-                                        r_gripper_l_fingertip_pfs_b_top_0:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_top_1:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_top_2:
-                                          {}
-                                        r_gripper_l_fingertip_pfs_b_top_3:
-                                          {}
-                                  r_gripper_led_frame:
-                                    {}
-                                  r_gripper_motor_accelerometer_link:
-                                    {}
-                                  r_gripper_motor_slider_link:
-                                    r_gripper_motor_screw_link:
-                                      {}
-                                  r_gripper_r_finger_link:
-                                    r_gripper_r_finger_tip_link:
-                                      r_gripper_l_finger_tip_frame:
-                                        {}
-                                      r_gripper_r_finger_tip_link_flipped:
-                                        r_gripper_r_fingertip_pfs_a:
-                                          r_gripper_r_fingertip_pfs_a_0:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_a_1:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_a_2:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_a_3:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_a_4:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_a_5:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_a_6:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_a_7:
-                                            {}
-                                        r_gripper_r_fingertip_pfs_b_back:
-                                          r_gripper_r_fingertip_pfs_b_back_0:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_back_1:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_back_2:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_back_3:
-                                            {}
-                                        r_gripper_r_fingertip_pfs_b_left:
-                                          r_gripper_r_fingertip_pfs_b_left_0:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_left_1:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_left_2:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_left_3:
-                                            {}
-                                        r_gripper_r_fingertip_pfs_b_right:
-                                          r_gripper_r_fingertip_pfs_b_right_0:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_right_1:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_right_2:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_right_3:
-                                            {}
-                                        r_gripper_r_fingertip_pfs_b_top:
-                                          r_gripper_r_fingertip_pfs_b_top_0:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_top_1:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_top_2:
-                                            {}
-                                          r_gripper_r_fingertip_pfs_b_top_3:
-                                            {}
-                                  r_gripper_tool_frame:
-                                    {}
-              r_torso_lift_side_plate_link:
-                {}
-            torso_lift_motor_screw_link:
-              {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: A_Front
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Top
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Back
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Left
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Right
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+          Enabled: true
+          Name: ProximityCloud
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: A_Front
+              Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Top
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Back
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Left
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Right
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+          Enabled: true
+          Name: Wrench
+      Enabled: true
+      Name: L_Gripper_L_Finger
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: A_Front
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Top
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Back
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Left
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Right
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+          Enabled: true
+          Name: ProximityCloud
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: A_Front
+              Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Top
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Back
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Left
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Right
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+          Enabled: true
+          Name: Wrench
+      Enabled: true
+      Name: L_Gripper_R_Finger
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: A_Front
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Top
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Back
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Left
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Right
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+          Enabled: true
+          Name: ProximityCloud
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: A_Front
+              Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Top
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Back
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Left
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Right
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+          Enabled: true
+          Name: Wrench
+      Enabled: true
+      Name: R_Gripper_L_Finger
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: A_Front
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Top
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Back
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Left
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 10
+                Min Value: -10
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 138; 226; 52
+              Color Transformer: FlatColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Max Intensity: 4096
+              Min Color: 0; 0; 0
+              Min Intensity: 0
+              Name: B_Right
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 5
+              Size (m): 0.009999999776482582
+              Style: Points
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/proximity
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+          Enabled: true
+          Name: ProximityCloud
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: A_Front
+              Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Top
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Back
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Left
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+            - Alpha: 1
+              Arrow Width: 0.10000000149011612
+              Class: rviz/WrenchStamped
+              Enabled: true
+              Force Arrow Scale: 1
+              Force Color: 204; 51; 51
+              Hide Small Values: false
+              History Length: 1
+              Name: B_Right
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/force
+              Torque Arrow Scale: 1
+              Torque Color: 204; 204; 51
+              Unreliable: false
+              Value: true
+          Enabled: true
+          Name: Wrench
+      Enabled: true
+      Name: R_Gripper_R_Finger
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -1260,37 +1441,39 @@ Visualization Manager:
     - Class: rviz/PublishPoint
       Single click: true
       Topic: /clicked_point
+    - Class: jsk_rviz_plugin/CloseAll
+    - Class: jsk_rviz_plugin/OpenAll
   Value: true
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.8785362243652344
+      Distance: 3.1109416484832764
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.022203989326953888
-        Y: -0.06722698360681534
-        Z: 0.9194647073745728
+        X: -0.025779271498322487
+        Y: -0.0711732730269432
+        Z: 0.2643868327140808
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7203978300094604
-      Target Frame: <Fixed Frame>
+      Pitch: 0.579797625541687
+      Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 0.603567361831665
+      Yaw: 5.792049407958984
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1025
+  Height: 1385
   Hide Left Dock: false
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd00000004000000000000024c00000363fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000363000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000363fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d00000363000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073d0000003efc0100000002fb0000000800540069006d006501000000000000073d000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000004eb0000036300000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001e3000004cbfc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000004cb000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb00000018004b0069006e00650063007400430061006d00650072006102000000830000013e0000026c000001bafb00000018004e006100720072006f007700430061006d00650072006100000002cb000000be0000000000000000000000010000010f000007cefc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000028000007ce000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009bd0000003efc0100000002fb0000000800540069006d00650100000000000009bd000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000007d4000004cb00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1299,6 +1482,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: true
-  Width: 1853
+  Width: 2493
   X: 67
   Y: 27

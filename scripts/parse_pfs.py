@@ -19,8 +19,8 @@ class ParsePFS(object):
             self.pub[gripper] = {}
             for fingertip in self.fingertips:
                 self.pub[gripper][fingertip] = rospy.Publisher(
-                    '/pfs/' + gripper + '/' + fingertip, PR2FingertipSensor,
-                    queue_size=1)
+                    '/pfs/' + gripper + '/' + fingertip + '/raw',
+                    PR2FingertipSensor, queue_size=1)
         # Subscribers
         rospy.Subscriber(
             "/pressure/l_gripper_motor", PressureState, self.cb, "l_gripper")
@@ -78,7 +78,7 @@ class ParsePFS(object):
         pfs_msg.proximity = proximity
         pfs_msg.force = force
         pfs_msg.imu.header.stamp = header.stamp
-        imu_frame_id = '/' + gripper + '_' + fingertip + '_' + 'pfs_a'
+        imu_frame_id = '/' + gripper + '_' + fingertip + '_' + 'pfs_a_front'
         pfs_msg.imu.header.frame_id = imu_frame_id
         pfs_msg.imu.linear_acceleration.x = acc[0]
         pfs_msg.imu.linear_acceleration.y = acc[1]

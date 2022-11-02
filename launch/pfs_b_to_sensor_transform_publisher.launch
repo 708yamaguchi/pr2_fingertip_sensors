@@ -2,10 +2,10 @@
   <!-- static_transform_publisher's args -->
   <!-- x y z qx qy qz qw frame_id child_frame_id  period_in_ms -->
 
-  <arg name="gripper" default="l" doc="'l' or 'r'" />
-  <arg name="finger" default="l" doc="'l' or 'r'" />
-  <arg name="part" default="top" doc="'top', 'back', 'left' or 'right'" />
-  <arg name="parent_link" value="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)" />
+  <arg name="gripper" doc="'l' or 'r'" />
+  <arg name="finger" doc="'l' or 'r'" />
+  <arg name="part" doc="'top', 'back', 'left' or 'right'" />
+  <arg name="parent_link" />
 
   <!-- PFS-01B's sensor 0 -->
   <node pkg="tf" type="static_transform_publisher"

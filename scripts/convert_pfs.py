@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
+from geometry_msgs.msg import WrenchStamped
 import math
 import rospy
 from pr2_fingertip_sensors.msg import PR2FingertipSensor
-from sensor_msgs.msg import Imu, PointCloud2, PointField, WrenchStamped
+from sensor_msgs.msg import Imu, PointCloud2, PointField
 import sensor_msgs.point_cloud2 as pc2
 from std_msgs.msg import Header
 
@@ -19,7 +20,7 @@ class ConvertPFS(object):
         self.grippers = ['l_gripper', 'r_gripper']
         self.fingertips = ['l_fingertip', 'r_fingertip']
         self.parts = [
-            'pfs_a', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left', 'pfs_b_right']
+            'pfs_a_front', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left', 'pfs_b_right']
         self.pub = {}
         for gripper in self.grippers:
             self.pub[gripper] = {}
@@ -27,40 +28,44 @@ class ConvertPFS(object):
                 # Subscriber
                 rospy.Subscriber(
                     '/pfs/{}/{}'.format(gripper, fingertip),
-                    PR2FingertipSensor, self.cb, gripper, fingertip)
+                    PR2FingertipSensor, self.cb, (gripper, fingertip))
                 # Publisher for proximity, force and imu
                 self.pub[gripper][fingertip] = {}
                 for part in self.parts:
+                    self.pub[gripper][fingertip][part] = {}
                     sensors = ['proximity', 'force', 'imu']
                     msg_types = [PointCloud2, WrenchStamped, Imu]
                     for sensor, msg_type in zip(sensors, msg_types):
-                        if part != 'pfs_a' and sensor == 'imu':
+                        if part != 'pfs_a_front' and sensor == 'imu':
                             continue
                         self.pub[gripper][fingertip][part][sensor] = rospy.Publisher(
                             '/pfs/{}/{}/{}/{}'.format(
                                 gripper, fingertip, part, sensor),
                             msg_type, queue_size=1)
-        self.fields = [PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=8),
-                       PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=8),
-                       PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=8)]
+        self.fields = [PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+                       PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+                       PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1)]
 
-    def cb(self, msg, gripper, fingertip):
+    def cb(self, msg, args):
         """
         publish each sensor data
+        args must be tuple of (gripper, fingertip)
         """
+        gripper = args[0]
+        fingertip = args[1]
         self.publish_pointcloud(msg, gripper, fingertip)
         self.publish_wrenchstamped(msg, gripper, fingertip)
-        self.pub[gripper][fingertip]['pfs_a']['imu'].publish(msg.imu)
+        self.pub[gripper][fingertip]['pfs_a_front']['imu'].publish(msg.imu)
 
     def sensor_num(self, part):
         """
         Args
-        part: 'pfs_a', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left' or 'pfs_b_right'
+        part: 'pfs_a_front', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left' or 'pfs_b_right'
 
         Return
         sensor_num: The number of sensors in the specified PCB.
         """
-        if part == 'pfs_a':
+        if part == 'pfs_a_front':
             sensor_num = 8
         else:
             sensor_num = 4
@@ -69,13 +74,13 @@ class ConvertPFS(object):
     def sensor_index(self, part, i):
         """
         Args
-        part: 'pfs_a', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left' or 'pfs_b_right'
-        i: The index of sensor in each PCB. 0~7 for pfs_a. 0~3 for pfs_b.
+        part: 'pfs_a_front', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left' or 'pfs_b_right'
+        i: The index of sensor in each PCB. 0~7 for pfs_a_front. 0~3 for pfs_b.
 
         Return
         index: The index of sensor in all PCBs. This value is between 0~23.
         """
-        if part == 'pfs_a':
+        if part == 'pfs_a_front':
             index = i
         elif part == 'pfs_b_top':
             index = 8 + i
@@ -93,8 +98,8 @@ class ConvertPFS(object):
         proximity: The raw proximity value
         gripper: 'l_gripper' or 'r_gripper'
         fingertips: 'l_fingertip' or 'r_fingertip'
-        part: 'pfs_a', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left' or 'pfs_b_right'
-        i: The index of sensor in each PCB. 0~7 for pfs_a. 0~3 for pfs_b.
+        part: 'pfs_a_front', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left' or 'pfs_b_right'
+        i: The index of sensor in each PCB. 0~7 for pfs_a_front. 0~3 for pfs_b.
 
         Return
         distance: Distance calculated from proximity value [m]
@@ -120,7 +125,7 @@ class ConvertPFS(object):
                 distance = self.proximity_to_distance(
                     msg.proximity[index], gripper, fingertip, part, i)
                 point = [0, 0, distance]
-                point.append = point
+                points.append(point)
             prox_msg = pc2.create_cloud(header, self.fields, points)
             self.pub[gripper][fingertip][part]['proximity'].publish(prox_msg)
 
@@ -138,7 +143,8 @@ class ConvertPFS(object):
             # Publish force
             force_msg = WrenchStamped()
             force_msg.header = header
-            force_msg.wrench.force.z = average_force
+            force_scale = 0.00005  # TODO: Convert force topic value into [N]
+            force_msg.wrench.force.z = average_force * force_scale
             self.pub[gripper][fingertip][part]['force'].publish(force_msg)
 
 

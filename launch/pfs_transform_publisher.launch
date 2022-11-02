@@ -4,6 +4,7 @@
   <include file="$(find pr2_fingertip_sensors)/launch/pfs_to_sensor_transform_publisher.launch">
     <arg name="gripper" value="l" />
     <arg name="finger" value="l" />
+    <arg name="parent_link" value="l_gripper_l_finger_tip_link" />
   </include>
 
   <!-- Publish each sensor tf from left gripper right finger -->
@@ -24,6 +25,7 @@
   <include file="$(find pr2_fingertip_sensors)/launch/pfs_to_sensor_transform_publisher.launch">
     <arg name="gripper" value="r" />
     <arg name="finger" value="l" />
+    <arg name="parent_link" value="r_gripper_l_finger_tip_link" />
   </include>
 
   <!-- Publish each sensor tf from right gripper right finger -->

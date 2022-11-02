@@ -34,7 +34,7 @@ This repository will develop boards and firmware with the following features.
   ```
   # Set ROS_MASTER_URI to your PR2
   source ~/pr2_fingertip_ws/devel/setup.bash
-  rosrun pr2_fingertip_sensors parse_pfs.py
+  roslaunch pr2_fingertip_sensors pfs.launch
   ```
 
 - Subscribe sensor data
@@ -44,6 +44,12 @@ This repository will develop boards and firmware with the following features.
   rostopic echo /pfs/l_gripper/r_fingertip
   rostopic echo /pfs/r_gripper/l_fingertip
   rostopic echo /pfs/r_gripper/r_fingertip
+  ```
+
+- View sensor data with sample rosbag
+
+  ```
+  roslaunch pr2_fingertip_sensors sample_pfs.launch
   ```
 
 # Directories
