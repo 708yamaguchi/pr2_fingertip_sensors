@@ -19,13 +19,8 @@ class ParsePFS(object):
             self.pub[gripper] = {}
             for fingertip in self.fingertips:
                 self.pub[gripper][fingertip] = rospy.Publisher(
-                    '/pfs/' + gripper + '/' + fingertip + '/raw',
+                    '/pfs/' + gripper + '/' + fingertip,
                     PR2FingertipSensor, queue_size=1)
-        # Subscribers
-        rospy.Subscriber(
-            "/pressure/l_gripper_motor", PressureState, self.cb, "l_gripper")
-        rospy.Subscriber(
-            "/pressure/r_gripper_motor", PressureState, self.cb, "r_gripper")
         # PFS data to be parsed
         self.pfs_data = {}
         for gripper in self.grippers:
@@ -34,6 +29,13 @@ class ParsePFS(object):
                 self.pfs_data[gripper][fingertip] = {}
                 for packet in [0, 1]:
                     self.pfs_data[gripper][fingertip][packet] = None
+        # Subscribers
+        # Create subscribers at the last of __init__ to avoid
+        # 'object has no attribute ...' error
+        rospy.Subscriber(
+            "/pressure/l_gripper_motor", PressureState, self.cb, "l_gripper")
+        rospy.Subscriber(
+            "/pressure/r_gripper_motor", PressureState, self.cb, "r_gripper")
 
     def cb(self, msg, gripper):
         """
@@ -168,13 +170,12 @@ https://docs.google.com/presentation/d/1VxRJWDqeDk_ryu-x1Vhj3_6BDu3gscwvNpngHKwf
             sum_data += packet_uint8
         sum_data = sum_data % 256
         if check_sum == sum_data:
-            rospy.loginfo(
+            rospy.logdebug(
                 'check_sum ({}) is correctly calculated.'.format(check_sum))
         else:
             rospy.logerr(
                 'check_sum ({}) is different from calculation ({}).'.format(
                     check_sum, sum_data))
-            raise AssertionError
         return {'proximity': prox,
                 'force': force,
                 'imu': imu,

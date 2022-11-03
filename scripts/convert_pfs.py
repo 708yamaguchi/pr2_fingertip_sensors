@@ -21,14 +21,14 @@ class ConvertPFS(object):
         self.fingertips = ['l_fingertip', 'r_fingertip']
         self.parts = [
             'pfs_a_front', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left', 'pfs_b_right']
+        self.fields = [PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+                       PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+                       PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1)]
+        self.pfs_params = rospy.get_param('/pfs')
         self.pub = {}
         for gripper in self.grippers:
             self.pub[gripper] = {}
             for fingertip in self.fingertips:
-                # Subscriber
-                rospy.Subscriber(
-                    '/pfs/{}/{}'.format(gripper, fingertip),
-                    PR2FingertipSensor, self.cb, (gripper, fingertip))
                 # Publisher for proximity, force and imu
                 self.pub[gripper][fingertip] = {}
                 for part in self.parts:
@@ -42,9 +42,12 @@ class ConvertPFS(object):
                             '/pfs/{}/{}/{}/{}'.format(
                                 gripper, fingertip, part, sensor),
                             msg_type, queue_size=1)
-        self.fields = [PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
-                       PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
-                       PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1)]
+                # Subscriber
+                # Create subscribers at the last of __init__ to avoid
+                # 'object has no attribute ...' error
+                rospy.Subscriber(
+                    '/pfs/{}/{}'.format(gripper, fingertip),
+                    PR2FingertipSensor, self.cb, (gripper, fingertip))
 
     def cb(self, msg, args):
         """
@@ -104,12 +107,17 @@ class ConvertPFS(object):
         Return
         distance: Distance calculated from proximity value [m]
         """
+        index = self.sensor_index(part, i)
         # Create method for conversion
         # I = (a / d^2) + b
-        b = 100
-        a = 0.01
-        distance = math.sqrt(
-            a / max(0.1, proximity - b))  # unit: [m]
+        a = self.pfs_params[gripper][fingertip]['proximity_a'][index]
+        b = self.pfs_params[gripper][fingertip]['proximity_b'][index]
+        if a == 0:
+            # This means the calibration process was not done or failed.
+            distance = None
+        else:
+            distance = math.sqrt(
+                a / max(0.1, proximity - b))  # unit: [m]
         return distance
 
     def publish_pointcloud(self, msg, gripper, fingertip):
@@ -124,10 +132,13 @@ class ConvertPFS(object):
                 # Convert proximity into PointCloud2
                 distance = self.proximity_to_distance(
                     msg.proximity[index], gripper, fingertip, part, i)
-                point = [0, 0, distance]
-                points.append(point)
-            prox_msg = pc2.create_cloud(header, self.fields, points)
-            self.pub[gripper][fingertip][part]['proximity'].publish(prox_msg)
+                # Distance is under 0.1[m], it is regarded as reliable
+                if distance is not None and distance < 0.1:
+                    point = [0, 0, distance]
+                    points.append(point)
+            if len(points) != 0:
+                prox_msg = pc2.create_cloud(header, self.fields, points)
+                self.pub[gripper][fingertip][part]['proximity'].publish(prox_msg)
 
     def publish_wrenchstamped(self, msg, gripper, fingertip):
         header = Header()
@@ -139,12 +150,13 @@ class ConvertPFS(object):
             for i in range(sensor_num):
                 index = self.sensor_index(part, i)  # index: 0~23
                 # Convert force into WrenchStamped
-                average_force += msg.force[index] / float(sensor_num)
+                preload = self.pfs_params[gripper][fingertip]['preload'][index]
+                force_scale = self.pfs_params[gripper][fingertip]['force_scale'][index]
+                average_force += force_scale * (msg.force[index] - preload) / float(sensor_num)
             # Publish force
             force_msg = WrenchStamped()
             force_msg.header = header
-            force_scale = 0.00005  # TODO: Convert force topic value into [N]
-            force_msg.wrench.force.z = average_force * force_scale
+            force_msg.wrench.force.z = average_force
             self.pub[gripper][fingertip][part]['force'].publish(force_msg)
 
     def publish_imu(self, msg, gripper, fingertip):

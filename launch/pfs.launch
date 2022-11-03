@@ -3,8 +3,11 @@
        doc="Publish static tf for pfs sensors. If you use PR2's default urdf, set this value as true" />
   <arg name="gui" default="true" doc="Launch RViz or not" />
 
+  <!-- Load rosparam for pfs sensor calibration -->
+  <rosparam command="load" file="$(find pr2_fingertip_sensors)/data/pfs_params.yaml" />
+
+  <!-- Launch nodes to get pfs data and to convert the data into proper ROS msg -->
   <node name="parse_pfs" pkg="pr2_fingertip_sensors" type="parse_pfs.py" output="screen" />
-  <node name="calibrate_pfs" pkg="pr2_fingertip_sensors" type="calibrate_pfs.py" output="screen" />
   <node name="convert_pfs" pkg="pr2_fingertip_sensors" type="convert_pfs.py" output="screen" />
 
   <!-- Publish transform from fingertip to each pfs board -->
