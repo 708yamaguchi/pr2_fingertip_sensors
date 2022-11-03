@@ -28,8 +28,11 @@ class CalibratePFS(object):
         rospack = rospkg.RosPack()
         package_path = rospack.get_path('pr2_fingertip_sensors')
         self.pfs_params_path = package_path + '/data/pfs_params.yaml'
+        # For proximity calibration
         rospy.Service('/pfs/no_object', Empty, self.no_object)
         rospy.Service('/pfs/near_object', Empty, self.near_object)
+        # For force calibration
+        rospy.Service('/pfs/preload', Empty, self.preload)
         rospy.Service('/pfs/dump_pfs_params', Empty, self.dump_params)
 
     def cb(self, msg, args):
@@ -93,6 +96,23 @@ class CalibratePFS(object):
         rospy.loginfo("Get sensor data of 'near_object' and calibrate 'a' proximity param.")
         return EmptyResponse()
 
+    def preload(self, req):
+        """
+        Calculate preload of each force sensor
+        Call this service when nothing touches the PFS finger.
+        """
+        for gripper in self.grippers:
+            for fingertip in self.fingertips:
+                force = self.pfs_data[gripper][fingertip].force
+                # Set dummy pfs data in case not all fingers have sensors
+                if len(force) == 0:
+                    force = [0] * 24
+                rospy.set_param(
+                    '/pfs/{}/{}/preload'.format(gripper, fingertip),
+                    force)
+        rospy.loginfo("Get sensor data of 'preload' for force sensors.")
+        return EmptyResponse()
+
     def dump_params(self, req):
         """
         Get the current pfs params and save it to data/pfs_params.yaml
@@ -102,7 +122,7 @@ class CalibratePFS(object):
             params['pfs'][gripper] = {}
             for fingertip in self.fingertips:
                 params['pfs'][gripper][fingertip] = {}
-                for param_name in ['proximity_a', 'proximity_b', 'force_scale']:
+                for param_name in ['proximity_a', 'proximity_b', 'preload', 'force_scale']:
                     param_value = rospy.get_param(
                         '/pfs/{}/{}/{}'.format(gripper, fingertip, param_name))
                     params['pfs'][gripper][fingertip][param_name] = param_value

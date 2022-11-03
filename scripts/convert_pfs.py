@@ -150,8 +150,9 @@ class ConvertPFS(object):
             for i in range(sensor_num):
                 index = self.sensor_index(part, i)  # index: 0~23
                 # Convert force into WrenchStamped
+                preload = self.pfs_params[gripper][fingertip]['preload'][index]
                 force_scale = self.pfs_params[gripper][fingertip]['force_scale'][index]
-                average_force += force_scale * msg.force[index] / float(sensor_num)
+                average_force += force_scale * (msg.force[index] - preload) / float(sensor_num)
             # Publish force
             force_msg = WrenchStamped()
             force_msg.header = header

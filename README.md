@@ -58,13 +58,19 @@ This repository will develop boards and firmware with the following features.
   rosservice call /pfs/near_object "{}"
   ```
 
+  Calibrate force sensor preload. Run the following command when nothing touches the PFS finger.
+
+  ```
+  rosservice call /pfs/preload "{}"
+  ```
+
   Dump calibration parameters under pr2_fingertip_sensors/data/pfs_params.yaml
 
   ```
   rosservice call /pfs/dump_pfs_params "{}"
   ```
 
-- Run parser node for PFS sensor data. In PFS-01 project, two rostopics are combined to represent the whole sensor data.
+- Run parser and visualizer node for PFS sensor data. In PFS-01 project, two rostopics are combined to represent the whole sensor data.
 
   ```
   roslaunch pr2_fingertip_sensors pfs.launch
