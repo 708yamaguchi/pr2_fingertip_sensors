@@ -7,7 +7,7 @@ This repository will develop boards and firmware with the following features.
  - Develop a board that fits at the fingertips of PR2
  - In the board, connect microcontroller with many sensors (e.g. I2C proximity sensors, IMU, ADC force sensor, I2S microphone)
  - In the board, connect SPI slave microcontroller with PR2
- - Output `/pressure/l(r)_gripper_motor` rostopic instead of regular tactile sensor
+ - Output `/pressure/l(r)_gripper_motor` rostopic instead of regular tactile sensor. The two ouptut topics are combined to represent one finger sensor data.
 
 # System
 
@@ -25,14 +25,6 @@ This repository will develop boards and firmware with the following features.
   cd ..
   rosdep install --from-paths src --ignore-src -y -r
   catkin build
-  ```
-
-  When you use programs in this package, do not forget to set ROS_MASTER_URI and source this workspace
-
-  ```
-  ### Set ROS_MASTER_URI to your PR2, like rossetmaster pr1012 ###
-
-  # Source this workspace
   source ~/pr2_fingertip_ws/devel/setup.bash
   ```
 
@@ -40,52 +32,41 @@ This repository will develop boards and firmware with the following features.
 
 - Calibrate sensors
 
-  Launch nodes for calibration
-
   ```
+  # Launch nodes for calibration
   roslaunch pr2_fingertip_sensors calibrate_pfs.launch
   ```
 
-  Calibrate proximity parameters 'b' in I = (a / d^2) + b. Run the following command when nothing is near the PFS finger.
-
   ```
+  # Calibrate proximity parameters 'b' in I = (a / d^2) + b. Run the following command when nothing is near the PFS finger.
   rosservice call /pfs/no_object "{}"
-  ```
 
-  Calibrate proximity parameters 'a' in I = (a / d^2) + b. Run the following command after wrapping the PFS finger with white conver. This command must be called after the above command.
-
-  ```
+  # Calibrate proximity parameters 'a' in I = (a / d^2) + b. Run the following command after wrapping the PFS finger with white conver. This command must be called after the above command.
   rosservice call /pfs/near_object "{}"
-  ```
 
-  Calibrate force sensor preload. Run the following command when nothing touches the PFS finger.
-
-  ```
+  # Calibrate force sensor preload. Run the following command when nothing touches the PFS finger.
   rosservice call /pfs/preload "{}"
-  ```
 
-  Dump calibration parameters under pr2_fingertip_sensors/data/pfs_params.yaml
-
-  ```
+  # Dump calibration parameters under pr2_fingertip_sensors/data/pfs_params.yaml
   rosservice call /pfs/dump_pfs_params "{}"
   ```
 
-- Run parser and visualizer node for PFS sensor data. In PFS-01 project, two rostopics are combined to represent the whole sensor data.
+- Run parser and visualizer node for PFS sensor data.
 
   ```
-  roslaunch pr2_fingertip_sensors pfs.launch
+  # Run main nodes.
+  roslaunch pr2_fingertip_sensors pfs.launch gui:=true
   ```
 
-- Subscribe sensor data
-
   ```
+  # Subscribe sensor data
   rostopic echo /pfs/l_gripper/l_fingertip
   rostopic echo /pfs/l_gripper/r_fingertip
   rostopic echo /pfs/r_gripper/l_fingertip
   rostopic echo /pfs/r_gripper/r_fingertip
   ```
 
-- View sensor data with sample rosbag
+- View sensor data with sample rosbag (Without real PR2 robot)
 
   ```
   roslaunch pr2_fingertip_sensors sample_pfs.launch
