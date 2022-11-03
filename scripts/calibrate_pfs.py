@@ -2,6 +2,9 @@
 
 import rospy
 from pr2_fingertip_sensors.msg import PR2FingertipSensor
+import rospkg
+from std_srvs.srv import Empty, EmptyResponse
+import yaml
 
 
 class CalibratePFS(object):
@@ -11,35 +14,105 @@ class CalibratePFS(object):
     def __init__(self):
         self.grippers = ['l_gripper', 'r_gripper']
         self.fingertips = ['l_fingertip', 'r_fingertip']
-        self.pub = {}
+        self.pfs_data = {}
         for gripper in self.grippers:
-            self.pub[gripper] = {}
+            self.pfs_data[gripper] = {}
             for fingertip in self.fingertips:
-                # Subscribe raw data
+                # Set dummy pfs data in case not all fingers have sensors
+                self.pfs_data[gripper][fingertip] = PR2FingertipSensor()
+                # Subscribe pfs data published by parse_pfs.py
                 rospy.Subscriber(
-                    '/pfs/{}/{}/raw'.format(gripper, fingertip),
-                    PR2FingertipSensor, self.cb, (gripper, fingertip))
-                # Publish calibrated data
-                self.pub[gripper][fingertip] = rospy.Publisher(
                     '/pfs/{}/{}'.format(gripper, fingertip),
-                    PR2FingertipSensor, queue_size=1)
+                    PR2FingertipSensor, self.cb, (gripper, fingertip))
+        # Calibration
+        rospack = rospkg.RosPack()
+        package_path = rospack.get_path('pr2_fingertip_sensors')
+        self.pfs_params_path = package_path + '/data/pfs_params.yaml'
+        rospy.Service('/pfs/no_object', Empty, self.no_object)
+        rospy.Service('/pfs/near_object', Empty, self.near_object)
+        rospy.Service('/pfs/dump_pfs_params', Empty, self.dump_params)
 
     def cb(self, msg, args):
         """
-        Publish calibrated PFS sensor data
+        Save PFS sensor data for calibration
         args must be tuple of (gripper, fingertip)
         """
         gripper = args[0]
         fingertip = args[1]
-        msg_calibrated = self.calibrate(msg)
-        self.pub[gripper][fingertip].publish(msg_calibrated)
+        self.pfs_data[gripper][fingertip] = msg
 
-    def calibrate(self, msg):
+    def no_object(self, req):
         """
-        Calibrate sensor data
+        Determine 'b' in I = (a / d^2) + b, and set the value to rosparam
+        The service call '/pfs/no_object' must be called before '/pfs/near_object'.
+        Call this service when nothing is near the PFS finger.
         """
-        # Need calibration for proximity and force sensors
-        return msg
+        for gripper in self.grippers:
+            for fingertip in self.fingertips:
+                proximity = self.pfs_data[gripper][fingertip].proximity
+                # Set dummy pfs data in case not all fingers have sensors
+                if len(proximity) == 0:
+                    proximity = [0] * 24
+                rospy.set_param(
+                    '/pfs/{}/{}/proximity_b'.format(gripper, fingertip),
+                    proximity)
+        rospy.loginfo("Get sensor data of 'no_object' and calibrate 'b' proximity param.")
+        return EmptyResponse()
+
+    def near_object(self, req):
+        """
+        Determine 'a' in I = (a / d^2) + b, and set the value to rosparam
+        The service call '/pfs/near_object' must be called
+        after '/pfs/no_object'.
+        Call this service after wrapping the PFS finger with white conver.
+        """
+        for gripper in self.grippers:
+            for fingertip in self.fingertips:
+                proximity = self.pfs_data[gripper][fingertip].proximity
+                # Set dummy pfs data in case not all fingers have sensors
+                if len(proximity) == 0:
+                    proximity = [0] * 24
+                # Calculate 'a'
+                proximity_b = rospy.get_param(
+                    '/pfs/{}/{}/proximity_b'.format(gripper, fingertip))
+                near_distance = 0.003  # object is now 3mm away from the sensors
+
+                def _calc_a(prox, b):
+                    a = (prox - b) * (near_distance ** 2)
+                    if a <= 0:
+                        rospy.logerr(
+                            "Proximity param 'a' is not positive value. Retry calibration")
+                        a = 0  # dummy value
+                    return a
+
+                proximity_a = map(_calc_a, proximity, proximity_b)
+                # Set 'a' to rosparam
+                rospy.set_param(
+                    '/pfs/{}/{}/proximity_a'.format(gripper, fingertip),
+                    proximity_a)
+        rospy.loginfo("Get sensor data of 'near_object' and calibrate 'a' proximity param.")
+        return EmptyResponse()
+
+    def dump_params(self, req):
+        """
+        Get the current pfs params and save it to data/pfs_params.yaml
+        """
+        params = {'pfs': {}}
+        for gripper in self.grippers:
+            params['pfs'][gripper] = {}
+            for fingertip in self.fingertips:
+                params['pfs'][gripper][fingertip] = {}
+                for param_name in ['proximity_a', 'proximity_b', 'force_scale']:
+                    param_value = rospy.get_param(
+                        '/pfs/{}/{}/{}'.format(gripper, fingertip, param_name))
+                    params['pfs'][gripper][fingertip][param_name] = param_value
+        # Overwrite existing param file
+        with open(self.pfs_params_path, "w") as f:
+            yaml.dump(params, f, default_flow_style=None)
+        rospy.loginfo(
+            "Dump PFS sensor calibration parameters to {}.".format(self.pfs_params_path))
+        rospy.loginfo(params)
+        return EmptyResponse()
 
 
 if __name__ == '__main__':

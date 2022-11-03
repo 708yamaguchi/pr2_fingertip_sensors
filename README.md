@@ -27,13 +27,46 @@ This repository will develop boards and firmware with the following features.
   catkin build
   ```
 
+  When you use programs in this package, do not forget to set ROS_MASTER_URI and source this workspace
+
+  ```
+  ### Set ROS_MASTER_URI to your PR2, like rossetmaster pr1012 ###
+
+  # Source this workspace
+  source ~/pr2_fingertip_ws/devel/setup.bash
+  ```
+
 - Write `PFS-01` project to main board (PFS-01A)
+
+- Calibrate sensors
+
+  Launch nodes for calibration
+
+  ```
+  roslaunch pr2_fingertip_sensors calibrate_pfs.launch
+  ```
+
+  Calibrate proximity parameters 'b' in I = (a / d^2) + b. Run the following command when nothing is near the PFS finger.
+
+  ```
+  rosservice call /pfs/no_object "{}"
+  ```
+
+  Calibrate proximity parameters 'a' in I = (a / d^2) + b. Run the following command after wrapping the PFS finger with white conver. This command must be called after the above command.
+
+  ```
+  rosservice call /pfs/near_object "{}"
+  ```
+
+  Dump calibration parameters under pr2_fingertip_sensors/data/pfs_params.yaml
+
+  ```
+  rosservice call /pfs/dump_pfs_params "{}"
+  ```
 
 - Run parser node for PFS sensor data. In PFS-01 project, two rostopics are combined to represent the whole sensor data.
 
   ```
-  # Set ROS_MASTER_URI to your PR2
-  source ~/pr2_fingertip_ws/devel/setup.bash
   roslaunch pr2_fingertip_sensors pfs.launch
   ```
 
