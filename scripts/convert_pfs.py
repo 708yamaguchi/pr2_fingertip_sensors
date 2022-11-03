@@ -132,7 +132,8 @@ class ConvertPFS(object):
                 # Convert proximity into PointCloud2
                 distance = self.proximity_to_distance(
                     msg.proximity[index], gripper, fingertip, part, i)
-                if distance is not None:
+                # Distance is under 0.1[m], it is regarded as reliable
+                if distance is not None and distance < 0.1:
                     point = [0, 0, distance]
                     points.append(point)
             if len(points) != 0:
@@ -154,7 +155,7 @@ class ConvertPFS(object):
             # Publish force
             force_msg = WrenchStamped()
             force_msg.header = header
-            force_msg.wrench.force.z = average_force * force_scale
+            force_msg.wrench.force.z = average_force
             self.pub[gripper][fingertip][part]['force'].publish(force_msg)
 
     def publish_imu(self, msg, gripper, fingertip):
