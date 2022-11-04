@@ -56,17 +56,19 @@ class ParsePFS(object):
             # If all sensor data is stored, append them
             if self.pfs_data[gripper][fingertip][0] is not None \
                and self.pfs_data[gripper][fingertip][1] is not None:
-                # Create method?
                 header = msg.header
                 header.frame_id = frame_id
                 prox = self.pfs_data[gripper][fingertip][0]['proximity'] + \
                     self.pfs_data[gripper][fingertip][1]['proximity']
+                prox_ordered = self.order_data(prox)
                 force = self.pfs_data[gripper][fingertip][0]['force'] + \
                     self.pfs_data[gripper][fingertip][1]['force']
+                force_ordered = self.order_data(force)
                 acc = self.pfs_data[gripper][fingertip][0]['imu']
                 gyro = self.pfs_data[gripper][fingertip][1]['imu']
                 self.publish(
-                    gripper, fingertip, header, prox, force, acc, gyro)
+                    gripper, fingertip, header,
+                    prox_ordered, force_ordered, acc, gyro)
                 # Reset self.pfs_data to None after publish
                 self.pfs_data[gripper][fingertip][0] = None
                 self.pfs_data[gripper][fingertip][1] = None
@@ -89,6 +91,23 @@ class ParsePFS(object):
         pfs_msg.imu.angular_velocity.y = gyro[1]
         pfs_msg.imu.angular_velocity.z = gyro[2]
         self.pub[gripper][fingertip].publish(pfs_msg)
+
+    def order_data(self, data):
+        """
+        Args
+        data: proximity or force array (length 24)
+        The order of data depends on PFS's firmware.
+        Return
+        data_ordered: proximity or force 'ordered' array (length 24)
+        The order is 'pfs_a_front', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left', 'pfs_b_right'
+        """
+        data_ordered = [0] * 24
+        data_ordered[0:8] = data[0:8]
+        data_ordered[8:12] = data[16:20]
+        data_ordered[12:16] = data[20:24]
+        data_ordered[16:20] = data[8:12]
+        data_ordered[20:24] = data[12:16]
+        return data_ordered
 
     def binary_to_int(self, binary_string):
         """
