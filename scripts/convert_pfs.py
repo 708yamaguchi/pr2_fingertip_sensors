@@ -36,12 +36,22 @@ class ConvertPFS(object):
                     sensors = ['proximity', 'force', 'imu']
                     msg_types = [PointCloud2, WrenchStamped, Imu]
                     for sensor, msg_type in zip(sensors, msg_types):
-                        if part != 'pfs_a_front' and sensor == 'imu':
-                            continue
+                        if sensor == 'imu' and part != 'pfs_a_front':
+                            continue  # PFS B does not have IMU
                         self.pub[gripper][fingertip][part][sensor] = rospy.Publisher(
                             '/pfs/{}/{}/{}/{}'.format(
                                 gripper, fingertip, part, sensor),
                             msg_type, queue_size=1)
+                        # For Proximity sensors,
+                        # publish proximity cloud topic for RViz visualization
+                        if sensor == 'proximity':
+                            self.pub[gripper][fingertip][part]['proximity_viz'] = {}
+                            for i in range(self.sensor_num(part)):
+                                self.pub[gripper][fingertip][part]['proximity_viz'][i] = rospy.Publisher(
+                                    '/pfs/{}/{}/{}/{}/{}'.format(
+                                        gripper, fingertip, part, sensor, i),
+                                    msg_type, queue_size=1)
+
                 # Subscriber
                 # Create subscribers at the last of __init__ to avoid
                 # 'object has no attribute ...' error
@@ -124,10 +134,11 @@ class ConvertPFS(object):
         header = Header()
         header.stamp = msg.header.stamp
         for part in self.parts:
-            header.frame_id = '/' + gripper + '_' + fingertip + '_' + part
+            frame_id_base = '/' + gripper + '_' + fingertip + '_' + part
             sensor_num = self.sensor_num(part)
             points = []
             for i in range(sensor_num):
+                header.frame_id = frame_id_base + '_' + str(i)
                 index = self.sensor_index(part, i)  # index: 0~23
                 # Convert proximity into PointCloud2
                 distance = self.proximity_to_distance(
@@ -135,8 +146,11 @@ class ConvertPFS(object):
                 # Distance is under 0.1[m], it is regarded as reliable
                 if distance is not None and distance < 0.1:
                     point = [0, 0, distance]
+                    prox_msg = pc2.create_cloud(header, self.fields, [point])
+                    self.pub[gripper][fingertip][part]['proximity_viz'][i].publish(prox_msg)
                     points.append(point)
             if len(points) != 0:
+                header.frame_id = frame_id_base
                 prox_msg = pc2.create_cloud(header, self.fields, points)
                 self.pub[gripper][fingertip][part]['proximity'].publish(prox_msg)
 
