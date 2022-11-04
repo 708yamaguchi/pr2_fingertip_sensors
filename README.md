@@ -47,7 +47,7 @@ This repository will develop boards and firmware with the following features.
   # Calibrate force sensor preload. Run the following command when nothing touches the PFS finger.
   rosservice call /pfs/preload "{}"
 
-  # Dump calibration parameters under pr2_fingertip_sensors/data/pfs_params.yaml
+  # Dump calibration parameters to yaml file (`pr2_fingertip_sensors/data/pfs_params.yaml`)
   rosservice call /pfs/dump_pfs_params "{}"
   ```
 
@@ -71,6 +71,8 @@ This repository will develop boards and firmware with the following features.
   ```
   roslaunch pr2_fingertip_sensors sample_pfs.launch
   ```
+
+- Details of each ROS node is described [here](https://github.com/708yamaguchi/pr2_fingertip_sensors/tree/master/scripts)
 
 # Directories
 
