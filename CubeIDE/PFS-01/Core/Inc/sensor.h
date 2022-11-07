@@ -205,6 +205,7 @@ struct sensor_params {
 	// read data
 	uint8_t ps[PS_CHANNEL_NUM * 2];
 	uint16_t ps_print[PS_CHANNEL_NUM];
+	uint16_t ps_print_raw[PS_CHANNEL_NUM];
 	uint8_t ps_2d[PCA9547_NUM][PS_CHANNEL_NUM * 2];
 	uint16_t ps_print_2d[PCA9547_NUM][PS_CHANNEL_NUM];
 	uint16_t ps_print_flatten[MAX_PS_SENSOR_NUM];//PFS-01A:8 * 1, PFS-01B:4 * 4
@@ -224,6 +225,7 @@ struct sensor_params {
 	uint32_t imu_count_frame;
 	uint8_t adc[ADC_CHANNEL_NUM * 2];
 	uint16_t adc_print[ADC_CHANNEL_NUM];
+	uint16_t adc_print_raw[ADC_CHANNEL_NUM];
 	uint16_t adc_elapsed_time;
 	uint8_t adc_ADS_2d[ADS7828_NUM][ADC_CHANNEL_NUM_ADS * 2];
 	uint16_t adc_print_ADS_2d[ADS7828_NUM][ADC_CHANNEL_NUM_ADS];

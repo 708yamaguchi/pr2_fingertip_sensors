@@ -404,8 +404,17 @@ void adc_update(ADC_HandleTypeDef *hadc){
 		}
 	}
 	for(int i=0; i < ADC_CHANNEL_NUM; i++){
-		sp.adc_print[i] = (int16_t)(sp.adc[i * 2] << 8 | sp.adc[i * 2 + 1]);
+		sp.adc_print_raw[i] = (int16_t)(sp.adc[i * 2] << 8 | sp.adc[i * 2 + 1]);
 	}
+	sp.adc_print[0] = sp.adc_print_raw[3];
+	sp.adc_print[1] = sp.adc_print_raw[2];
+	sp.adc_print[2] = sp.adc_print_raw[1];
+	sp.adc_print[3] = sp.adc_print_raw[0];
+	sp.adc_print[4] = sp.adc_print_raw[4];
+	sp.adc_print[5] = sp.adc_print_raw[6];
+	sp.adc_print[6] = sp.adc_print_raw[5];
+	sp.adc_print[7] = sp.adc_print_raw[7];
+	sp.adc_print[8] = sp.adc_print_raw[8];
 	HAL_ADC_Stop (hadc);
 }
 
@@ -512,21 +521,16 @@ void ps_update(I2C_HandleTypeDef *hi2c){
 			if(sp.ps_en_2d[0][i] == PS_EN){
 				ps_select_channel(hi2c, PS_CHANNEL_ARRAY_PCA9457[i]);
 
-				//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, start_buff, 2, HAL_MAX_DELAY);//Turn on LED
-				//HAL_Delay(10);
-				//HAL_I2C_Mem_Read(hi2c1, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, 1);
 				ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, HAL_MAX_DELAY);
 
 				if(ps_ret == HAL_OK){
-					sp.ps_print_2d[0][i] = (uint16_t)(data[1] << 8 | data[0]);
+					sp.ps_print_raw[i] = (uint16_t)(data[1] << 8 | data[0]);
 
 					sp.ps_2d[0][i * 2] = data[1];
 
 					sp.ps_2d[0][i * 2 + 1] = data[0];
-
 				}
 			}
-			//HAL_I2C_Mem_Write(hi2c1, VCNL4040_ADDR, PS_CONF1, 1, stop_buff, 2, HAL_MAX_DELAY);//Turn off LED
 		}
 		break;
 	case 1:
@@ -541,7 +545,11 @@ void ps_update(I2C_HandleTypeDef *hi2c){
 					ps_ret = HAL_I2C_Mem_Read(hi2c, VCNL4040_ADDR, PS_DATA_L, 1, data, 2, HAL_MAX_DELAY);
 
 					if(ps_ret == HAL_OK){
-						sp.ps_print_2d[i][j] = (uint16_t)(data[1] << 8 | data[0]);
+						if (i == 0){
+							sp.ps_print_raw[j] = (uint16_t)(data[1] << 8 | data[0]);
+						}else{
+							sp.ps_print_2d[i][j] = (uint16_t)(data[1] << 8 | data[0]);
+						}
 
 						sp.ps_2d[i][j * 2] = data[1];
 
@@ -553,6 +561,14 @@ void ps_update(I2C_HandleTypeDef *hi2c){
 		}
 		break;
 	}
+	sp.ps_print_2d[0][0] = sp.ps_print_raw[3];
+	sp.ps_print_2d[0][1] = sp.ps_print_raw[4];
+	sp.ps_print_2d[0][2] = sp.ps_print_raw[5];
+	sp.ps_print_2d[0][3] = sp.ps_print_raw[6];
+	sp.ps_print_2d[0][4] = sp.ps_print_raw[7];
+	sp.ps_print_2d[0][5] = sp.ps_print_raw[0];
+	sp.ps_print_2d[0][6] = sp.ps_print_raw[1];
+	sp.ps_print_2d[0][7] = sp.ps_print_raw[2];
 }
 
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c) {
