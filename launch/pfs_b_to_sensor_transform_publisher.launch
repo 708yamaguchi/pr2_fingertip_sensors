@@ -10,14 +10,14 @@
   <!-- PFS-01B's sensor 0 -->
   <node pkg="tf" type="static_transform_publisher"
         name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_0_broadcaster"
-        args="-0.003 -0.003 0 0 0 0 1
+        args="0.003 -0.003 0 0 0 0 1
               $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_0
               100" />
 
   <!-- PFS-01B's sensor 1 -->
   <node pkg="tf" type="static_transform_publisher"
         name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_1_broadcaster"
-        args="0.003 -0.003 0 0 0 0 1
+        args="0.003 0.003 0 0 0 0 1
               $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_1
               100" />
 
@@ -31,7 +31,7 @@
   <!-- PFS-01B's sensor 3 -->
   <node pkg="tf" type="static_transform_publisher"
         name="$(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_3_broadcaster"
-        args="0.003 0.003 0 0 0 0 1
+        args="-0.003 -0.003 0 0 0 0 1
               $(arg parent_link) $(arg gripper)_gripper_$(arg finger)_fingertip_pfs_b_$(arg part)_3
               100" />
 </launch>
