@@ -6,21 +6,22 @@ import rospy
 from pr2_fingertip_sensors.msg import PR2FingertipSensor
 from sensor_msgs.msg import Imu, PointCloud2, PointField
 import sensor_msgs.point_cloud2 as pc2
-from std_msgs.msg import Header
+from std_msgs.msg import Float32, Header
 
 
 class ConvertPFS(object):
     """
-    Convert PR2FingertipSensor message into proximity, force and imu message
-    - proximity(sensor_msgs/PointCloud2)
-    - force(geometry_msgs/WrenchStamped)
-    - imu(sensor_msgs/Imu)
+    Convert PR2FingertipSensor message into the following messages
+    - proximity_cloud(sensor_msgs/PointCloud2), pointcloud calculated from each proximity sensor. One topic per proximity sensor.
+    - proximity_distance(std_msgs/Float32), distance calculated from each proximity sensor. One topic per proximity sensor.
+    - wrench(geometry_msgs/WrenchStamped), wrench value. One topic per PFS board.
+    - force(std_msgs/Float32), force value. One topic per force sensor.
+    - imu(sensor_msgs/Imu), IMU value. One topic per PFS A board.
     """
     def __init__(self):
         self.grippers = ['l_gripper', 'r_gripper']
         self.fingertips = ['l_fingertip', 'r_fingertip']
-        self.parts = [
-            'pfs_a_front', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left', 'pfs_b_right']
+        self.parts = ['pfs_a_front', 'pfs_b_top', 'pfs_b_back', 'pfs_b_left', 'pfs_b_right']
         self.fields = [PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
                        PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
                        PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1)]
@@ -33,25 +34,26 @@ class ConvertPFS(object):
                 self.pub[gripper][fingertip] = {}
                 for part in self.parts:
                     self.pub[gripper][fingertip][part] = {}
-                    sensors = ['proximity', 'force', 'imu']
-                    msg_types = [PointCloud2, WrenchStamped, Imu]
+                    sensors = ['proximity_distance', 'proximity_cloud', 'wrench', 'force', 'imu']
+                    msg_types = [Float32, PointCloud2, WrenchStamped, Float32, Imu]
                     for sensor, msg_type in zip(sensors, msg_types):
                         if sensor == 'imu' and part != 'pfs_a_front':
-                            continue  # PFS B does not have IMU
-                        self.pub[gripper][fingertip][part][sensor] = rospy.Publisher(
-                            '/pfs/{}/{}/{}/{}'.format(
-                                gripper, fingertip, part, sensor),
-                            msg_type, queue_size=1)
-                        # For Proximity sensors,
-                        # publish proximity cloud topic for RViz visualization
-                        if sensor == 'proximity':
+                            # PFS B does not have IMU
+                            continue
+                        # For imu and wrench, publish value for each board
+                        if sensor in ['imu', 'wrench']:
+                            self.pub[gripper][fingertip][part][sensor] = rospy.Publisher(
+                                '/pfs/{}/{}/{}/{}'.format(
+                                    gripper, fingertip, part, sensor),
+                                msg_type, queue_size=1)
+                        # For proximity and force sensors, publish value for each sensor
+                        if sensor in ['proximity_distance', 'proximity_cloud', 'force']:
                             self.pub[gripper][fingertip][part][sensor] = {}
                             for i in range(self.sensor_num(part)):
                                 self.pub[gripper][fingertip][part][sensor][i] = rospy.Publisher(
                                     '/pfs/{}/{}/{}/{}/{}'.format(
                                         gripper, fingertip, part, sensor, i),
                                     msg_type, queue_size=1)
-
                 # Subscriber
                 # Create subscribers at the last of __init__ to avoid
                 # 'object has no attribute ...' error
@@ -67,8 +69,11 @@ class ConvertPFS(object):
         """
         gripper = args[0]
         fingertip = args[1]
-        self.publish_pointcloud(msg, gripper, fingertip)
-        self.publish_wrenchstamped(msg, gripper, fingertip)
+        # Publish proximity distance and proximity cloud
+        self.publish_proximity(msg, gripper, fingertip)
+        # Publish each force sensor value and publish wrench value for each board
+        self.publish_force(msg, gripper, fingertip)
+        # Publish imu value for PFS A board
         self.publish_imu(msg, gripper, fingertip)
 
     def sensor_num(self, part):
@@ -125,13 +130,18 @@ class ConvertPFS(object):
         b = self.pfs_params[gripper][fingertip]['proximity_b'][index]
         if a == 0:
             # This means the calibration process was not done or failed.
-            distance = None
+            distance = float('inf')
         else:
             distance = math.sqrt(
                 a / max(0.1, proximity - b))  # unit: [m]
         return distance
 
-    def publish_pointcloud(self, msg, gripper, fingertip):
+    def publish_proximity(self, msg, gripper, fingertip):
+        """
+        Publish the following topics
+        - proximity_cloud(sensor_msgs/PointCloud2), pointcloud calculated from each proximity sensor. One topic per proximity sensor.
+        - proximity_distance(std_msgs/Float32), distance calculated from each proximity sensor. One topic per proximity sensor.
+        """
         header = Header()
         header.stamp = msg.header.stamp
         for part in self.parts:
@@ -144,12 +154,19 @@ class ConvertPFS(object):
                 distance = self.proximity_to_distance(
                     msg.proximity[index], gripper, fingertip, part, i)
                 # Distance is under 0.1[m], it is regarded as reliable
-                if distance is not None and distance < 0.1:
+                if distance < 0.1:
+                    dist_msg = Float32(data=distance)
+                    self.pub[gripper][fingertip][part]['proximity_distance'][i].publish(dist_msg)
                     point = [0, 0, distance]
                     prox_msg = pc2.create_cloud(header, self.fields, [point])
-                    self.pub[gripper][fingertip][part]['proximity'][i].publish(prox_msg)
+                    self.pub[gripper][fingertip][part]['proximity_cloud'][i].publish(prox_msg)
 
-    def publish_wrenchstamped(self, msg, gripper, fingertip):
+    def publish_force(self, msg, gripper, fingertip):
+        """
+        Publish the following topics
+        - wrench(geometry_msgs/WrenchStamped), wrench value. One topic per PFS board.
+        - force(std_msgs/Float32), force value. One topic per force sensor.
+        """
         header = Header()
         header.stamp = msg.header.stamp
         for part in self.parts:
@@ -161,14 +178,21 @@ class ConvertPFS(object):
                 # Convert force into WrenchStamped
                 preload = self.pfs_params[gripper][fingertip]['preload'][index]
                 force_scale = self.pfs_params[gripper][fingertip]['force_scale'][index]
-                average_force += force_scale * (msg.force[index] - preload) / float(sensor_num)
+                force = msg.force[index] - preload
+                force_msg = Float32(data=force)
+                self.pub[gripper][fingertip][part]['force'][i].publish(force_msg)
+                average_force += force_scale * force / float(sensor_num)
             # Publish force
             force_msg = WrenchStamped()
             force_msg.header = header
             force_msg.wrench.force.z = average_force
-            self.pub[gripper][fingertip][part]['force'].publish(force_msg)
+            self.pub[gripper][fingertip][part]['wrench'].publish(force_msg)
 
     def publish_imu(self, msg, gripper, fingertip):
+        """
+        Publish the following topic
+        - imu(sensor_msgs/Imu), IMU value. One topic per PFS A board.
+        """
         imu = msg.imu
         # Gyro
         gyro = imu.angular_velocity

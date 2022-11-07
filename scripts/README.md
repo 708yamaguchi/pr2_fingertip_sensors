@@ -17,7 +17,7 @@ Here, to avoid duplicate expressions, multiple topic names are summarized by abb
 
   Parsed PFS topics.
 
-  - `/pfs/{l_r}_gripper/{l_r}_fingertip` [`pr2_fingertip_sensors/PR2FingertipSensor`]
+  - `/pfs/{l_r}_gripper/{l_r}_fingertip` (`pr2_fingertip_sensors/PR2FingertipSensor`)
 
 # convert_pfs.py
 
@@ -31,17 +31,31 @@ Here, to avoid duplicate expressions, multiple topic names are summarized by abb
 
   Parsed PFS topics.
 
-  - `/pfs/{l_r}_gripper/{l_r}_fingertip` [`pr2_fingertip_sensors/PR2FingertipSensor`]
+  - `/pfs/{l_r}_gripper/{l_r}_fingertip` (`pr2_fingertip_sensors/PR2FingertipSensor`)
 
 ## Publish topics
 
-  ROS topics decomposed for each sensor.
-  The last proximity topics are for RViz visualization.
+  ROS topics decomposed for each sensor. `pr2_fingertip_sensors/config/pfs.rviz` visualizes the second, third and fifth topics.
 
-  - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/force` [`geometry_msgs/WrenchStamped`]
-  - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/imu` [`sensor_msgs/Imu`]
-  - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/proximity` [`sensor_msgs/PointCloud2`]
-  - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/proximity/{sensor_num}` [`sensor_msgs/PointCloud2`]
+  - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/force/{sensor_num}` (`std_msgs/Float32`)
+
+  Force value. One topic per force sensor.
+
+  - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/wrench` (`geometry_msgs/WrenchStamped`)
+
+  Wrench value. One topic per PFS board.
+
+  - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/imu` (`sensor_msgs/Imu`)
+
+  IMU value. One topic per PFS A board.
+
+  - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/proximity_distance/{sensor_num}` (`std_msgs/Float32`)
+
+  Distance calculated from each proximity sensor. One topic per proximity sensor.
+
+  - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/proximity_cloud/{sensor_num}` (`sensor_msgs/PointCloud2`)
+
+  Pointcloud calculated from each proximity sensor. One topic per proximity sensor.
 
 ## Parameters
 
@@ -60,7 +74,7 @@ Here, to avoid duplicate expressions, multiple topic names are summarized by abb
 
   Parsed PFS topics.
 
-  - `/pfs/{l_r}_gripper/{l_r}_fingertip` [`pr2_fingertip_sensors/PR2FingertipSensor`]
+  - `/pfs/{l_r}_gripper/{l_r}_fingertip` (`pr2_fingertip_sensors/PR2FingertipSensor`)
 
 ## Publish topics
 
@@ -70,20 +84,20 @@ None
 
 ### Calibrate proximity sensor
 
-  Calibrate proximity parameters 'b' in I = (a / d^2) + b. Run the following command when nothing is near the PFS finger.
+  Calibrate proximity parameters 'b' in I = (a / d^2) + b. Run the following command when nothing is near the PFS finger. The calibration result is saved to rosparam `/pfs/{l_r}_gripper/{l_r}_fingertip/proximity_b`.
 
-  - `/pfs/no_object` [`std_srvs/Empty`]
+  - `/pfs/no_object` (`std_srvs/Empty`)
 
-  Calibrate proximity parameters 'a' in I = (a / d^2) + b. Run the following command after wrapping the PFS finger with white conver. This command must be called after the above command.
+  Calibrate proximity parameters 'a' in I = (a / d^2) + b. Run the following command after wrapping the PFS finger with white conver. This command must be called after the above command. The calibration result is saved to rosparam `/pfs/{l_r}_gripper/{l_r}_fingertip/proximity_a`.
 
-  - `/pfs/near_object` [`std_srvs/Empty`]
+  - `/pfs/near_object` (`std_srvs/Empty`)
 
 ### Calibrate force sensor
 
-  Calibrate force sensor preload. Run the following command when nothing touches the PFS finger.
+  Calibrate force sensor preload. Run the following command when nothing touches the PFS finger. The calibration result is saved to rosparam `/pfs/{l_r}_gripper/{l_r}_fingertip/preload`.
 
-  - `/pfs/preload` [`std_srvs/Empty`]
+  - `/pfs/preload` (`std_srvs/Empty`)
 
 ### Dump calibration params
 
-  Dump calibration parameters to yaml file (`pr2_fingertip_sensors/data/pfs_params.yaml`).
+  Dump calibration rosparams to yaml file (`pr2_fingertip_sensors/data/pfs_params.yaml`).

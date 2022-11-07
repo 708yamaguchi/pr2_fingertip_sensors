@@ -560,7 +560,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity/0
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -590,7 +590,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity/1
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -620,7 +620,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity/2
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -650,7 +650,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity/3
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -680,7 +680,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity/4
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity_cloud/4
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -710,7 +710,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity/5
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity_cloud/5
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -740,7 +740,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity/6
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity_cloud/6
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -770,7 +770,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity/7
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/proximity_cloud/7
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -804,7 +804,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/proximity/0
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -834,7 +834,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/proximity/1
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -864,7 +864,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/proximity/2
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -894,7 +894,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/proximity/3
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -928,7 +928,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/proximity/0
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -958,7 +958,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/proximity/1
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -988,7 +988,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/proximity/2
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1018,7 +1018,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/proximity/3
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1052,7 +1052,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/proximity/0
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1082,7 +1082,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/proximity/1
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1112,7 +1112,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/proximity/2
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1142,7 +1142,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/proximity/3
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1176,7 +1176,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/proximity/0
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1206,7 +1206,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/proximity/1
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1236,7 +1236,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/proximity/2
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1266,7 +1266,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/proximity/3
+                  Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1286,7 +1286,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: A_Front
-              Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/force
+              Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -1300,7 +1300,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Top
-              Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/force
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -1314,7 +1314,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Back
-              Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/force
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -1328,7 +1328,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Left
-              Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/force
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -1342,7 +1342,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Right
-              Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/force
+              Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -1391,7 +1391,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity/0
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1421,7 +1421,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity/1
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1451,7 +1451,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity/2
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1481,7 +1481,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity/3
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1511,7 +1511,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity/4
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity_cloud/4
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1541,7 +1541,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity/5
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity_cloud/5
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1571,7 +1571,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity/6
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity_cloud/6
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1601,7 +1601,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity/7
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/proximity_cloud/7
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1635,7 +1635,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/proximity/0
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1665,7 +1665,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/proximity/1
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1695,7 +1695,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/proximity/2
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1725,7 +1725,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/proximity/3
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1759,7 +1759,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/proximity/0
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1789,7 +1789,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/proximity/1
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1819,7 +1819,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/proximity/2
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1849,7 +1849,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/proximity/3
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1883,7 +1883,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/proximity/0
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1913,7 +1913,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/proximity/1
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1943,7 +1943,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/proximity/2
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -1973,7 +1973,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/proximity/3
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2007,7 +2007,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/proximity/0
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2037,7 +2037,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/proximity/1
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2067,7 +2067,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/proximity/2
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2097,7 +2097,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/proximity/3
+                  Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2117,7 +2117,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: A_Front
-              Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/force
+              Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -2131,7 +2131,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Top
-              Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/force
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -2145,7 +2145,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Back
-              Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/force
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -2159,7 +2159,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Left
-              Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/force
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -2173,7 +2173,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Right
-              Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/force
+              Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -2222,7 +2222,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity/0
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2252,7 +2252,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity/1
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2282,7 +2282,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity/2
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2312,7 +2312,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity/3
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2342,7 +2342,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity/4
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity_cloud/4
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2372,7 +2372,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity/5
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity_cloud/5
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2402,7 +2402,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity/6
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity_cloud/6
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2432,7 +2432,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity/7
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/proximity_cloud/7
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2466,7 +2466,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/proximity/0
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2496,7 +2496,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/proximity/1
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2526,7 +2526,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/proximity/2
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2556,7 +2556,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/proximity/3
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2590,7 +2590,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/proximity/0
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2620,7 +2620,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/proximity/1
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2650,7 +2650,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/proximity/2
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2680,7 +2680,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/proximity/3
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2714,7 +2714,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/proximity/0
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2744,7 +2744,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/proximity/1
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2774,7 +2774,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/proximity/2
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2804,7 +2804,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/proximity/3
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2838,7 +2838,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/proximity/0
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2868,7 +2868,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/proximity/1
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2898,7 +2898,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/proximity/2
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2928,7 +2928,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/proximity/3
+                  Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -2948,7 +2948,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: A_Front
-              Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/force
+              Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -2962,7 +2962,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Top
-              Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/force
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -2976,7 +2976,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Back
-              Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/force
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -2990,7 +2990,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Left
-              Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/force
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -3004,7 +3004,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Right
-              Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/force
+              Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -3053,7 +3053,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity/0
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3083,7 +3083,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity/1
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3113,7 +3113,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity/2
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3143,7 +3143,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity/3
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3173,7 +3173,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity/4
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity_cloud/4
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3203,7 +3203,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity/5
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity_cloud/5
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3233,7 +3233,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity/6
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity_cloud/6
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3263,7 +3263,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity/7
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/proximity_cloud/7
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3297,7 +3297,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/proximity/0
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3327,7 +3327,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/proximity/1
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3357,7 +3357,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/proximity/2
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3387,7 +3387,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/proximity/3
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3421,7 +3421,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/proximity/0
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3451,7 +3451,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/proximity/1
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3481,7 +3481,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/proximity/2
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3511,7 +3511,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/proximity/3
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3545,7 +3545,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/proximity/0
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3575,7 +3575,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/proximity/1
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3605,7 +3605,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/proximity/2
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3635,7 +3635,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/proximity/3
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3669,7 +3669,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/proximity/0
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/proximity_cloud/0
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3699,7 +3699,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/proximity/1
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/proximity_cloud/1
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3729,7 +3729,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/proximity/2
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/proximity_cloud/2
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3759,7 +3759,7 @@ Visualization Manager:
                   Size (Pixels): 5
                   Size (m): 0.009999999776482582
                   Style: Points
-                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/proximity/3
+                  Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/proximity_cloud/3
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
@@ -3779,7 +3779,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: A_Front
-              Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/force
+              Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -3793,7 +3793,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Top
-              Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/force
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -3807,7 +3807,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Back
-              Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/force
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -3821,7 +3821,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Left
-              Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/force
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
@@ -3835,7 +3835,7 @@ Visualization Manager:
               Hide Small Values: false
               History Length: 1
               Name: B_Right
-              Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/force
+              Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/wrench
               Torque Arrow Scale: 1
               Torque Color: 204; 204; 51
               Unreliable: false
