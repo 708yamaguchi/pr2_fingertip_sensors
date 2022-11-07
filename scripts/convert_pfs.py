@@ -45,9 +45,9 @@ class ConvertPFS(object):
                         # For Proximity sensors,
                         # publish proximity cloud topic for RViz visualization
                         if sensor == 'proximity':
-                            self.pub[gripper][fingertip][part]['proximity_viz'] = {}
+                            self.pub[gripper][fingertip][part][sensor] = {}
                             for i in range(self.sensor_num(part)):
-                                self.pub[gripper][fingertip][part]['proximity_viz'][i] = rospy.Publisher(
+                                self.pub[gripper][fingertip][part][sensor][i] = rospy.Publisher(
                                     '/pfs/{}/{}/{}/{}/{}'.format(
                                         gripper, fingertip, part, sensor, i),
                                     msg_type, queue_size=1)
@@ -137,7 +137,6 @@ class ConvertPFS(object):
         for part in self.parts:
             frame_id_base = '/' + gripper + '_' + fingertip + '_' + part
             sensor_num = self.sensor_num(part)
-            points = []
             for i in range(sensor_num):
                 header.frame_id = frame_id_base + '_' + str(i)
                 index = self.sensor_index(part, i)  # index: 0~23
@@ -148,12 +147,7 @@ class ConvertPFS(object):
                 if distance is not None and distance < 0.1:
                     point = [0, 0, distance]
                     prox_msg = pc2.create_cloud(header, self.fields, [point])
-                    self.pub[gripper][fingertip][part]['proximity_viz'][i].publish(prox_msg)
-                    points.append(point)
-            if len(points) != 0:
-                header.frame_id = frame_id_base
-                prox_msg = pc2.create_cloud(header, self.fields, points)
-                self.pub[gripper][fingertip][part]['proximity'].publish(prox_msg)
+                    self.pub[gripper][fingertip][part]['proximity'][i].publish(prox_msg)
 
     def publish_wrenchstamped(self, msg, gripper, fingertip):
         header = Header()
