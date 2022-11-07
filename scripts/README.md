@@ -38,10 +38,24 @@ Here, to avoid duplicate expressions, multiple topic names are summarized by abb
   ROS topics decomposed for each sensor. `pr2_fingertip_sensors/config/pfs.rviz` visualizes the second, third and fifth topics.
 
   - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/force/{sensor_num}` (`std_msgs/Float32`)
+
+  Force value. One topic per force sensor.
+
   - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/wrench` (`geometry_msgs/WrenchStamped`)
+
+  Wrench value. One topic per PFS board.
+
   - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/imu` (`sensor_msgs/Imu`)
+
+  IMU value. One topic per PFS A board.
+
   - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/proximity_distance/{sensor_num}` (`std_msgs/Float32`)
+
+  Distance calculated from each proximity sensor. One topic per proximity sensor.
+
   - `/pfs/{l_r}_gripper/{l_r}_fingertip/{part}/proximity_cloud/{sensor_num}` (`sensor_msgs/PointCloud2`)
+
+  Pointcloud calculated from each proximity sensor. One topic per proximity sensor.
 
 ## Parameters
 

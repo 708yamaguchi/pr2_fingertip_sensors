@@ -12,11 +12,11 @@ from std_msgs.msg import Float32, Header
 class ConvertPFS(object):
     """
     Convert PR2FingertipSensor message into the following messages
-    - proximity_cloud(sensor_msgs/PointCloud2), pointcloud calculated from each proximity sensor
-    - proximity_distance(std_msgs/Float32), distance calculated from each proximity sensor
-    - wrench(geometry_msgs/WrenchStamped), wrench value for each PFS board
-    - force(geometry_msgs/Vector3), force value for each force sensor
-    - imu(sensor_msgs/Imu), IMU value for PFS A board
+    - proximity_cloud(sensor_msgs/PointCloud2), pointcloud calculated from each proximity sensor. One topic per proximity sensor.
+    - proximity_distance(std_msgs/Float32), distance calculated from each proximity sensor. One topic per proximity sensor.
+    - wrench(geometry_msgs/WrenchStamped), wrench value. One topic per PFS board.
+    - force(std_msgs/Float32), force value. One topic per force sensor.
+    - imu(sensor_msgs/Imu), IMU value. One topic per PFS A board.
     """
     def __init__(self):
         self.grippers = ['l_gripper', 'r_gripper']
@@ -139,8 +139,8 @@ class ConvertPFS(object):
     def publish_proximity(self, msg, gripper, fingertip):
         """
         Publish the following topics
-        - proximity_cloud(sensor_msgs/PointCloud2), pointcloud calculated from each proximity sensor
-        - proximity_distance(std_msgs/Float32), distance calculated from each proximity sensor
+        - proximity_cloud(sensor_msgs/PointCloud2), pointcloud calculated from each proximity sensor. One topic per proximity sensor.
+        - proximity_distance(std_msgs/Float32), distance calculated from each proximity sensor. One topic per proximity sensor.
         """
         header = Header()
         header.stamp = msg.header.stamp
@@ -164,8 +164,8 @@ class ConvertPFS(object):
     def publish_force(self, msg, gripper, fingertip):
         """
         Publish the following topics
-        - wrench(geometry_msgs/WrenchStamped), wrench value for each PFS board
-        - force(geometry_msgs/Vector3), force value for each force sensor
+        - wrench(geometry_msgs/WrenchStamped), wrench value. One topic per PFS board.
+        - force(std_msgs/Float32), force value. One topic per force sensor.
         """
         header = Header()
         header.stamp = msg.header.stamp
@@ -191,7 +191,7 @@ class ConvertPFS(object):
     def publish_imu(self, msg, gripper, fingertip):
         """
         Publish the following topic
-        - imu(sensor_msgs/Imu), IMU value for PFS A board
+        - imu(sensor_msgs/Imu), IMU value. One topic per PFS A board.
         """
         imu = msg.imu
         # Gyro
