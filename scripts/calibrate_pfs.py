@@ -23,7 +23,8 @@ class CalibratePFS(object):
                 # Subscribe pfs data published by parse_pfs.py
                 rospy.Subscriber(
                     '/pfs/{}/{}'.format(gripper, fingertip),
-                    PR2FingertipSensor, self.cb, (gripper, fingertip))
+                    PR2FingertipSensor, self.cb, (gripper, fingertip),
+                    queue_size=1)
         # Calibration
         rospack = rospkg.RosPack()
         package_path = rospack.get_path('pr2_fingertip_sensors')

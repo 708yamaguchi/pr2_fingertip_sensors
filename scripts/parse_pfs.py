@@ -33,9 +33,11 @@ class ParsePFS(object):
         # Create subscribers at the last of __init__ to avoid
         # 'object has no attribute ...' error
         rospy.Subscriber(
-            "/pressure/l_gripper_motor", PressureState, self.cb, "l_gripper")
+            "/pressure/l_gripper_motor", PressureState, self.cb, "l_gripper",
+            queue_size=1)
         rospy.Subscriber(
-            "/pressure/r_gripper_motor", PressureState, self.cb, "r_gripper")
+            "/pressure/r_gripper_motor", PressureState, self.cb, "r_gripper",
+            queue_size=1)
 
     def cb(self, msg, gripper):
         """
@@ -192,7 +194,7 @@ https://docs.google.com/presentation/d/1VxRJWDqeDk_ryu-x1Vhj3_6BDu3gscwvNpngHKwf
             rospy.logdebug(
                 'check_sum ({}) is correctly calculated.'.format(check_sum))
         else:
-            rospy.logerr(
+            rospy.logdebug(
                 'check_sum ({}) is different from calculation ({}).'.format(
                     check_sum, sum_data))
         return {'proximity': prox,
