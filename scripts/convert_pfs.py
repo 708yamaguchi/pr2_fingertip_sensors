@@ -57,7 +57,8 @@ class ConvertPFS(object):
                 # 'object has no attribute ...' error
                 rospy.Subscriber(
                     '/pfs/{}/{}'.format(gripper, fingertip),
-                    PR2FingertipSensor, self.cb, (gripper, fingertip))
+                    PR2FingertipSensor, self.cb, (gripper, fingertip),
+                    queue_size=1)
 
     def cb(self, msg, args):
         """

@@ -33,9 +33,11 @@ class ParsePFS(object):
         # Create subscribers at the last of __init__ to avoid
         # 'object has no attribute ...' error
         rospy.Subscriber(
-            "/pressure/l_gripper_motor", PressureState, self.cb, "l_gripper")
+            "/pressure/l_gripper_motor", PressureState, self.cb, "l_gripper",
+            queue_size=1)
         rospy.Subscriber(
-            "/pressure/r_gripper_motor", PressureState, self.cb, "r_gripper")
+            "/pressure/r_gripper_motor", PressureState, self.cb, "r_gripper",
+            queue_size=1)
 
     def cb(self, msg, gripper):
         """
