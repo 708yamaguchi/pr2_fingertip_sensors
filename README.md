@@ -74,6 +74,14 @@ This repository will develop boards and firmware with the following features.
 
 - Details of each ROS node is described [here](https://github.com/708yamaguchi/pr2_fingertip_sensors/tree/master/scripts)
 
+# Board
+
+Proximity and force sensor placement and index. The board coordinates is also written.
+
+![PFS_01A](https://user-images.githubusercontent.com/19769486/200317338-623f4bf6-29eb-439b-b5ba-90e29b41c088.svg)
+
+![PFS_01B](https://user-images.githubusercontent.com/19769486/200317348-b7a98b77-e71a-4691-9112-cffd2195bf45.svg)
+
 # Directories
 
 - CubeIDE
