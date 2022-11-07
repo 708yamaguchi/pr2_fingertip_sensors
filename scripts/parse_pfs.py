@@ -194,7 +194,7 @@ https://docs.google.com/presentation/d/1VxRJWDqeDk_ryu-x1Vhj3_6BDu3gscwvNpngHKwf
             rospy.logdebug(
                 'check_sum ({}) is correctly calculated.'.format(check_sum))
         else:
-            rospy.logerr(
+            rospy.logdebug(
                 'check_sum ({}) is different from calculation ({}).'.format(
                     check_sum, sum_data))
         return {'proximity': prox,
