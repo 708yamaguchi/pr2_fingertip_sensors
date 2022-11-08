@@ -1,4 +1,9 @@
 <launch>
+
+  <!-- Load default pfs sensor params -->
+  <rosparam command="load" file="$(find pr2_fingertip_sensors)/data/pfs_params.yaml" />
+
+  <!-- Launch ROS nodes for pfs sensor calibration -->
   <node name="parse_pfs" pkg="pr2_fingertip_sensors" type="parse_pfs.py" output="screen" />
   <node name="calibrate_pfs" pkg="pr2_fingertip_sensors" type="calibrate_pfs.py" output="screen" />
 </launch>
