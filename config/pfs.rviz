@@ -1281,13 +1281,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: A_Front
               Topic: /pfs/l_gripper/l_fingertip/pfs_a_front/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -1295,13 +1295,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Top
               Topic: /pfs/l_gripper/l_fingertip/pfs_b_top/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -1309,13 +1309,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Back
               Topic: /pfs/l_gripper/l_fingertip/pfs_b_back/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -1323,13 +1323,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Left
               Topic: /pfs/l_gripper/l_fingertip/pfs_b_left/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -1337,13 +1337,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Right
               Topic: /pfs/l_gripper/l_fingertip/pfs_b_right/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -2112,13 +2112,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: A_Front
               Topic: /pfs/l_gripper/r_fingertip/pfs_a_front/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -2126,13 +2126,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Top
               Topic: /pfs/l_gripper/r_fingertip/pfs_b_top/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -2140,13 +2140,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Back
               Topic: /pfs/l_gripper/r_fingertip/pfs_b_back/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -2154,13 +2154,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Left
               Topic: /pfs/l_gripper/r_fingertip/pfs_b_left/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -2168,13 +2168,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Right
               Topic: /pfs/l_gripper/r_fingertip/pfs_b_right/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -2943,13 +2943,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: A_Front
               Topic: /pfs/r_gripper/l_fingertip/pfs_a_front/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -2957,13 +2957,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Top
               Topic: /pfs/r_gripper/l_fingertip/pfs_b_top/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -2971,13 +2971,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Back
               Topic: /pfs/r_gripper/l_fingertip/pfs_b_back/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -2985,13 +2985,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Left
               Topic: /pfs/r_gripper/l_fingertip/pfs_b_left/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -2999,13 +2999,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Right
               Topic: /pfs/r_gripper/l_fingertip/pfs_b_right/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -3774,13 +3774,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: A_Front
               Topic: /pfs/r_gripper/r_fingertip/pfs_a_front/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -3788,13 +3788,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Top
               Topic: /pfs/r_gripper/r_fingertip/pfs_b_top/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -3802,13 +3802,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Back
               Topic: /pfs/r_gripper/r_fingertip/pfs_b_back/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -3816,13 +3816,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Left
               Topic: /pfs/r_gripper/r_fingertip/pfs_b_left/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
@@ -3830,13 +3830,13 @@ Visualization Manager:
               Arrow Width: 0.10000000149011612
               Class: rviz/WrenchStamped
               Enabled: true
-              Force Arrow Scale: 1
+              Force Arrow Scale: 0.03
               Force Color: 204; 51; 51
               Hide Small Values: false
               History Length: 1
               Name: B_Right
               Topic: /pfs/r_gripper/r_fingertip/pfs_b_right/wrench
-              Torque Arrow Scale: 1
+              Torque Arrow Scale: 0.03
               Torque Color: 204; 204; 51
               Unreliable: false
               Value: true
