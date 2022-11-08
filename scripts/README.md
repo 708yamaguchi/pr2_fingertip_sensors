@@ -25,7 +25,12 @@ Here, to avoid duplicate expressions, multiple topic names are summarized by abb
   This node publishes
   - force data for each PFS board (6 axis, unit: [N])
   - imu data for each fingertip (6 axis, unit: [rad/s], [m/s^2])
-  - proximity data for each sensor (Pointcloud considering the position of each sensor and the distance calculated from the sensor. `I = (a/d^2) + b`)
+  - proximity data for each sensor (Pointcloud considering the position of each sensor and the distance calculated from the sensor. )
+    - Based on the equation: `I = (a/d^2) + b`
+    - I: proximity sensor value
+    - a: Coefficient on infrared reflectance
+    - d: Distance between proximity sensor and object
+    - b: Amount of infrared radiation reflected permanently (e.g. Reflection by rubber)
 
 ## Subscribe topics
 
