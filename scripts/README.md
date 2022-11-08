@@ -66,7 +66,7 @@ Here, to avoid duplicate expressions, multiple topic names are summarized by abb
 
   Parameters used to convert PFS sensor data. The default value is saved at `pr2_fingertip_sensors/data/pfs_params.yaml`
 
-  - `/pfs/{l_r}_gripper/{l_r}_fingertip/force_scale` [float list, 24 elements]
+  - `/pfs/{l_r}_gripper/{l_r}_fingertip/sensitivity` [float list, 24 elements]
   - `/pfs/{l_r}_gripper/{l_r}_fingertip/preload` [float list, 24 elements]
   - `/pfs/{l_r}_gripper/{l_r}_fingertip/proximity_a` [float list, 24 elements]
   - `/pfs/{l_r}_gripper/{l_r}_fingertip/proximity_b` [float list, 24 elements]

@@ -166,6 +166,22 @@ class ConvertPFS(object):
         Publish the following topics
         - wrench(geometry_msgs/WrenchStamped), wrench value. One topic per PFS board.
         - force(std_msgs/Float32), force value. One topic per force sensor.
+
+        Force Sensor (HSFPAR003A) documentation
+        https://tech.alpsalpine.com/cms.media/product_spec_hsfpar003a_ja_4ea3fef0f5.pdf
+
+        Equation for voltage [mV] is following
+        - (force_sensor_value - preload) * adc_resolution = gain * force[N] * sensitivity
+        - force[N] = 0.105 * (force_sensor_value - preload) / sensitivity
+
+        where the values of the variables are as follows
+        - sensitivity
+          3.7[mV/N] (min 2.7, max 4.7)
+          This is different among force sensors, so this is managed by rosparam
+        - gain:
+          1 + (100000[ohm] / 15000[ohm]) = 7.6666
+        - adc_resolution [mV]:
+          3.3[V] * 1000 / 4096 (12bit) = 0.806
         """
         header = Header()
         header.stamp = msg.header.stamp
@@ -177,11 +193,11 @@ class ConvertPFS(object):
                 index = self.sensor_index(part, i)  # index: 0~23
                 # Convert force into WrenchStamped
                 preload = self.pfs_params[gripper][fingertip]['preload'][index]
-                force_scale = self.pfs_params[gripper][fingertip]['force_scale'][index]
-                force = msg.force[index] - preload
+                sensitivity = self.pfs_params[gripper][fingertip]['sensitivity'][index]
+                force = 0.105 * (msg.force[index] - preload) / sensitivity
                 force_msg = Float32(data=force)
                 self.pub[gripper][fingertip][part]['force'][i].publish(force_msg)
-                average_force += force_scale * force / float(sensor_num)
+                average_force += force / float(sensor_num)
             # Publish force
             force_msg = WrenchStamped()
             force_msg.header = header

@@ -123,7 +123,7 @@ class CalibratePFS(object):
             params['pfs'][gripper] = {}
             for fingertip in self.fingertips:
                 params['pfs'][gripper][fingertip] = {}
-                for param_name in ['proximity_a', 'proximity_b', 'preload', 'force_scale']:
+                for param_name in ['proximity_a', 'proximity_b', 'preload', 'sensitivity']:
                     param_value = rospy.get_param(
                         '/pfs/{}/{}/{}'.format(gripper, fingertip, param_name))
                     params['pfs'][gripper][fingertip][param_name] = param_value
