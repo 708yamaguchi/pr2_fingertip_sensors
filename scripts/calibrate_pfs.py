@@ -108,6 +108,12 @@ class CalibratePFS(object):
                 # Set dummy pfs data in case not all fingers have sensors
                 if len(force) == 0:
                     force = [0] * 24
+                else:
+                    if 0 in force:
+                        rospy.logwarn('There is 0 force value in {} {}'.format(
+                            gripper, fingertip))
+                        rospy.logwarn('force value: {}'.format(
+                            force))
                 rospy.set_param(
                     '/pfs/{}/{}/preload'.format(gripper, fingertip),
                     force)
