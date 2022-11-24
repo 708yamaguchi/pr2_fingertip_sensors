@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "sensor.h"
+// #include "sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,22 +43,14 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
-I2C_HandleTypeDef hi2c1;
-I2C_HandleTypeDef hi2c2;
-
 I2S_HandleTypeDef hi2s2;
+DMA_HandleTypeDef hdma_spi2_rx;
 
-SPI_HandleTypeDef hspi1;
-SPI_HandleTypeDef hspi3;
-DMA_HandleTypeDef hdma_spi1_rx;
-DMA_HandleTypeDef hdma_spi1_tx;
+UART_HandleTypeDef huart1;
 
 PCD_HandleTypeDef hpcd_USB_FS;
 
-osThreadId ADCTaskHandle;
-osThreadId LEDTaskHandle;
-osThreadId PSTaskHandle;
-osThreadId IMUTaskHandle;
+osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 uint8_t rxbuff[1];
 /* USER CODE END PV */
@@ -68,16 +60,10 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_I2C1_Init(void);
-static void MX_I2C2_Init(void);
 static void MX_I2S2_Init(void);
-static void MX_SPI1_Init(void);
-static void MX_SPI3_Init(void);
 static void MX_USB_PCD_Init(void);
-void StartADCTask(void const * argument);
-void StartLEDTask(void const * argument);
-void StartPSTask(void const * argument);
-void StartIMUTask(void const * argument);
+static void MX_USART1_UART_Init(void);
+void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void mpuWrite(uint8_t, uint8_t);
@@ -101,7 +87,11 @@ void txbuff_update();
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+#define BUFF_SIZE 1024
+int32_t I2S_RX_BUFFER[BUFF_SIZE];
+int32_t buff_sifted[BUFF_SIZE];
+int32_t buff_sifted_mirror[BUFF_SIZE];
+uint8_t buffer[1024];
 /* USER CODE END 0 */
 
 /**
@@ -134,29 +124,13 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
-  MX_I2C1_Init();
-  MX_I2C2_Init();
   MX_I2S2_Init();
-  MX_SPI1_Init();
-  MX_SPI3_Init();
   MX_USB_PCD_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   //sp.board_select = SELECT_PFS_01_SINGLE;
-  sp.board_select = SELECT_PFS_01_ASM;
-  sp.imu_select = SELECT_ICM_20600;
 
-  sp.com_en = 0;
-
-  sp.spi_slave_flag = 0;
-
-  ps_init(&hi2c1);
-
-  imu_init(&hspi3);
-
-  // Start SPI slave with PR2
-  // HAL_SPI_Receive_DMA should be called at last(?)
-  HAL_Delay(100);
-  HAL_SPI_Receive_DMA( &hspi1, rxbuff, sizeof(rxbuff));
+  HAL_I2S_Receive_DMA( &hi2s2, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
 
   /* USER CODE END 2 */
 
@@ -177,21 +151,9 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of ADCTask */
-  osThreadDef(ADCTask, StartADCTask, osPriorityNormal, 0, 128);
-  ADCTaskHandle = osThreadCreate(osThread(ADCTask), NULL);
-
-  /* definition and creation of LEDTask */
-  osThreadDef(LEDTask, StartLEDTask, osPriorityIdle, 0, 128);
-  LEDTaskHandle = osThreadCreate(osThread(LEDTask), NULL);
-
-  /* definition and creation of PSTask */
-  osThreadDef(PSTask, StartPSTask, osPriorityIdle, 0, 128);
-  PSTaskHandle = osThreadCreate(osThread(PSTask), NULL);
-
-  /* definition and creation of IMUTask */
-  osThreadDef(IMUTask, StartIMUTask, osPriorityIdle, 0, 128);
-  IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
+  /* definition and creation of defaultTask */
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -260,11 +222,9 @@ void SystemClock_Config(void)
   }
   /** Initializes the peripherals clocks
   */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C2
-                              |RCC_PERIPHCLK_I2S|RCC_PERIPHCLK_USB
-                              |RCC_PERIPHCLK_ADC12;
-  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
-  PeriphClkInit.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_I2S
+                              |RCC_PERIPHCLK_USB|RCC_PERIPHCLK_ADC12;
+  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
   PeriphClkInit.I2sClockSelection = RCC_I2SCLKSOURCE_HSI;
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
   PeriphClkInit.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
@@ -404,98 +364,6 @@ static void MX_ADC1_Init(void)
 }
 
 /**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x30909DEC;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
-
-}
-
-/**
-  * @brief I2C2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C2_Init(void)
-{
-
-  /* USER CODE BEGIN I2C2_Init 0 */
-
-  /* USER CODE END I2C2_Init 0 */
-
-  /* USER CODE BEGIN I2C2_Init 1 */
-
-  /* USER CODE END I2C2_Init 1 */
-  hi2c2.Instance = I2C2;
-  hi2c2.Init.Timing = 0x30909DEC;
-  hi2c2.Init.OwnAddress1 = 0;
-  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c2.Init.OwnAddress2 = 0;
-  hi2c2.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C2_Init 2 */
-
-  /* USER CODE END I2C2_Init 2 */
-
-}
-
-/**
   * @brief I2S2 Initialization Function
   * @param None
   * @retval None
@@ -511,11 +379,11 @@ static void MX_I2S2_Init(void)
 
   /* USER CODE END I2S2_Init 1 */
   hi2s2.Instance = SPI2;
-  hi2s2.Init.Mode = I2S_MODE_MASTER_TX;
+  hi2s2.Init.Mode = I2S_MODE_MASTER_RX;
   hi2s2.Init.Standard = I2S_STANDARD_PHILIPS;
   hi2s2.Init.DataFormat = I2S_DATAFORMAT_24B;
   hi2s2.Init.MCLKOutput = I2S_MCLKOUTPUT_DISABLE;
-  hi2s2.Init.AudioFreq = I2S_AUDIOFREQ_8K;
+  hi2s2.Init.AudioFreq = 64000;
   hi2s2.Init.CPOL = I2S_CPOL_LOW;
   if (HAL_I2S_Init(&hi2s2) != HAL_OK)
   {
@@ -528,81 +396,50 @@ static void MX_I2S2_Init(void)
 }
 
 /**
-  * @brief SPI1 Initialization Function
+  * @brief USART1 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_SPI1_Init(void)
+static void MX_USART1_UART_Init(void)
 {
 
-  /* USER CODE BEGIN SPI1_Init 0 */
+  /* USER CODE BEGIN USART1_Init 0 */
 
-  /* USER CODE END SPI1_Init 0 */
+  /* USER CODE END USART1_Init 0 */
 
-  /* USER CODE BEGIN SPI1_Init 1 */
+  /* USER CODE BEGIN USART1_Init 1 */
 
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_SLAVE;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_HARD_INPUT;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 7;
-  hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi1.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_HalfDuplex_Init(&huart1) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
-
-}
-
-/**
-  * @brief SPI3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI3_Init(void)
-{
-
-  /* USER CODE BEGIN SPI3_Init 0 */
-
-  /* USER CODE END SPI3_Init 0 */
-
-  /* USER CODE BEGIN SPI3_Init 1 */
-
-  /* USER CODE END SPI3_Init 1 */
-  /* SPI3 parameter configuration*/
-  hspi3.Instance = SPI3;
-  hspi3.Init.Mode = SPI_MODE_MASTER;
-  hspi3.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-  hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi3.Init.CRCPolynomial = 7;
-  hspi3.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi3.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
-  if (HAL_SPI_Init(&hspi3) != HAL_OK)
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN SPI3_Init 2 */
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
 
-  /* USER CODE END SPI3_Init 2 */
+  /* USER CODE END USART1_Init 2 */
 
 }
 
@@ -650,12 +487,9 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
-  /* DMA1_Channel2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  /* DMA1_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
 
 }
 
@@ -693,6 +527,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PB3 PB4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
   /*Configure GPIO pin : IMU_nCS_Pin */
   GPIO_InitStruct.Pin = IMU_nCS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -703,101 +545,34 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
-    if(rxbuff[0] == READ_COMMAND){//as possible as light processing
-    	// Do not call txbuff_update() before HAL_SPI_Transmit_DMA();
-    	// There is only 36us for txbuff_update() to be processed
-    	// due to PR2 Gripper MCB specification
-        HAL_SPI_Transmit_DMA(hspi, sp.txbuff_state[sp.spi_slave_flag], TXBUFF_LENGTH);
-    }else{
-       	HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
+	// Send I2S data to serial monitor
+    for(int i = 0; i < BUFF_SIZE; i++){
+    	buff_sifted[i] = I2S_RX_BUFFER[i] >> 14;
     }
-}
-
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
-	txbuff_update();
-   	// HAL_Delay(1) is magic number
-    HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+    sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
+    HAL_UART_Transmit(&huart1, buffer, 1024, 10);
+    // Receive I2S data again
+    HAL_I2S_Receive_DMA( hi2s, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
 }
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartADCTask */
+/* USER CODE BEGIN Header_StartDefaultTask */
 /**
-  * @brief  Function implementing the ADCTask thread.
+  * @brief  Function implementing the defaultTask thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartADCTask */
-void StartADCTask(void const * argument)
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
   for(;;)
   {
-	  adc_update(&hadc1);
-	  if(sp.board_select == SELECT_PFS_01_ASM){
-		  adc_update_ADS7828(&hi2c1);
-	  }
-	  osDelay(1);
-  }
-  /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_StartLEDTask */
-/**
-* @brief Function implementing the LEDTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartLEDTask */
-void StartLEDTask(void const * argument)
-{
-  /* USER CODE BEGIN StartLEDTask */
-  /* Infinite loop */
-  for(;;)
-  {
-	  HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
-	  osDelay(50);
-  }
-  /* USER CODE END StartLEDTask */
-}
-
-/* USER CODE BEGIN Header_StartPSTask */
-/**
-* @brief Function implementing the PSTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartPSTask */
-void StartPSTask(void const * argument)
-{
-  /* USER CODE BEGIN StartPSTask */
-  /* Infinite loop */
-  for(;;)
-  {
-	ps_update(&hi2c1);
     osDelay(1);
   }
-  /* USER CODE END StartPSTask */
-}
-
-/* USER CODE BEGIN Header_StartIMUTask */
-/**
-* @brief Function implementing the IMUTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartIMUTask */
-void StartIMUTask(void const * argument)
-{
-  /* USER CODE BEGIN StartIMUTask */
-  /* Infinite loop */
-  for(;;)
-  {
-	  imu_update(&hspi3);
-	  osDelay(1);
-  }
-  /* USER CODE END StartIMUTask */
+  /* USER CODE END 5 */
 }
 
  /**
