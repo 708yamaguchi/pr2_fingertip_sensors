@@ -1,0 +1,26 @@
+<!-- Mainly copied from -->
+<!-- https://github.com/jsk-ros-pkg/jsk_robot/blob/ee8662bafc16cc0d1af38b2994ff51990367d052/jsk_pr2_robot/jsk_pr2_startup/jsk_pr2_lifelog/rosbag_play.launch -->
+
+<!-- Make sure that this launch file is used under localhost -->
+
+<launch>
+  <arg name="rosbag" doc="rosbag file path" />
+  <arg name="gui" default="true" />
+  <arg name="loop" default="true" />
+  <arg name="loop_flag" value="--loop" if="$(arg loop)" />
+  <arg name="loop_flag" value="" unless="$(arg loop)" />
+
+  <!-- Publish transform from fingertip to each pfs board -->
+  <arg name="model" value="$(find pr2_description)/robots/pr2.urdf.xacro" />
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+  <include file="$(find pr2_fingertip_sensors)/launch/pfs_transform_publisher.launch" />
+
+  <!-- rosbag player -->
+  <node pkg="rosbag" type="play" name="rosbag_play"
+        args="$(arg rosbag) $(arg loop_flag) --clock" output="screen" />
+
+  <!-- RViz -->
+  <node pkg="rviz" type="rviz" name="$(anon rviz)" if="$(arg gui)"
+        args="-d $(find pr2_fingertip_sensors)/config/pfs.rviz" />
+
+</launch>
