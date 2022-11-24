@@ -66,6 +66,15 @@ This repository will develop boards and firmware with the following features.
   rostopic echo /pfs/r_gripper/r_fingertip
   ```
 
+- Record/Play rosbag (rostopic with sensor calibration is saved, so you do not need to save rosparam for calibration)
+
+  ```
+  # Record
+  roslaunch pr2_fingertip_sensors rosbag_record.launch rosbag:=$(pwd)/hoge.bag
+  # Play
+  roslaunch pr2_fingertip_sensors rosbag_play.launch rosbag:=$(pwd)/hoge.bag
+  ```
+
 - View sensor data with sample rosbag (Without real PR2 robot)
 
   ```
