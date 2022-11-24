@@ -411,7 +411,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -550,8 +550,6 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
     for(int i = 0; i < BUFF_SIZE; i++){
     	buff_sifted[i] = I2S_RX_BUFFER[i] >> 14;
     }
-    sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \r\n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
-    HAL_UART_Transmit(&huart1, buffer, 1024, 10);
     // Receive I2S data again
     HAL_I2S_Receive_DMA( hi2s, (uint16_t*)&I2S_RX_BUFFER, BUFF_SIZE);
 }
@@ -570,6 +568,8 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+	    sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
+	    HAL_UART_Transmit(&huart1, buffer, 1024, 100);
     osDelay(1);
   }
   /* USER CODE END 5 */
