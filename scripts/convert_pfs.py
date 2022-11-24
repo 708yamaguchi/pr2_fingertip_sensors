@@ -15,7 +15,7 @@ class ConvertPFS(object):
     - proximity_cloud(sensor_msgs/PointCloud2), pointcloud calculated from each proximity sensor. One topic per proximity sensor.
     - proximity_distance(std_msgs/Float32), distance calculated from each proximity sensor. One topic per proximity sensor.
     - wrench(geometry_msgs/WrenchStamped), wrench value. One topic per PFS board.
-    - force(std_msgs/Float32), force value. One topic per force sensor.
+    - force(geometry_msgs/WrenchStamped), calibrated force sensor value. One topic per force sensor.
     - imu(sensor_msgs/Imu), IMU value. One topic per PFS A board.
     """
     def __init__(self):
@@ -37,7 +37,7 @@ class ConvertPFS(object):
                 for part in self.parts:
                     self.pub[gripper][fingertip][part] = {}
                     sensors = ['proximity_distance', 'proximity_cloud', 'wrench', 'force', 'imu']
-                    msg_types = [Float32, PointCloud2, WrenchStamped, Float32, Imu]
+                    msg_types = [Float32, PointCloud2, WrenchStamped, WrenchStamped, Imu]
                     for sensor, msg_type in zip(sensors, msg_types):
                         if sensor == 'imu' and part != 'pfs_a_front':
                             # PFS B does not have IMU
@@ -188,23 +188,29 @@ class ConvertPFS(object):
         header = Header()
         header.stamp = msg.header.stamp
         for part in self.parts:
-            header.frame_id = '/' + gripper + '_' + fingertip + '_' + part
+            frame_id_base = '/' + gripper + '_' + fingertip + '_' + part
             sensor_num = self.sensor_num(part)
             average_force = 0.0
             for i in range(sensor_num):
                 index = self.sensor_index(part, i)  # index: 0~23
-                # Convert force into WrenchStamped
+                frame_id = frame_id_base + '_' + str(i)
+                # Publish each force sensor value
                 preload = self.pfs_params[gripper][fingertip]['preload'][index]
                 sensitivity = self.pfs_params[gripper][fingertip]['sensitivity'][index]
                 force = 0.105 * (msg.force[index] - preload) / sensitivity
-                force_msg = Float32(data=force)
+                force_msg = WrenchStamped()
+                header.frame_id = frame_id
+                force_msg.header = header
+                force_msg.wrench.force.z = force
                 self.pub[gripper][fingertip][part]['force'][i].publish(force_msg)
                 average_force += force / float(sensor_num)
-            # Publish force
-            force_msg = WrenchStamped()
-            force_msg.header = header
-            force_msg.wrench.force.z = average_force
-            self.pub[gripper][fingertip][part]['wrench'].publish(force_msg)
+            # Publish force on each PFS board
+            board_force_msg = WrenchStamped()
+            header.frame_id = frame_id_base
+            board_force_msg.header = header
+            board_force_msg.wrench.force.z = average_force
+            self.pub[gripper][fingertip][part]['wrench'].publish(
+                board_force_msg)
 
     def publish_imu(self, msg, gripper, fingertip):
         """
