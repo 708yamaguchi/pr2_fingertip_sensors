@@ -569,7 +569,7 @@ void StartDefaultTask(void const * argument)
   for(;;)
   {
 	    sprintf(buffer, "buff[0]:%d buff[1]:%d buff[2]:%d buff[3]:%d \n", buff_sifted[0], buff_sifted[1], buff_sifted[2], buff_sifted[3]);
-	    HAL_UART_Transmit(&huart1, buffer, 1024, 100);
+	    HAL_UART_Transmit(&huart1, buffer, 1024, 1000);
     osDelay(1);
   }
   /* USER CODE END 5 */
