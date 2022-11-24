@@ -1,0 +1,18 @@
+<!-- Mainly copied from -->
+<!-- https://github.com/jsk-ros-pkg/jsk_robot/blob/ee8662bafc16cc0d1af38b2994ff51990367d052/jsk_pr2_robot/jsk_pr2_startup/jsk_pr2_lifelog/rosbag_record.launch -->
+
+<!-- Make sure that pfs.launch is already launched -->
+
+<launch>
+  <arg name="rosbag" doc="rosbag file path" />
+
+  <node name="rosbag_record" pkg="rosbag" type="record"
+        args="-q -e -O $(arg rosbag) -b 0 
+            /rosout
+            /tf
+            /tf_static
+            /joint_states
+            /pfs/.*"
+        output="screen" />
+
+</launch>
