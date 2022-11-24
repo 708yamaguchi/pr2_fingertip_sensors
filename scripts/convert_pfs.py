@@ -26,6 +26,8 @@ class ConvertPFS(object):
                        PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
                        PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1)]
         self.pfs_params = rospy.get_param('/pfs')
+        rospy.loginfo('Load pfs calibration params')
+        rospy.loginfo(self.pfs_params)
         self.pub = {}
         for gripper in self.grippers:
             self.pub[gripper] = {}

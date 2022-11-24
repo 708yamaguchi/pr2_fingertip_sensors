@@ -85,7 +85,8 @@ class CalibratePFS(object):
                     a = (prox - b) * (near_distance ** 2)
                     if a <= 0:
                         rospy.logerr(
-                            "Proximity param 'a' is not positive value. Retry calibration")
+                            "Proximity param 'a' is not positive value at {} {}. Retry calibration".format(
+                                gripper, fingertip))
                         a = 0  # dummy value
                     return a
 
