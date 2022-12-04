@@ -146,17 +146,17 @@ int main(void)
   MX_SPI3_Init();
   MX_USB_Device_Init();
   /* USER CODE BEGIN 2 */
-  sp.board_select = SELECT_PFS_01_SINGLE;
-  //sp.board_select = SELECT_PFS_01_ASM;
+  //sp.board_select = SELECT_PFS_01_SINGLE;  // for PFS-01A only
+  sp.board_select = SELECT_PFS_01_ASM;  // for assembly board
   sp.imu_select = SELECT_ICM_20600;
 
   sp.com_en = 0;
 
   sp.spi_slave_flag = 0;
 
-  //sp.slave_mode = PR2_SPI_SLAVE; // for PR2 slave
-  //sp.slave_mode = UART_SLAVE; //for UART serial slave, You need to change the pin assignment.TODO write detailed instructions.
-  sp.slave_mode = USB_SLAVE; //for USB serial slave
+  sp.slave_mode = PR2_SPI_SLAVE; // for PR2 slave
+  //sp.slave_mode = UART_SLAVE; // for UART serial slave, You need to change the pin assignment.TODO write detailed instructions.
+  //sp.slave_mode = USB_SLAVE; // for USB serial slave
 
   ps_init(&hi2c1);
 

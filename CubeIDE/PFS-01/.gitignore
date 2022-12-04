@@ -3,6 +3,7 @@ Debug
 Drivers
 Core/Startup
 Middlewares
+USB_Device
 
 .cproject
 .mxproject
