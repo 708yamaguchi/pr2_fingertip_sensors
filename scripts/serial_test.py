@@ -31,11 +31,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", "-p", default="/dev/ttyUSB0", help="serial port")
     parser.add_argument("--baud", "-b", default=115200, type=int, help="baud rate")
+    parser.add_argument("--verbose", "-v", action='store_true')
     args = parser.parse_args()
     serial_port = args.port
     baud_rate = args.baud
+    verbose = args.verbose
 
     key_phrase = 'serial_publish_flatten['
+    serial_publish_length = 54
 
     rospy.init_node('serial_test')
     publisher = rospy.Publisher('/pfs/from_serial', PR2FingertipSensor, queue_size=1)
@@ -46,7 +49,7 @@ if __name__ == '__main__':
     ser = serial.Serial(serial_port, baud_rate)
     print(ser)
 
-    pfs_array = [0 for _ in range(88)]
+    pfs_array = [0 for _ in range(serial_publish_length)]
     while 1:
         line = ser.readline()
         line_disp=line.strip().decode('UTF-8')
@@ -57,17 +60,19 @@ if __name__ == '__main__':
             line_num = [int(i) for i in line_num_split_str]
             # print(line_num)
             if line_num[0] == 0:
-                print("current pfs_array: {}".format(pfs_array))
                 proximity = pfs_array[:24]
                 force = pfs_array[24:48]
                 acc = pfs_array[48:51]
                 gyro = pfs_array[51:54]
-                print("proximity: {}".format(proximity))
-                print("force: {}".format(force))
-                print("acc: {}".format(acc))
-                print("gyro: {}".format(gyro))
+                if verbose:
+                    print("current pfs_array: {}".format(pfs_array))
+                    print("proximity: {}".format(proximity))
+                    print("force: {}".format(force))
+                    print("acc: {}".format(acc))
+                    print("gyro: {}".format(gyro))
+                    print("-------------------------------------------------------")
                 header = std_msgs.msg.Header()
                 header.stamp = rospy.Time.now()
                 publish(publisher, header, proximity, force, acc, gyro)
-                pfs_array = [0 for _ in range(88)]
+                pfs_array = [0 for _ in range(serial_publish_length)]
             pfs_array[line_num[0]] = line_num[1]

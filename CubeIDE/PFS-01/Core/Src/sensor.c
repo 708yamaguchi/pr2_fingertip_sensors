@@ -93,7 +93,7 @@ void txbuff_update(){//max: uint8_t * 44:
 	}
 
 	/*for serial publish*/
-	if (sp.slave_mode == UART_SLAVE){
+	if (sp.slave_mode == UART_SLAVE || sp.slave_mode == USB_SLAVE){
 		for(int i=0; i < MAX_PS_SENSOR_NUM; i++){ // proximity 24
 			sp.serial_publish_flatten[i] = (int16_t)sp.ps_print_flatten[i];
 		}

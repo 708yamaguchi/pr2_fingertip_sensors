@@ -182,6 +182,7 @@ static const uint8_t ADS7828_ADDR_ARRAY[ADS7828_NUM] = {0x48<<1, 0x49<<1, 0x4A<<
 // SLAVE MODE
 #define PR2_SPI_SLAVE 0
 #define UART_SLAVE 1
+#define USB_SLAVE 2
 
 uint8_t debug_buffer[2048];
 uint8_t gyro_buffer[512];
@@ -199,7 +200,6 @@ struct sensor_params {
 	uint8_t rxbuff[1];
 	uint8_t txbuff[TXBUFF_LENGTH];
 	uint8_t txbuff_state[SPI_SLAVE_STATENUM][TXBUFF_LENGTH];
-//	uint8_t txbuff_state_flatten[TXBUFF_LENGTH * 2];
 	int16_t serial_publish_flatten[SERIAL_PUBLISH_LENGTH];
 
 	// read write data
