@@ -47,6 +47,17 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+// Variables for changing usage are gathered here.
+//BOARD selection
+static const uint8_t SELECT_PFS_01_SINGLE = 0x00;
+static const uint8_t SELECT_PFS_01_ASM = 0x01;
+//#define SELECT_PFS_01 SELECT_PFS_01_SINGLE; // comment in when PFS-01A only
+#define SELECT_PFS_01 SELECT_PFS_01_ASM; // comment in when assembly board
+
+// SLAVE MODE enable
+#define enable_pr2_spi_slave 1 // enable or not PR2 slave
+#define enable_uart_slave 0 // enable or not UART serial slave
+#define enable_usb_slave 0 // enable or not USB serial slave
 
 /* USER CODE END EM */
 

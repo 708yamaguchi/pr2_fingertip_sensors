@@ -6,10 +6,6 @@
 // COMMUNICATION const
 static const uint8_t READ_COMMAND = 0x12;
 
-//BOARD selection
-static const uint8_t SELECT_PFS_01_SINGLE = 0x00;
-static const uint8_t SELECT_PFS_01_ASM = 0x01;
-
 // IMU selection
 static const uint8_t SELECT_ICM_20600 = 0x00;
 static const uint8_t SELECT_ICM_42605 = 0x01;
@@ -178,11 +174,6 @@ static const uint8_t ADS7828_ADDR_ARRAY[ADS7828_NUM] = {0x48<<1, 0x49<<1, 0x4A<<
 // MAIN SPI FLAG
 #define SPI_SLAVE 1
 #define SPI_SLAVE_STATENUM 2
-
-// SLAVE MODE
-#define PR2_SPI_SLAVE 0
-#define UART_SLAVE 1
-#define USB_SLAVE 2
 
 uint8_t debug_buffer[2048];
 uint8_t gyro_buffer[512];

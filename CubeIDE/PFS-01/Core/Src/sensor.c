@@ -93,7 +93,7 @@ void txbuff_update(){//max: uint8_t * 44:
 	}
 
 	/*for serial publish*/
-	if (sp.slave_mode == UART_SLAVE || sp.slave_mode == USB_SLAVE){
+	#if enable_uart_slave || enable_usb_slave
 		for(int i=0; i < MAX_PS_SENSOR_NUM; i++){ // proximity 24
 			sp.serial_publish_flatten[i] = (int16_t)sp.ps_print_flatten[i];
 		}
@@ -106,8 +106,7 @@ void txbuff_update(){//max: uint8_t * 44:
 		for(int i=0; i < GYRO_CHANNEL_NUM; i++){ // gyro 3
 			sp.serial_publish_flatten[i + MAX_PS_SENSOR_NUM + MAX_FS_SENSOR_NUM + ACC_CHANNEL_NUM] = (int16_t)sp.gyro_print[i];
 		}
-	}
-
+    #endif
 
 	sp.txbuff_state[sp.spi_slave_flag][TXBUFF_LENGTH - 2] = (((sp.board_select & 0x0f) << 4) | (sp.spi_slave_flag & 0x0f));
 	sp.txbuff_state[sp.spi_slave_flag][TXBUFF_LENGTH - 1] = check_sum & 0x00ff;
