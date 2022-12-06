@@ -3,6 +3,7 @@
 import rospy
 from pr2_msgs.msg import PressureState
 from pr2_fingertip_sensors.msg import PR2FingertipSensor
+from pr2_fingertip_sensors import create_pfs_msg
 
 
 class ParsePFS(object):
@@ -79,19 +80,8 @@ class ParsePFS(object):
         """
         Publish parsed sensor data
         """
-        pfs_msg = PR2FingertipSensor()
-        pfs_msg.header = header
-        pfs_msg.proximity = proximity
-        pfs_msg.force = force
-        pfs_msg.imu.header.stamp = header.stamp
-        imu_frame_id = '/' + gripper + '_' + fingertip + '_' + 'pfs_a_front'
-        pfs_msg.imu.header.frame_id = imu_frame_id
-        pfs_msg.imu.linear_acceleration.x = acc[0]
-        pfs_msg.imu.linear_acceleration.y = acc[1]
-        pfs_msg.imu.linear_acceleration.z = acc[2]
-        pfs_msg.imu.angular_velocity.x = gyro[0]
-        pfs_msg.imu.angular_velocity.y = gyro[1]
-        pfs_msg.imu.angular_velocity.z = gyro[2]
+        pfs_msg = create_pfs_msg(
+            gripper, fingertip, header, proximity, force, acc, gyro)
         self.pub[gripper][fingertip].publish(pfs_msg)
 
     def order_data(self, data):

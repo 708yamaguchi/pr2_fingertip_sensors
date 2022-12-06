@@ -6,26 +6,18 @@ import argparse
 import rospy
 import std_msgs.msg
 from pr2_fingertip_sensors.msg import PR2FingertipSensor
+from pr2_fingertip_sensors import create_pfs_msg
 
 
-def publish(publisher, header, proximity, force, acc, gyro):
+def publish(
+        publisher, gripper, fingertip, header, proximity, force, acc, gyro):
     """
     Publish parsed sensor data
     """
-    pfs_msg = PR2FingertipSensor()
-    pfs_msg.header = header
-    pfs_msg.proximity = proximity
-    pfs_msg.force = force
-    pfs_msg.imu.header.stamp = header.stamp
-    imu_frame_id = '/pfs_a_front'
-    pfs_msg.imu.header.frame_id = imu_frame_id
-    pfs_msg.imu.linear_acceleration.x = acc[0]
-    pfs_msg.imu.linear_acceleration.y = acc[1]
-    pfs_msg.imu.linear_acceleration.z = acc[2]
-    pfs_msg.imu.angular_velocity.x = gyro[0]
-    pfs_msg.imu.angular_velocity.y = gyro[1]
-    pfs_msg.imu.angular_velocity.z = gyro[2]
+    pfs_msg = create_pfs_msg(
+        gripper, fingertip, header, proximity, force, acc, gyro)
     publisher.publish(pfs_msg)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -73,6 +65,7 @@ if __name__ == '__main__':
                     print("-------------------------------------------------------")
                 header = std_msgs.msg.Header()
                 header.stamp = rospy.Time.now()
-                publish(publisher, header, proximity, force, acc, gyro)
+                publish(publisher, 'l_gripper', 'l_fingertip',
+                        header, proximity, force, acc, gyro)
                 pfs_array = [0 for _ in range(serial_publish_length)]
             pfs_array[line_num[0]] = line_num[1]
