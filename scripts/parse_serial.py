@@ -63,7 +63,7 @@ if __name__ == '__main__':
     parser.add_argument(
         "--port", "-p", default="/dev/ttyUSB0", help="serial port")
     parser.add_argument(
-        "--baud", "-b", default=115200, type=int, help="baud rate")
+        "--baud", "-b", default=57600, type=int, help="baud rate")
     parser.add_argument(
         "--verbose", "-v", action='store_true')
     args = parser.parse_args()
