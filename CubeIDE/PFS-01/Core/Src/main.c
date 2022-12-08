@@ -796,8 +796,10 @@ void StartSLAVETask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	 #if enable_uart_slave
+     #if enable_uart_slave || enable_usb_slave
 	  txbuff_update();
+     #endif
+	 #if enable_uart_slave
       HAL_UART_Transmit(&huart1,
     		  (uint8_t *)sp.txbuff_state[sp.spi_slave_flag],
 			  TXBUFF_LENGTH,
@@ -805,7 +807,6 @@ void StartSLAVETask(void const * argument)
 	  printf("\r\n");
 	 #endif
 	 #if enable_usb_slave
-	  txbuff_update();
       while(CDC_Transmit_FS((uint8_t*)sp.txbuff_state[sp.spi_slave_flag], TXBUFF_LENGTH) == USBD_OK) {}
       char buff[2] = "\r\n";
       osDelay(1);
