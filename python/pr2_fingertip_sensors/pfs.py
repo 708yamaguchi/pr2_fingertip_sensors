@@ -172,6 +172,6 @@ def append_packets(packet1, packet2):
     proximity_orderd = order_data(proximity)
     force = packet1['force'] + packet2['force']
     force_ordered = order_data(force)
-    acc = packet1['imu']
-    gyro = packet2['imu']
+    gyro = packet1['imu']
+    acc = packet2['imu']
     return proximity_orderd, force_ordered, acc, gyro
