@@ -798,18 +798,19 @@ void StartSLAVETask(void const * argument)
   {
 	 #if enable_uart_slave
 	  txbuff_update();
-	  for(int i=0; i < SERIAL_PUBLISH_LENGTH; i++){
-		  printf("serial_publish_flatten[%d]:%d \r\n", i ,sp.serial_publish_flatten[i]);
-	  }
+      HAL_UART_Transmit(&huart1,
+    		  (uint8_t *)sp.txbuff_state[sp.spi_slave_flag],
+			  TXBUFF_LENGTH,
+			  HAL_MAX_DELAY);
+	  printf("\r\n");
 	 #endif
 	 #if enable_usb_slave
 	  txbuff_update();
-	  for(int i=0; i < SERIAL_PUBLISH_LENGTH; i++){
-		  char cdcBuffer[40];
-		  sprintf(cdcBuffer, "serial_publish_flatten[%d]:%d \r\n", i ,sp.serial_publish_flatten[i]);
-		  while(CDC_Transmit_FS((uint8_t*)cdcBuffer, strlen(cdcBuffer)) == USBD_OK) {}
-		  HAL_Delay(1);
-	  }
+      while(CDC_Transmit_FS((uint8_t*)sp.txbuff_state[sp.spi_slave_flag], TXBUFF_LENGTH) == USBD_OK) {}
+      char buff[2] = "\r\n";
+      osDelay(1);
+      while(CDC_Transmit_FS((uint8_t*)buff, sizeof(buff)) == USBD_OK) {}
+      osDelay(1);
 	 #endif
     osDelay(1);
   }
