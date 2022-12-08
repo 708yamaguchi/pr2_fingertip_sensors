@@ -7,7 +7,7 @@
   <rosparam command="load" file="$(find pr2_fingertip_sensors)/data/pfs_params.yaml" />
 
   <!-- Launch nodes to get pfs data and to convert the data into proper ROS msg -->
-  <node name="parse_pfs" pkg="pr2_fingertip_sensors" type="parse_pfs.py" output="screen" />
+  <node name="parse_pr2" pkg="pr2_fingertip_sensors" type="parse_pr2.py" output="screen" />
   <node name="convert_pfs" pkg="pr2_fingertip_sensors" type="convert_pfs.py" output="screen" />
 
   <!-- Publish transform from fingertip to each pfs board -->

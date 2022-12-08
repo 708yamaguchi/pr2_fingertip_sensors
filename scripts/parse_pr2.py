@@ -87,6 +87,6 @@ class ParsePFS(object):
 
 
 if __name__ == '__main__':
-    rospy.init_node('parse_pfs')
+    rospy.init_node('parse_pr2')
     pp = ParsePFS()
     rospy.spin()

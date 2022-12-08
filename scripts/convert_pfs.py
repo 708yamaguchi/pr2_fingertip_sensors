@@ -234,6 +234,6 @@ class ConvertPFS(object):
 
 
 if __name__ == '__main__':
-    rospy.init_node('parse_pfs')
+    rospy.init_node('convert_pfs')
     pp = ConvertPFS()
     rospy.spin()

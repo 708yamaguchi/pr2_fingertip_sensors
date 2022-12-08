@@ -70,7 +70,7 @@ if __name__ == '__main__':
     baud_rate = args.baud
     verbose = args.verbose
 
-    rospy.init_node('serial_test')
+    rospy.init_node('parse_serial')
     ps = ParseSerial(serial_port, baud_rate, verbose)
     rate = rospy.Rate(100)  # 100Hz
     while not rospy.is_shutdown():

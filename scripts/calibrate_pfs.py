@@ -20,7 +20,7 @@ class CalibratePFS(object):
             for fingertip in self.fingertips:
                 # Set dummy pfs data in case not all fingers have sensors
                 self.pfs_data[gripper][fingertip] = PR2FingertipSensor()
-                # Subscribe pfs data published by parse_pfs.py
+                # Subscribe pfs data published by parse_pr2.py
                 rospy.Subscriber(
                     '/pfs/{}/{}'.format(gripper, fingertip),
                     PR2FingertipSensor, self.cb, (gripper, fingertip),
