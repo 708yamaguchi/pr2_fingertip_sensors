@@ -20,7 +20,7 @@ void flatten_sensor_val(){
 	switch(sp.board_select){
 	case 0:
 		for (int i = index; i < MAX_PS_SENSOR_NUM; i++){
-			sp.ps_print_flatten[i] = 11111;
+			sp.ps_print_flatten[i] = 4000;
 		}
 		break;
 	case 1:
@@ -41,7 +41,7 @@ void flatten_sensor_val(){
 	switch(sp.board_select){
 	case 0:
 		for (int i = index; i < MAX_FS_SENSOR_NUM; i++){
-			sp.adc_print_flatten[i] = 22222;
+			sp.adc_print_flatten[i] = 4000;
 		}
 		break;
 	case 1:
@@ -91,22 +91,6 @@ void txbuff_update(){//max: uint8_t * 44:
 	for(int i = 1; i < (MAX_FS_SENSOR_NUM / 2) * 3 + GYRO_CHANNEL_NUM * 2; i += 2){//36 + 6 =42
 		check_sum += sp.txbuff_state[sp.spi_slave_flag][i];
 	}
-
-	/*for serial publish*/
-	#if enable_uart_slave || enable_usb_slave
-		for(int i=0; i < MAX_PS_SENSOR_NUM; i++){ // proximity 24
-			sp.serial_publish_flatten[i] = (int16_t)sp.ps_print_flatten[i];
-		}
-		for(int i=0; i < MAX_FS_SENSOR_NUM; i++){ // force 24
-			sp.serial_publish_flatten[i + MAX_PS_SENSOR_NUM] = (int16_t)sp.adc_print_flatten[i];
-		}
-		for(int i=0; i < ACC_CHANNEL_NUM; i++){ // acc 3
-			sp.serial_publish_flatten[i + MAX_PS_SENSOR_NUM + MAX_FS_SENSOR_NUM] = (int16_t)sp.acc_print[i];
-		}
-		for(int i=0; i < GYRO_CHANNEL_NUM; i++){ // gyro 3
-			sp.serial_publish_flatten[i + MAX_PS_SENSOR_NUM + MAX_FS_SENSOR_NUM + ACC_CHANNEL_NUM] = (int16_t)sp.gyro_print[i];
-		}
-    #endif
 
 	sp.txbuff_state[sp.spi_slave_flag][TXBUFF_LENGTH - 2] = (((sp.board_select & 0x0f) << 4) | (sp.spi_slave_flag & 0x0f));
 	sp.txbuff_state[sp.spi_slave_flag][TXBUFF_LENGTH - 1] = check_sum & 0x00ff;

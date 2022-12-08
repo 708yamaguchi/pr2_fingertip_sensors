@@ -146,7 +146,6 @@ static const uint8_t ADS7828_ADDR_ARRAY[ADS7828_NUM] = {0x48<<1, 0x49<<1, 0x4A<<
 
 // Buffer CONST
 #define TXBUFF_LENGTH 44
-#define SERIAL_PUBLISH_LENGTH (MAX_PS_SENSOR_NUM + MAX_FS_SENSOR_NUM + ACC_CHANNEL_NUM + GYRO_CHANNEL_NUM)
 
 #define SPI_SLAVE_SENSOR_EN 1
 #define SPISLAVE_PERIOD 30//長くすると上手く行く場合がある
@@ -191,7 +190,6 @@ struct sensor_params {
 	uint8_t rxbuff[1];
 	uint8_t txbuff[TXBUFF_LENGTH];
 	uint8_t txbuff_state[SPI_SLAVE_STATENUM][TXBUFF_LENGTH];
-	int16_t serial_publish_flatten[SERIAL_PUBLISH_LENGTH];
 
 	// read write data
 	uint8_t id;
