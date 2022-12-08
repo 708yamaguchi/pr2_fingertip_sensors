@@ -83,6 +83,36 @@ This repository will develop boards and firmware with the following features.
 
 - Details of each ROS node is described [here](https://github.com/708yamaguchi/pr2_fingertip_sensors/tree/master/scripts)
 
+# Usage in serial communication via USB or UART connection
+This PFS can be used with robots other than PR2 through serial communication via USB and UART connection.
+
+- Write `PFS-01` project to main board (PFS-01A)
+
+ Change the "Variables for changing usage are gathered here." section of `CubeIDE/PFS-01/Core/Inc/main.h` written below according to the settings you want to use. Select the line to comment in according to whether you are using PFS-01A only or the assembled board, and assign 1 to the variable for the connection method to be treated as slave for pr2_spi, uart, and usb, respectively.
+
+```C
+# in CubeIDE/PFS-01/Core/Inc/main.h
+// Variables for changing usage are gathered here.
+//BOARD selection
+static const uint8_t SELECT_PFS_01_SINGLE = 0x00;
+static const uint8_t SELECT_PFS_01_ASM = 0x01;
+//#define SELECT_PFS_01 SELECT_PFS_01_SINGLE; // comment in when PFS-01A only
+#define SELECT_PFS_01 SELECT_PFS_01_ASM; // comment in when assembly board
+
+// SLAVE MODE enable
+#define enable_pr2_spi_slave 1 // enable or not PR2 slave
+#define enable_uart_slave 0 // enable or not UART serial slave
+#define enable_usb_slave 0 // enable or not USB serial slave
+```
+
+- Start parser program for serial
+
+Run with -p to specify the serial port. All currently connected ports are displayed as INFO when the program is executed.
+
+```
+rosrun pr2_fingertip_sensors parse_serial.py -p /dev/ttyACM0
+```
+
 # Board
 
 Proximity and force sensor placement and index. The board coordinates is also written.

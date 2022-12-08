@@ -18,9 +18,10 @@ class ParseSerial(object):
     def __init__(self, serial_port, baud_rate, verbose):
         self.pub = rospy.Publisher(
             '/pfs/from_serial', PR2FingertipSensor, queue_size=1)
+        self.ser = serial.Serial() ## for detect ports
         devices = [info.device for info in list_ports.comports()]
-        self.ser = serial.Serial(serial_port, baud_rate)
         rospy.loginfo("current serial port list: {}".format(devices))
+        self.ser = serial.Serial(serial_port, baud_rate)
         rospy.loginfo(self.ser)
         self.packet_bytes = 44  # each packet is 44 bytes
         self.pfs_data = [None, None]
