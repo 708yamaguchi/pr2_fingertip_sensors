@@ -3,7 +3,7 @@ Here, to avoid duplicate expressions, multiple topic names are summarized by abb
   - `{part}`: `pfs_a_front`, `pfs_b_top`, `pfs_b_back`, `pfs_b_left` or `pfs_b_right`
   - `{sensor_num}`: the number of sensors on the each PFS board
 
-# parse_pfs.py
+# parse_pr2.py
 
   This node parses PFS sensor data by combining two consecutive topics.
 

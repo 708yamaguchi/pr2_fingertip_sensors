@@ -20,7 +20,7 @@ void flatten_sensor_val(){
 	switch(sp.board_select){
 	case 0:
 		for (int i = index; i < MAX_PS_SENSOR_NUM; i++){
-			sp.ps_print_flatten[i] = 12345;
+			sp.ps_print_flatten[i] = 4000;
 		}
 		break;
 	case 1:
@@ -41,7 +41,7 @@ void flatten_sensor_val(){
 	switch(sp.board_select){
 	case 0:
 		for (int i = index; i < MAX_FS_SENSOR_NUM; i++){
-			sp.adc_print_flatten[i] = 56789;
+			sp.adc_print_flatten[i] = 4000;
 		}
 		break;
 	case 1:
