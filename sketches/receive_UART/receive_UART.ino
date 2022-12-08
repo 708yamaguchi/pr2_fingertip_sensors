@@ -73,6 +73,8 @@ bool parse (const char* packet, uint16_t* proximities, uint16_t* forces, int16_t
     int16_t imu_val = 0;
     imu_val += (int16_t)packet[12*24 + i*2];
     imu[i] = imu_val;
+    Serial.println("imu");
+    Serial.println(imu_val);
   }
   // board select
   *board_select = packet[42] >> 4;
@@ -84,62 +86,93 @@ bool parse (const char* packet, uint16_t* proximities, uint16_t* forces, int16_t
   for(int i=1; i<PACKET_BYTES-2; i=i+2) {
     packet_sum += packet[i];
   }
+
   return check_sum == packet_sum;
 }
 
-void loop() {
-  char received_data[PACKET_BYTES];
-  int data_size = receive_data(received_data);
-
-  if (data_size == PACKET_BYTES) {
-    uint16_t proximities[12], forces[12];
-    int16_t imu[3];
+void get_sensor_data(uint16_t* proximities, uint16_t* forces, int16_t* acc, int16_t* gyro) {
+  // Wait for two type packets to come and append them
+  uint8_t packet_exist[2] = {0, 0}; // if packet type X comes, packet_exist[X] = 1;
+  while (!(packet_exist[0]==1 && packet_exist[1]==1)) {
+    char received_data[PACKET_BYTES];
+    uint16_t prox_temp[12], force_temp[12];
+    int16_t imu_temp[3];
     int board_select, packet_type;
     bool check_sum;
-    check_sum = parse(received_data, proximities, forces, imu, &board_select, &packet_type);
-    //
-    Serial.println("proximities");
-    for(int i=0; i<12; i++) {
-      Serial.print(proximities[i]);
-      Serial.print(", ");
-    }
-    Serial.println();
-    //
-    Serial.println("forces");
-    for(int i=0; i<12; i++) {
-      Serial.print(forces[i]);
-      Serial.print(", ");
-    }
-    Serial.println();
-    //
-    Serial.println("imu");
-    for(int i=0; i<3; i++) {
-      Serial.print(imu[i]);
-      Serial.print(", ");
-    }
-    Serial.println();
-    // TODO: Get imu value as int
-    Serial.println("packet_type: ");
-    Serial.print(packet_type);
-    Serial.println();
-    //
-    if (check_sum) {
-      Serial.println("check_sum is correct.");
+    // Receive packet
+    int data_size = receive_data(received_data);
+    // Parse packet
+    if (data_size == PACKET_BYTES) {
+      check_sum = parse(received_data, prox_temp, force_temp, imu_temp, &board_select, &packet_type);
+      if (!check_sum) {
+        Serial.println("check_sum is NOT correct.");
+      }
     }
     else {
-      Serial.println("check_sum is NOT correct.");
+      /*
+      Serial.print("[ERROR] packet byte size is expected ");
+      Serial.print(PACKET_BYTES);
+      Serial.print(", but ");
+      Serial.print(data_size);
+      Serial.println(" bytes come.");
+      */
     }
-    //
-    Serial.println();
-    Serial.println();
+    // Store packet
+    if (packet_type == 0) {
+      for(int i=0; i<12; i++) {
+        proximities[i] = prox_temp[i];
+        forces[i] = force_temp[i];
+      }
+      for(int i=0; i<3; i++) {
+        acc[i] = imu_temp[i];
+      } 
+    }
+    else if (packet_type == 1) {
+      for(int i=0; i<12; i++) {
+        proximities[i+12] = prox_temp[i];
+        forces[i+12] = force_temp[i];
+      }
+      for(int i=0; i<3; i++) {
+        gyro[i] = imu_temp[i];
+      }
+    }
+    packet_exist[packet_type] = 1;
   }
-  else {
-    /*
-    Serial.print("[ERROR] packet byte size is expected ");
-    Serial.print(PACKET_BYTES);
-    Serial.print(", but ");
-    Serial.print(data_size);
-    Serial.println(" bytes come.");
-    */
+  return;
+}
+
+void loop() {
+  uint16_t proximities[24], forces[24];
+  int16_t acc[3], gyro[3];
+  get_sensor_data(proximities, forces, acc, gyro);
+
+  // Print debug
+  Serial.println("proximities");
+  for(int i=0; i<24; i++) {
+    Serial.print(proximities[i]);
+    Serial.print(", ");
   }
+  Serial.println();
+  //
+  Serial.println("forces");
+  for(int i=0; i<24; i++) {
+    Serial.print(forces[i]);
+    Serial.print(", ");
+  }
+  Serial.println();
+  //
+  Serial.println("acc");
+  for(int i=0; i<3; i++) {
+    Serial.print(acc[i]);
+    Serial.print(", ");
+  }
+  Serial.println();
+  //
+  Serial.println("gyro");
+  for(int i=0; i<3; i++) {
+    Serial.print(gyro[i]);
+    Serial.print(", ");
+  }
+  Serial.println();
+  Serial.println();
 }
