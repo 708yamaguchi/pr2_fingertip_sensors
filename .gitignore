@@ -1,2 +1,4 @@
 *~
 *pyc
+# ignore symlinked files
+sketches/**/symlink_libs
