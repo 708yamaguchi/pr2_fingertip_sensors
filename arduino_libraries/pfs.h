@@ -1,13 +1,23 @@
 // https://shizenkarasuzon.hatenablog.com/entry/2020/06/23/120550
 // https://qiita.com/ma2shita/items/37d403fb7a79814d4d4c
 
-#include <SoftwareSerial.h>
+// By default, define SOFTWARE_SERIAL. You can override this.
+#if (!defined HARDWARE_SERIAL) && (!defined SOFTWARE_SERIAL)
+  #define SOFTWARE_SERIAL
+#endif
+
+#ifdef SOFTWARE_SERIAL
+  #include <SoftwareSerial.h>
+  // SoftwareSerial to use UART via Grove connector
+  SoftwareSerial GroveA(22, 21);
+#endif
 
 #define PACKET_BYTES 44
+#define NUM_SENSORS 24
 
 struct pfs_packet {
-  uint16_t proximities[12];
-  uint16_t forces[12];
+  int16_t proximities[12];
+  int16_t forces[12];
   int16_t imu[3];
   int board_select;
   int packet_type;
@@ -15,23 +25,45 @@ struct pfs_packet {
 };
 
 struct pfs_sensors {
-  uint16_t proximities[24];
-  uint16_t forces[24];
+  int16_t proximities[NUM_SENSORS];
+  int16_t forces[NUM_SENSORS];
   int16_t acc[3];
   int16_t gyro[3];
 };
 
+void begin_pfs_serial() {
+  #ifdef SOFTWARE_SERIAL
+    GroveA.begin(57600);
+  #endif
+  #ifdef HARDWARE_SERIAL
+    // Connect RX and TX to M5Stack's pin2 and pin5
+    Serial1.begin(57600, SERIAL_8N1,2, 5);
+  #endif
+}
+
+void end_pfs_serial() {
+  #ifdef SOFTWARE_SERIAL
+    GroveA.end();
+  #endif
+  #ifdef HARDWARE_SERIAL
+    // Connect RX and TX to M5Stack's pin2 and pin5
+    Serial1.end();
+  #endif
+}
+
+
 // Receive data until \n is detected.
-// int receive_data (SoftwareSerial* ss, char* received_data) {
-int receive_data (HardwareSerial* ss, char* received_data) {
+template <typename SerialClass>
+int receive_data (SerialClass* ss, char* received_data) {
   int index = 0;
 
-  while (true) {
+  unsigned long start_time = millis();
+  int timeout = 500; // [ms]
+  while (millis() - start_time < timeout) {
     int received_byte_size = ss->available();
     // Wait until new data come
     if (received_byte_size == 0) {
       continue;
-      // delay(1);
     }
     // Read data
     else {
@@ -97,8 +129,8 @@ struct pfs_packet parse (const char* packet) {
   return packet_obj;
 }
 
-// data_array is proximity or force sensor data array (24 length) 
-void order_data(const uint16_t* data_array, uint16_t* data_ordered) {
+// data_array is proximity or force sensor data array (NUM_SENSORS length) 
+void order_data(const int16_t* data_array, int16_t* data_ordered) {
   for(int i=0; i<8; i++) {
     data_ordered[i] = data_array[i];
   }
@@ -110,11 +142,16 @@ void order_data(const uint16_t* data_array, uint16_t* data_ordered) {
   }
 }
 
-void read_sensors (HardwareSerial* ss, struct pfs_sensors* sensors) {
-  uint16_t forces[24], proximities[24];
+template <typename SerialClass>
+void read_sensors_with_serial (SerialClass* ss, struct pfs_sensors* sensors) {
+  int16_t forces[NUM_SENSORS], proximities[NUM_SENSORS];
   uint8_t packet_exist[2] = {0, 0}; // if packet type X comes, packet_exist[X] = 1;
+  unsigned long start_time = millis();
+  int timeout = 3000; // [ms]
   // Wait for two type packets to come and append them
-  while (!(packet_exist[0]==1 && packet_exist[1]==1)) {
+  // If timeout, do not change sensors object
+  while (!(packet_exist[0]==1 && packet_exist[1]==1) &&
+         (millis() - start_time < timeout)) {
     // Receive packet
     char received_data[PACKET_BYTES];
     int data_size = receive_data(ss, received_data);
@@ -156,16 +193,26 @@ void read_sensors (HardwareSerial* ss, struct pfs_sensors* sensors) {
   order_data(forces, sensors->forces);
 }
 
+// Before calling this function, you need to call setup_pfs_serial()
+void read_sensors(struct pfs_sensors* sensors) {
+  #ifdef SOFTWARE_SERIAL
+    read_sensors_with_serial<SoftwareSerial>(&GroveA, sensors);
+  #endif
+  #ifdef HARDWARE_SERIAL
+    read_sensors_with_serial<HardwareSerial>(&Serial1, sensors);
+  #endif
+}
+
 void print_sensors (const struct pfs_sensors* sensors) {
   Serial.println("proximities");
-  for(int i=0; i<24; i++) {
+  for(int i=0; i<NUM_SENSORS; i++) {
     Serial.print(sensors->proximities[i]);
     Serial.print(", ");
   }
   Serial.println();
   //
   Serial.println("forces");
-  for(int i=0; i<24; i++) {
+  for(int i=0; i<NUM_SENSORS; i++) {
     Serial.print(sensors->forces[i]);
     Serial.print(", ");
   }

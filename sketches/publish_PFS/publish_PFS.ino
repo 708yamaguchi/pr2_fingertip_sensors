@@ -4,10 +4,9 @@
 #undef ESP32
 #include <ros.h>
 #define ESP32
-#include "pfs_ros.h"
 
-// SoftwareSerial to use UART via Grove connector
-// SoftwareSerial GroveA(22, 21);
+#define HARDWARE_SERIAL
+#include "symlink_libs/pfs_ros.h"
 
 // ROS node handle.
 ros::NodeHandle nh;
@@ -17,7 +16,6 @@ ros::Publisher pfs_pub("/pfs/from_uart", &pfs_msg);
 void setup() {
   // Setup M5Stack
   M5.begin();
-  // GroveA.begin(57600);
 
   // Advertise ROS message
   nh.initNode();
@@ -27,10 +25,10 @@ void setup() {
 
 void loop() {
   // Read sensor data.
-  Serial2.begin(57600, SERIAL_8N1,2, 5);
+  begin_pfs_serial();
   struct pfs_sensors sensors;
-  read_sensors(&Serial2, &sensors);
-  Serial2.end();
+  read_sensors(&sensors);
+  end_pfs_serial();
 
   // Publish PFS ROS topic
   // Do not use other Serial during rosserial communication

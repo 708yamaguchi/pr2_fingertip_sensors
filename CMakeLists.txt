@@ -20,6 +20,7 @@ catkin_package(
   CATKIN_DEPENDS message_runtime std_msgs sensor_msgs
   )
 
+# Install python scripts
 file(GLOB NODE_SCRIPTS_FILES node_scripts/*)
 catkin_install_python(
   PROGRAMS ${NODE_SCRIPTS_FILES}
@@ -30,3 +31,9 @@ install(DIRECTORY scripts
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS
 )
+
+# Create symlink for Arduino sketches
+execute_process(COMMAND
+  bash "-c" "${CMAKE_SOURCE_DIR}/scripts/symlink_arduino_libraries.sh"
+  )
+message("Create symlink from arduino_libraries directory to each arduino sketches.")
