@@ -106,7 +106,7 @@ void txbuff_update();
 /* USER CODE BEGIN 0 */
 int _write(int file, char *ptr, int len)
 {
-  #if slave_mode == UART_SLAVE
+  #if enable_uart_slave
 	HAL_UART_Transmit(&huart1,(uint8_t *)ptr,len,HAL_MAX_DELAY);
   #endif
   return len;
