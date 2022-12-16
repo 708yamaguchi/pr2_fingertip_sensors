@@ -35,5 +35,6 @@ install(DIRECTORY scripts
 # Create symlink for Arduino sketches
 execute_process(COMMAND
   bash "-c" "${CMAKE_SOURCE_DIR}/scripts/symlink_arduino_libraries.sh"
+  OUTPUT_VARIABLE COMMAND_RESULT
   )
-message("Create symlink from arduino_libraries directory to each arduino sketches.")
+message(${COMMAND_RESULT})
