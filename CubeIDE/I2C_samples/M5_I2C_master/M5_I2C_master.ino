@@ -43,6 +43,5 @@ void loop() {
   else {
     Serial.println("Data came from slave device, but the value is wrong...");
   }
-
   delay(100);
 }
