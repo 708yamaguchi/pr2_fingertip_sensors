@@ -121,7 +121,9 @@ int _write(int file, char *ptr, int len)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	setbuf(stdout, NULL);
+  #if enable_uart_slave
+    setbuf(stdout, NULL);
+  #endif
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
