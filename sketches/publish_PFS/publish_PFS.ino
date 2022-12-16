@@ -3,7 +3,7 @@
 #include <M5Stack.h>
 
 #define I2C_MASTER
-// #define SOFTWAREWARE_SERIAL
+// #define SOFTWARE_SERIAL
 // #define HARDWARE_SERIAL
 #include "symlink_libs/pfs_ros.h"
 
