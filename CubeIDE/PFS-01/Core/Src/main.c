@@ -723,6 +723,7 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 }
 
 void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *hi2c) {
+  txbuff_update();
   HAL_I2C_Slave_Receive_DMA(hi2c, (uint8_t*)rxbuff_i2c, sizeof(rxbuff_i2c));
 }
 /* USER CODE END 4 */
