@@ -11,9 +11,19 @@ source ~/pr2_fingertip_ws/devel/setup.bash
 rosrun rosserial_arduino make_libraries.py .
 ```
 
-Burn the firmware
+Burn the firmware.
+- `receive_PFS.ino` is to print PFS sensor data on serial monitor.
+- `publish_PFS.ino` is to publish PFS sensor data on ROS.
 
-Run
+Inside each firmware, the communication method can be switched by commenting in/out the following define.
+
+```
+#define I2C_MASTER
+// #define SOFTWARE_SERIAL
+// #define HARDWARE_SERIAL
+```
+
+If you use rosserial (`publish_PFS.ino`) , run
 
 ```
 rosrun rosserial_python serial_node.py _baud:=57600 _port:=<your_m5stack_device>
