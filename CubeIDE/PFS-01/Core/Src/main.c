@@ -47,6 +47,9 @@
 ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c2;
+DMA_HandleTypeDef hdma_i2c2_rx;
+DMA_HandleTypeDef hdma_i2c2_tx;
 
 I2S_HandleTypeDef hi2s2;
 
@@ -55,8 +58,6 @@ SPI_HandleTypeDef hspi3;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 
-UART_HandleTypeDef huart1;
-
 osThreadId ADCTaskHandle;
 osThreadId LEDTaskHandle;
 osThreadId PSTaskHandle;
@@ -64,6 +65,7 @@ osThreadId IMUTaskHandle;
 osThreadId SLAVETaskHandle;
 /* USER CODE BEGIN PV */
 uint8_t rxbuff[1];
+uint8_t rxbuff_i2c[1];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,7 +77,7 @@ static void MX_I2C1_Init(void);
 static void MX_I2S2_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI3_Init(void);
-static void MX_USART1_UART_Init(void);
+static void MX_I2C2_Init(void);
 void StartADCTask(void const * argument);
 void StartLEDTask(void const * argument);
 void StartPSTask(void const * argument);
@@ -151,7 +153,7 @@ int main(void)
   MX_SPI1_Init();
   MX_SPI3_Init();
   MX_USB_Device_Init();
-  MX_USART1_UART_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
   sp.board_select = SELECT_PFS_01;
   sp.imu_select = SELECT_ICM_20600;
@@ -169,6 +171,9 @@ int main(void)
     HAL_SPI_Receive_DMA( &hspi1, rxbuff, sizeof(rxbuff));
   #endif
 
+  #if enable_i2c_slave
+    HAL_I2C_Slave_Receive_DMA(&hi2c2, (uint8_t*)rxbuff_i2c, 1);
+  #endif
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -275,11 +280,11 @@ void SystemClock_Config(void)
   }
   /** Initializes the peripherals clocks
   */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_I2C1
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C2
                               |RCC_PERIPHCLK_I2S|RCC_PERIPHCLK_USB
                               |RCC_PERIPHCLK_ADC12;
-  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+  PeriphClkInit.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
   PeriphClkInit.I2sClockSelection = RCC_I2SCLKSOURCE_HSI;
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
   PeriphClkInit.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
@@ -465,6 +470,52 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief I2C2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C2_Init(void)
+{
+
+  /* USER CODE BEGIN I2C2_Init 0 */
+
+  /* USER CODE END I2C2_Init 0 */
+
+  /* USER CODE BEGIN I2C2_Init 1 */
+
+  /* USER CODE END I2C2_Init 1 */
+  hi2c2.Instance = I2C2;
+  hi2c2.Init.Timing = 0x30909DEC;
+  hi2c2.Init.OwnAddress1 = 2;
+  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c2.Init.OwnAddress2 = 0;
+  hi2c2.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C2_Init 2 */
+
+  /* USER CODE END I2C2_Init 2 */
+
+}
+
+/**
   * @brief I2S2 Initialization Function
   * @param None
   * @retval None
@@ -576,54 +627,6 @@ static void MX_SPI3_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 57600;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_HalfDuplex_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -640,6 +643,12 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  /* DMA1_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+  /* DMA1_Channel4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 
 }
 
@@ -688,20 +697,33 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
-    if(rxbuff[0] == READ_COMMAND){//as possible as light processing
-    	// Do not call txbuff_update() before HAL_SPI_Transmit_DMA();
-    	// There is only 36us for txbuff_update() to be processed
-    	// due to PR2 Gripper MCB specification
-       HAL_SPI_Transmit_DMA(hspi, sp.txbuff_state[sp.spi_slave_flag], TXBUFF_LENGTH);
-    }else{
-       	HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
-    }
+  if(rxbuff[0] == READ_COMMAND){//as possible as light processing
+    // Do not call txbuff_update() before HAL_SPI_Transmit_DMA();
+    // There is only 36us for txbuff_update() to be processed
+    // due to PR2 Gripper MCB specification
+    HAL_SPI_Transmit_DMA(hspi, sp.txbuff_state[sp.spi_slave_flag], TXBUFF_LENGTH);
+  }else{
+   	HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+  }
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
-	txbuff_update();
-   	// HAL_Delay(1) is magic number
+    txbuff_update();
+    // HAL_Delay(1) is magic number
     HAL_SPI_Receive_DMA(hspi, rxbuff, 1);
+}
+
+void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c) {
+  if(rxbuff_i2c[0] == READ_COMMAND) {
+    HAL_I2C_Slave_Transmit_DMA(hi2c, sp.txbuff_state[sp.spi_slave_flag], TXBUFF_LENGTH);
+  }
+  else {
+    HAL_I2C_Slave_Receive_DMA(hi2c, rxbuff_i2c, sizeof(rxbuff_i2c));
+  }
+}
+
+void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *hi2c) {
+  HAL_I2C_Slave_Receive_DMA(hi2c, (uint8_t*)rxbuff_i2c, sizeof(rxbuff_i2c));
 }
 /* USER CODE END 4 */
 
