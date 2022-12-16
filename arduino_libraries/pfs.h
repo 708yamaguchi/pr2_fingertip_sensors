@@ -2,13 +2,21 @@
 // https://qiita.com/ma2shita/items/37d403fb7a79814d4d4c
 
 // By default, define SOFTWARE_SERIAL. You can override this.
-#if (!defined HARDWARE_SERIAL) && (!defined SOFTWARE_SERIAL)
-  #define SOFTWARE_SERIAL
+#if (!defined I2C_MASTER) && (!defined HARDWARE_SERIAL) && (!defined SOFTWARE_SERIAL)
+  #define I2C_MASTER
+#endif
+
+// By default, PFS slave address is 0x01. You can override this.
+// 7bit slave address
+#if (!defined PFS_ADDRESS)
+  #define PFS_ADDRESS 0x01
 #endif
 
 #ifdef SOFTWARE_SERIAL
   #include <SoftwareSerial.h>
   // SoftwareSerial to use UART via Grove connector
+  // The following pin assignments (22, 21) allow I2C
+  // to be used without removing and inserting connectors.
   SoftwareSerial GroveA(22, 21);
 #endif
 
@@ -31,13 +39,19 @@ struct pfs_sensors {
   int16_t gyro[3];
 };
 
-void begin_pfs_serial() {
+void begin_pfs() {
   #ifdef SOFTWARE_SERIAL
     GroveA.begin(57600);
+    Serial.println("Start SOFTWARE_SERIAL mode");
   #endif
   #ifdef HARDWARE_SERIAL
     // Connect RX and TX to M5Stack's pin2 and pin5
     Serial1.begin(57600, SERIAL_8N1,2, 5);
+    Serial.println("Start HARDWARE_SERIAL mode");
+  #endif
+  #ifdef I2C_MASTER
+    Wire.begin();
+    Serial.println("Start I2C_MASTER mode");
   #endif
 }
 
@@ -54,7 +68,7 @@ void end_pfs_serial() {
 
 // Receive data until \n is detected.
 template <typename SerialClass>
-int receive_data (SerialClass* ss, char* received_data) {
+int receive_data_with_serial (SerialClass* ss, char* received_data) {
   int index = 0;
 
   unsigned long start_time = millis();
@@ -84,6 +98,25 @@ int receive_data (SerialClass* ss, char* received_data) {
   }
   // The byte size of received data
   return index;
+}
+
+int receive_data_with_i2c (char* received_data) {
+  // Send command to PFS
+  Wire.beginTransmission(PFS_ADDRESS);
+  uint8_t req = 0x12;
+  Wire.write(req);
+  byte error = Wire.endTransmission();
+  if (error != 0) {
+    Serial.println("Error is detected in Wire.endTransmission()");
+  }
+  // Receive data
+  Wire.requestFrom(PFS_ADDRESS, PACKET_BYTES);
+  int received_bytes = Wire.available(); // Expect to get PACKET_BYTES bytes
+  for(int i=0; i<received_bytes; i++){
+    received_data[i] = Wire.read();
+  }
+  // The byte size of received data
+  return received_bytes;
 }
 
 // packet
@@ -123,9 +156,17 @@ struct pfs_packet parse (const char* packet) {
     packet_sum += packet[i];
   }
   packet_obj.check_sum = (check_sum == packet_sum);
-  if (!check_sum) {
-    // Serial.println("check_sum is NOT correct.");
-  }
+  // if (packet_obj.check_sum) {
+  //   Serial.println("check_sum is correct.");
+  //   Serial.print("Received check sum is ");
+  //   Serial.println(check_sum);
+  //   Serial.print("Calculated check sum is ");
+  //   Serial.println(packet_sum);
+  // }
+  // else {
+  //   Serial.println("check_sum is NOT correct.");
+  // }
+
   return packet_obj;
 }
 
@@ -142,8 +183,8 @@ void order_data(const int16_t* data_array, int16_t* data_ordered) {
   }
 }
 
-template <typename SerialClass>
-void read_sensors_with_serial (SerialClass* ss, struct pfs_sensors* sensors) {
+// Before calling this function, you need to call setup_pfs_serial()
+void read_sensors(struct pfs_sensors* sensors) {
   int16_t forces[NUM_SENSORS], proximities[NUM_SENSORS];
   uint8_t packet_exist[2] = {0, 0}; // if packet type X comes, packet_exist[X] = 1;
   unsigned long start_time = millis();
@@ -154,19 +195,28 @@ void read_sensors_with_serial (SerialClass* ss, struct pfs_sensors* sensors) {
          (millis() - start_time < timeout)) {
     // Receive packet
     char received_data[PACKET_BYTES];
-    int data_size = receive_data(ss, received_data);
-    // Parse packet
-    struct pfs_packet packet;
-    if (data_size == PACKET_BYTES) {
-      packet = parse(received_data);
-    }
-    else {
+    int data_size;
+    #ifdef SOFTWARE_SERIAL
+      data_size = receive_data_with_serial<SoftwareSerial>(&GroveA, received_data);
+    #endif
+    #ifdef HARDWARE_SERIAL
+      data_size = receive_data_with_serial<HardwareSerial>(&Serial1, received_data);
+    #endif
+    #ifdef I2C_MASTER
+      data_size = receive_data_with_i2c(received_data);
+    #endif
+    if (data_size != PACKET_BYTES) {
       // Serial.print("[ERROR] packet byte size is expected ");
       // Serial.print(PACKET_BYTES);
       // Serial.print(", but ");
       // Serial.print(data_size);
       // Serial.println(" bytes come.");
+      delay(10);
+      continue;
     }
+    // Parse packet
+    struct pfs_packet packet;
+    packet = parse(received_data);
     // Store packet
     if (packet.packet_type == 0) {
       for(int i=0; i<12; i++) {
@@ -191,16 +241,6 @@ void read_sensors_with_serial (SerialClass* ss, struct pfs_sensors* sensors) {
   // order proximity and force data
   order_data(proximities, sensors->proximities);
   order_data(forces, sensors->forces);
-}
-
-// Before calling this function, you need to call setup_pfs_serial()
-void read_sensors(struct pfs_sensors* sensors) {
-  #ifdef SOFTWARE_SERIAL
-    read_sensors_with_serial<SoftwareSerial>(&GroveA, sensors);
-  #endif
-  #ifdef HARDWARE_SERIAL
-    read_sensors_with_serial<HardwareSerial>(&Serial1, sensors);
-  #endif
 }
 
 void print_sensors (const struct pfs_sensors* sensors) {

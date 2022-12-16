@@ -25,7 +25,7 @@ void setup() {
 
 void loop() {
   // Read sensor data.
-  begin_pfs_serial();
+  begin_pfs();
   struct pfs_sensors sensors;
   read_sensors(&sensors);
   end_pfs_serial();

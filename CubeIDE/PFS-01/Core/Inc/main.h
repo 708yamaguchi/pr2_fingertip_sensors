@@ -55,9 +55,17 @@ static const uint8_t SELECT_PFS_01_ASM = 0x01;
 #define SELECT_PFS_01 SELECT_PFS_01_ASM; // comment in when assembly board
 
 // SLAVE MODE enable
+// It is highly recommended to select one of the following modes to avoid bugs.
 #define enable_pr2_spi_slave 1 // enable or not PR2 slave
+// Do not forget to set UART baud rate to 57600 when you enable UART (PA9 pin)
+// After disabling and enabling UART, the baud rate is set to 115200,
+// which is not compatible with M5Stack SoftwareSerial
 #define enable_uart_slave 0 // enable or not UART serial slave
 #define enable_usb_slave 0 // enable or not USB serial slave
+// Do not forget to change the following settings in PFS-01.ioc when you enable I2C (PA8 and PA9 pin)
+// - Enable DMA and interrupt
+// - Set Slave address (e.g. 0x01)
+#define enable_i2c_slave 0 // enable or not USB serial slave
 
 /* USER CODE END EM */
 
