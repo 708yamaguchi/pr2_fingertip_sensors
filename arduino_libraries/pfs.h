@@ -12,6 +12,10 @@
   #define PFS_ADDRESS 0x01
 #endif
 
+#ifdef I2C_MASTER
+  #include <Wire.h>
+#endif
+
 #ifdef SOFTWARE_SERIAL
   #include <SoftwareSerial.h>
   // SoftwareSerial to use UART via Grove connector
