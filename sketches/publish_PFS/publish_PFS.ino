@@ -10,6 +10,8 @@
 void setup() {
   // Setup M5Stack
   M5.begin();
+  M5.Speaker.begin();
+  M5.Speaker.mute();
   setup_nodehandle();
   begin_pfs();
 }
