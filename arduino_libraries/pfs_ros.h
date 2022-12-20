@@ -13,14 +13,29 @@ pr2_fingertip_sensors::PR2FingertipSensor pfs_msg;
   ros::Publisher pfs_pub("/pfs/from_uart", &pfs_msg);
 #endif
 #if (defined I2C_MASTER)
-  ros::Publisher pfs_pub("/pfs/from_i2c", &pfs_msg);
+  // Append publishers according to the number of PFS_ADDRESSES
+  ros::Publisher* pfs_pubs;
 #endif
 
 void setup_nodehandle () {
   // Advertise ROS message
   nh.initNode();
   nh.getHardware()->setBaud(57600);
-  nh.advertise(pfs_pub);
+  #if (defined HARDWARE_SERIAL) || (defined SOFTWARE_SERIAL)
+    nh.advertise(pfs_pub);
+  #endif
+  #if (defined I2C_MASTER)
+    int pfs_num = sizeof(pfs_addresses)/sizeof(uint8_t);
+    pfs_pubs = (ros::Publisher*)malloc(pfs_num);
+    for(int i=0; i<pfs_num; i++) {
+      char topic_name[100];
+      // sprintf(topic_name, "/pfs/from_i2c/%d", (int)i);
+      // ros::Publisher pfs_pub(topic_name, &pfs_msg);
+      ros::Publisher pfs_pub("hoge", &pfs_msg);
+      pfs_pubs[i] = pfs_pub;
+      nh.advertise(pfs_pubs[i]);
+    }
+  #endif
 }
 
 void set_pfs_fields(struct pfs_sensors* sensors,
@@ -41,14 +56,14 @@ void set_pfs_fields(struct pfs_sensors* sensors,
   return;
 }
 
-void get_pfs_msg (pr2_fingertip_sensors::PR2FingertipSensor* pfs_msg) {
+void get_pfs_msg (pr2_fingertip_sensors::PR2FingertipSensor* pfs_msg, uint8_t pfs_address = 0x01) {
   // Get sensor data
   // If you use HARD/SOFTWARE Serial, stop them before publishing rostopic
   #if (defined SOFTWARE_SERIAL) || (defined HARDWARE_SERIAL)
     begin_pfs();
   #endif
   struct pfs_sensors sensors;
-  read_sensors(&sensors);
+  read_sensors(&sensors, pfs_address);
   #if (defined SOFTWARE_SERIAL) || (defined HARDWARE_SERIAL)
     end_pfs_serial();
   #endif
@@ -57,3 +72,18 @@ void get_pfs_msg (pr2_fingertip_sensors::PR2FingertipSensor* pfs_msg) {
   pfs_msg->header.stamp = nh.now();
   pfs_msg->header.frame_id = "pfs_link";
 }
+
+void publish_pfs () {
+  #if (defined SOFTWARE_SERIAL) || (defined HARDWARE_SERIAL)
+    get_pfs_msg(&pfs_msg);
+    // Make sure that other Serial is not used during rosserial communication
+    pfs_pub.publish(&pfs_msg);
+  #endif
+  #if (defined I2C_MASTER)
+    for (int i=0; i<sizeof(pfs_addresses)/sizeof(uint8_t); i++) {
+      get_pfs_msg(&pfs_msg, pfs_addresses[i]);
+      pfs_pubs[i].publish(&pfs_msg);
+    }
+  #endif
+  nh.spinOnce();
+  }

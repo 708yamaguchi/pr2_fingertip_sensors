@@ -8,9 +8,10 @@
 
 // By default, PFS slave address is 0x01. You can override this.
 // 7bit slave address
-#if (!defined PFS_ADDRESS)
-  #define PFS_ADDRESS 0x01
+#if (!defined PFS_ADDRESSES)
+  #define PFS_ADDRESSES [0x01]
 #endif
+const uint8_t pfs_addresses[] = PFS_ADDRESSES;
 
 #ifdef I2C_MASTER
   #include <Wire.h>
@@ -72,7 +73,7 @@ void end_pfs_serial() {
 
 // Receive data until \n is detected.
 template <typename SerialClass>
-int receive_data_with_serial (SerialClass* ss, char* received_data) {
+int receive_data_with_serial (char* received_data, SerialClass* ss) {
   int index = 0;
 
   unsigned long start_time = millis();
@@ -104,9 +105,9 @@ int receive_data_with_serial (SerialClass* ss, char* received_data) {
   return index;
 }
 
-int receive_data_with_i2c (char* received_data) {
+int receive_data_with_i2c (char* received_data, const uint8_t pfs_address) {
   // Send command to PFS
-  Wire.beginTransmission(PFS_ADDRESS);
+  Wire.beginTransmission(pfs_address);
   uint8_t req = 0x12;
   Wire.write(req);
   byte error = Wire.endTransmission();
@@ -114,7 +115,7 @@ int receive_data_with_i2c (char* received_data) {
     Serial.println("Error is detected in Wire.endTransmission()");
   }
   // Receive data
-  Wire.requestFrom(PFS_ADDRESS, PACKET_BYTES);
+  Wire.requestFrom((int)pfs_address, PACKET_BYTES);
   int received_bytes = Wire.available(); // Expect to get PACKET_BYTES bytes
   for(int i=0; i<received_bytes; i++){
     received_data[i] = Wire.read();
@@ -188,7 +189,8 @@ void order_data(const int16_t* data_array, int16_t* data_ordered) {
 }
 
 // Before calling this function, you need to call setup_pfs_serial()
-void read_sensors(struct pfs_sensors* sensors) {
+// Specify pfs_address argument only if I2C_MASTER is defined
+void read_sensors(struct pfs_sensors* sensors, uint8_t pfs_address = 0x01) {
   int16_t forces[NUM_SENSORS], proximities[NUM_SENSORS];
   uint8_t packet_exist[2] = {0, 0}; // if packet type X comes, packet_exist[X] = 1;
   unsigned long start_time = millis();
@@ -201,13 +203,13 @@ void read_sensors(struct pfs_sensors* sensors) {
     char received_data[PACKET_BYTES];
     int data_size;
     #ifdef SOFTWARE_SERIAL
-      data_size = receive_data_with_serial<SoftwareSerial>(&GroveA, received_data);
+      data_size = receive_data_with_serial<SoftwareSerial>(received_data, &GroveA);
     #endif
     #ifdef HARDWARE_SERIAL
-      data_size = receive_data_with_serial<HardwareSerial>(&Serial1, received_data);
+      data_size = receive_data_with_serial<HardwareSerial>(received_data, &Serial1);
     #endif
     #ifdef I2C_MASTER
-      data_size = receive_data_with_i2c(received_data);
+      data_size = receive_data_with_i2c(received_data, pfs_address);
     #endif
     if (data_size != PACKET_BYTES) {
       // Serial.print("[ERROR] packet byte size is expected ");

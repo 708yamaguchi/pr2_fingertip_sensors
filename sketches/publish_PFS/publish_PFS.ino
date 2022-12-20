@@ -5,6 +5,7 @@
 #define I2C_MASTER
 // #define SOFTWARE_SERIAL
 // #define HARDWARE_SERIAL
+#define PFS_ADDRESSES {0x02}
 #include "symlink_libs/pfs_ros.h"
 
 void setup() {
@@ -17,11 +18,5 @@ void setup() {
 }
 
 void loop() {
-  // Read sensor data and set ROS msg
-  get_pfs_msg(&pfs_msg);
-
-  // Publish ROS message
-  // Make sure that other Serial is not used during rosserial communication
-  pfs_pub.publish(&pfs_msg);
-  nh.spinOnce();
+  publish_pfs();
 }
