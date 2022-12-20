@@ -8,9 +8,10 @@
 
 // By default, PFS slave address is 0x01. You can override this.
 // 7bit slave address
-#if (!defined PFS_ADDRESS)
-  #define PFS_ADDRESS 0x01
+#if (!defined PFS_ADDRESSES)
+  #define PFS_ADDRESSES {0x01}
 #endif
+const uint8_t pfs_addresses[] = PFS_ADDRESSES;
 
 #ifdef I2C_MASTER
   #include <Wire.h>
@@ -104,9 +105,9 @@ int receive_data_with_serial (SerialClass* ss, char* received_data) {
   return index;
 }
 
-int receive_data_with_i2c (char* received_data) {
+int receive_data_with_i2c (char* received_data, uint8_t pfs_address) {
   // Send command to PFS
-  Wire.beginTransmission(PFS_ADDRESS);
+  Wire.beginTransmission(pfs_address);
   uint8_t req = 0x12;
   Wire.write(req);
   byte error = Wire.endTransmission();
@@ -114,7 +115,7 @@ int receive_data_with_i2c (char* received_data) {
     Serial.println("Error is detected in Wire.endTransmission()");
   }
   // Receive data
-  Wire.requestFrom(PFS_ADDRESS, PACKET_BYTES);
+  Wire.requestFrom((int)pfs_address, PACKET_BYTES);
   int received_bytes = Wire.available(); // Expect to get PACKET_BYTES bytes
   for(int i=0; i<received_bytes; i++){
     received_data[i] = Wire.read();
@@ -188,7 +189,7 @@ void order_data(const int16_t* data_array, int16_t* data_ordered) {
 }
 
 // Before calling this function, you need to call setup_pfs_serial()
-void read_sensors(struct pfs_sensors* sensors) {
+void read_sensors(struct pfs_sensors* sensors, uint8_t pfs_address = 0x01) {
   int16_t forces[NUM_SENSORS], proximities[NUM_SENSORS];
   uint8_t packet_exist[2] = {0, 0}; // if packet type X comes, packet_exist[X] = 1;
   unsigned long start_time = millis();
@@ -207,7 +208,7 @@ void read_sensors(struct pfs_sensors* sensors) {
       data_size = receive_data_with_serial<HardwareSerial>(&Serial1, received_data);
     #endif
     #ifdef I2C_MASTER
-      data_size = receive_data_with_i2c(received_data);
+      data_size = receive_data_with_i2c(received_data, pfs_address);
     #endif
     if (data_size != PACKET_BYTES) {
       // Serial.print("[ERROR] packet byte size is expected ");
@@ -276,4 +277,20 @@ void print_sensors (const struct pfs_sensors* sensors) {
   }
   Serial.println();
   Serial.println();
+}
+
+void receive_pfs() {
+  struct pfs_sensors sensors;
+  #if (defined SOFTWARE_SERIAL) || (defined HARDWARE_SERIAL)
+    read_sensors(&sensors);
+    print_sensors(&sensors); // For debug
+  #endif
+  #if (defined I2C_MASTER)
+    for(int i=0; i<sizeof(pfs_addresses)/sizeof(uint8_t); i++) {
+      read_sensors(&sensors, pfs_addresses[i]);
+      Serial.print("\nPFS Slave Address: 0x");
+      Serial.println(pfs_addresses[i], HEX);
+      print_sensors(&sensors); // For debug
+    }
+  #endif
 }
