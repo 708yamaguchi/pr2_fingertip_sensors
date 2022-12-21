@@ -6,7 +6,7 @@
 #define PFS_ADDRESSES {0x01}
 // #define PFS_ADDRESSES {0x01, 0x02}
 #include "symlink_libs/pfs.h"
-  
+
 void setup() {
   M5.begin();
   Serial.begin(115200);
