@@ -13,14 +13,29 @@ pr2_fingertip_sensors::PR2FingertipSensor pfs_msg;
   ros::Publisher pfs_pub("/pfs/from_uart", &pfs_msg);
 #endif
 #if (defined I2C_MASTER)
-  ros::Publisher pfs_pub("/pfs/from_i2c", &pfs_msg);
+  ros::Publisher* pfs_pubs;
+  char** topic_names;
 #endif
+
 
 void setup_nodehandle () {
   // Advertise ROS message
   nh.initNode();
   nh.getHardware()->setBaud(57600);
-  nh.advertise(pfs_pub);
+
+  // Advertise ROS message
+  int pfs_num = sizeof(pfs_addresses)/sizeof(uint8_t);
+  pfs_pubs = (ros::Publisher*)malloc(pfs_num * sizeof(ros::Publisher));
+  // 2D char array
+  // https://stackoverflow.com/questions/2614249/dynamic-memory-for-2d-char-array
+  topic_names = (char**)malloc(pfs_num * sizeof(char*));
+  for(int i=0; i<pfs_num; i++) {
+    char* topic_name = (char*)malloc(20 * sizeof(char));
+    sprintf(topic_name, "/pfs/from_i2c/%d", i);
+    ros::Publisher pfs_pub(topic_name, &pfs_msg);
+    pfs_pubs[i] = pfs_pub;
+    nh.advertise(pfs_pubs[i]);
+  }
 }
 
 void set_pfs_fields(struct pfs_sensors* sensors,
@@ -56,7 +71,7 @@ void get_pfs_msg (pr2_fingertip_sensors::PR2FingertipSensor* pfs_msg, uint8_t pf
   set_pfs_fields(&sensors, pfs_msg);
   pfs_msg->header.stamp = nh.now();
   char frame_id[15];
-  sprintf(frame_id, "pfs_link_%d", pfs_address);
+  sprintf(frame_id, "pfs_link_0x%d", pfs_address);
   pfs_msg->header.frame_id = frame_id;
 }
 
@@ -69,7 +84,7 @@ void publish_pfs () {
   #if (defined I2C_MASTER)
     for(int i=0; i<sizeof(pfs_addresses)/sizeof(uint8_t); i++) {
       get_pfs_msg(&pfs_msg, pfs_addresses[i]);
-      pfs_pub.publish(&pfs_msg);
+      pfs_pubs[i].publish(&pfs_msg);
     }
   #endif
   nh.spinOnce();
