@@ -3,8 +3,10 @@
 #define I2C_MASTER
 // #define SOFTWARE_SERIAL
 // #define HARDWARE_SERIAL
+#define PFS_ADDRESSES {0x01}
+// #define PFS_ADDRESSES {0x01, 0x02}
 #include "symlink_libs/pfs.h"
-
+  
 void setup() {
   M5.begin();
   Serial.begin(115200);
@@ -14,7 +16,5 @@ void setup() {
 }
 
 void loop() {
-  struct pfs_sensors sensors;
-  read_sensors(&sensors);
-  print_sensors(&sensors); // For debug
+  receive_pfs();
 }
