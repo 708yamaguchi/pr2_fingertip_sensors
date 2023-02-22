@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import serial
+import six
 from serial.tools import list_ports
 import argparse
 import rospy
@@ -38,7 +39,10 @@ class ParseSerial(object):
         # Get packet data. The delimiter is newline.
         line = self.ser.readline()
         line_disp = line.rstrip()
-        res_disp = ''.join(format(ord(i), '08b') for i in line_disp)
+        if six.PY2:
+            res_disp = ''.join(format(ord(i), '08b') for i in line_disp)
+        else:
+            res_disp = ''.join(format(i, '08b') for i in line_disp)
         if (len(res_disp) != self.packet_bytes * 8):
             return False
         # Parse packet and get sensor data.
