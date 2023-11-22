@@ -64,7 +64,7 @@ class ParsePFS(object):
                 pfs_header = msg.header
                 pfs_header.frame_id = frame_id
                 imu_header = msg.header
-                imu_header.frame_id = '/' + gripper + '_' + fingertip + '_' + 'pfs_a_front'
+                imu_header.frame_id = gripper + '_' + fingertip + '_' + 'pfs_a_front'
                 prox_ordered, force_ordered, acc, gyro = append_packets(
                     self.pfs_data[gripper][fingertip][0],
                     self.pfs_data[gripper][fingertip][1])

@@ -147,7 +147,7 @@ class ConvertPFS(object):
         header = Header()
         header.stamp = msg.header.stamp
         for part in self.parts:
-            frame_id_base = '/' + gripper + '_' + fingertip + '_' + part
+            frame_id_base = gripper + '_' + fingertip + '_' + part
             sensor_num = self.sensor_num(part)
             for i in range(sensor_num):
                 header.frame_id = frame_id_base + '_' + str(i)
@@ -188,7 +188,7 @@ class ConvertPFS(object):
         header = Header()
         header.stamp = msg.header.stamp
         for part in self.parts:
-            frame_id_base = '/' + gripper + '_' + fingertip + '_' + part
+            frame_id_base = gripper + '_' + fingertip + '_' + part
             sensor_num = self.sensor_num(part)
             average_force = 0.0
             for i in range(sensor_num):
