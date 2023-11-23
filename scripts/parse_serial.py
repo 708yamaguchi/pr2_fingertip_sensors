@@ -70,7 +70,7 @@ if __name__ == '__main__':
         "--baud", "-b", default=57600, type=int, help="baud rate")
     parser.add_argument(
         "--verbose", "-v", action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
     serial_port = args.port
     baud_rate = args.baud
     verbose = args.verbose
