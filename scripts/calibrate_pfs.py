@@ -90,7 +90,7 @@ class CalibratePFS(object):
                         a = 0  # dummy value
                     return a
 
-                proximity_a = map(_calc_a, proximity, proximity_b)
+                proximity_a = list(map(_calc_a, proximity, proximity_b))
                 # Set 'a' to rosparam
                 rospy.set_param(
                     '/pfs/{}/{}/proximity_a'.format(gripper, fingertip),
