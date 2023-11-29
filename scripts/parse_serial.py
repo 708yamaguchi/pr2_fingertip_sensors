@@ -26,13 +26,15 @@ class ParseSerial(object):
         rospy.loginfo(self.ser)
         self.packet_bytes = 44  # each packet is 44 bytes
         self.pfs_data = [None, None]
+        self.pfs_frame = rospy.get_param('~pfs_frame', 'l_gripper_l_finger_tip_link')
+        self.imu_frame = rospy.get_param('~imu_frame', 'l_gripper_l_fingertip_pfs_a_front')
 
-    def publish(self, header, proximity, force, acc, gyro):
+    def publish(self, pfs_header, imu_header, proximity, force, acc, gyro):
         """
         Publish parsed sensor data
         """
         pfs_msg = create_pfs_msg(
-            header, header, proximity, force, acc, gyro)
+            pfs_header, imu_header, proximity, force, acc, gyro)
         self.pub.publish(pfs_msg)
 
     def parse_serial(self):
@@ -53,10 +55,14 @@ class ParseSerial(object):
             prox_ordered, force_ordered, acc, gyro = append_packets(
                 self.pfs_data[0],
                 self.pfs_data[1])
-            header = Header()
-            header.stamp = rospy.Time.now()
+            pfs_header = Header()
+            pfs_header.stamp = rospy.Time.now()
+            pfs_header.frame_id = self.pfs_frame
+            imu_header = Header()
+            imu_header.stamp = rospy.Time.now()
+            imu_header.frame_id = self.imu_frame
             self.publish(
-                header, prox_ordered, force_ordered, acc, gyro)
+                pfs_header, imu_header, prox_ordered, force_ordered, acc, gyro)
             self.pfs_data[0] = None
             self.pfs_data[1] = None
         return True
@@ -70,7 +76,7 @@ if __name__ == '__main__':
         "--baud", "-b", default=57600, type=int, help="baud rate")
     parser.add_argument(
         "--verbose", "-v", action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
     serial_port = args.port
     baud_rate = args.baud
     verbose = args.verbose

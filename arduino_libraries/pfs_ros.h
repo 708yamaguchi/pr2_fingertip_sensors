@@ -73,6 +73,9 @@ void get_pfs_msg (pr2_fingertip_sensors::PR2FingertipSensor* pfs_msg, uint8_t pf
   char frame_id[25];
   sprintf(frame_id, "pfs_link_addr_0x%02x", pfs_address);
   pfs_msg->header.frame_id = frame_id;
+  char imu_frame_id[40];
+  sprintf(imu_frame_id, "%s_pfs_a_front", frame_id);
+  pfs_msg->imu.header.frame_id = imu_frame_id;
 }
 
 void publish_pfs () {
